@@ -51,8 +51,8 @@ lRUCache.get(4);    // return 4
 1. Use a **hash map** (`key -> node`) for O(1) lookup, combined with a **doubly linked list** that maintains recency order (most recently used at the head, least recently used at the tail).
 2. On `get(key)`: if the key exists, move its node to the head of the list (mark as most recently used) and return its value; otherwise return `-1`.
 3. On `put(key, value)`:
-   - If the key exists, update its value and move the node to the head.
-   - If the key doesn't exist, create a new node, insert it at the head, and add it to the hash map. If capacity is exceeded, remove the node at the tail (least recently used) and delete it from the hash map.
+  - If the key exists, update its value and move the node to the head.
+  - If the key doesn't exist, create a new node, insert it at the head, and add it to the hash map. If capacity is exceeded, remove the node at the tail (least recently used) and delete it from the hash map.
 4. Use two dummy sentinel nodes (`head` and `tail`) to simplify insertion/removal edge cases at the boundaries of the list.
 
 **Time Complexity:** O(1) for both `get` and `put`.
@@ -120,3 +120,4 @@ class LRUCache:
 - How would you make this thread-safe for concurrent access?
 - How would you implement an LFU (Least Frequently Used) cache instead (LC 460)?
 - How would you add a TTL (time-to-live) expiration to cache entries?
+

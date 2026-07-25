@@ -37,3 +37,43 @@
 2. Then cover the **CodeJeet-tracked** set that rounds out Rivian's known question bank: `Degree of an Array`, `Flatten Deeply Nested Array`, `String Compression`, `Max Increase to Keep City Skyline`.
 3. Finish with the **topic-area fillers** frequently seen in Rivian-style interviews for the same skill areas (arrays, strings, trees, graphs, greedy/DP): `Remove All Occurrences of a Substring`, `Binary Tree Right Side View`, `Jump Game II`, `Invert Binary Tree`, `Kth Largest Element in an Array`, `Valid Palindrome`, `Angle Between Hands of a Clock`.
 4. Don't neglect the **system design** (vehicle/EV-themed, design for intermittent connectivity) and **behavioral** rounds (Rivian Compass framework: *Stay Adventurous*, *Lead the Way*, *Bring People Together*) — many candidates report losing the offer there despite strong coding performance.
+
+## System Design Interview Questions
+
+> Sources: Codemia's Rivian Software Engineer guide, TechPrep's Rivian interview process breakdown, Dataford's Rivian/VW Group Technologies and DevOps Engineer guides, AlgoCademy's Rivian interview questions blog, and Autoraiders' OTA governance analysis (all 2026).
+
+### About Rivian's System Design Round
+
+- **Format**: One dedicated system design round in the virtual onsite loop (typically for mid-level/senior roles), run as an open-ended, conversational whiteboard-style discussion.
+- **Theme**: Almost always **vehicle/EV-themed** — you will not get a generic web-service prompt (e.g. "design Twitter"). Expect prompts tied to the physical product: OTA updates, telemetry, charging, fleet management.
+- **Core constraint interviewers push on**: **intermittent connectivity**. Vehicles drive through tunnels, underground garages, and rural dead zones, so your design must handle store-and-forward, offline-first behavior, and graceful degradation — this is not optional.
+- **What's evaluated**: ability to clarify requirements, identify core components, reason about edge-cloud data consistency, and discuss scalability/reliability/safety trade-offs rather than pick a specific tech stack.
+
+### Common Questions
+
+| # | Question | Category | Key Considerations |
+|---|---|---|---|
+| 1 | Design an OTA (over-the-air) update system for a fleet of connected vehicles | OTA / Fleet | Differential (delta) updates, A/B partition scheme, staged/canary rollouts, fail-secure rollback on interrupted or failed flash, resumable downloads via checkpointing, signature verification |
+| 2 | Design a real-time vehicle telemetry ingestion pipeline for hundreds of thousands to a million active vehicles | Telemetry / Streaming | High-throughput ingestion (e.g. Kafka-style queues), store-and-forward buffering on the vehicle during outages, replayability, schema/data-quality validation, horizontal scalability |
+| 3 | Design a charging station availability / reservation network | Charging Network | Real-time availability state, handling concurrent reservations, eventual consistency across regions, conflict resolution when connectivity is restored |
+| 4 | Design a vehicle-to-cloud communication layer that tolerates dead zones (tunnels, garages, rural areas) | Connectivity | Offline-first client design, local queuing, adaptive/backoff retry logic, opportunistic sync (e.g. defer large payloads until Wi-Fi/strong signal) |
+| 5 | Design a system for managing and monitoring EV battery health across the fleet | Diagnostics | Time-series data ingestion, alerting on anomalies, aggregation at scale, edge pre-processing to reduce bandwidth |
+| 6 | Design a real-time navigation system incorporating traffic and charging station data | Navigation | Merging multiple real-time data sources, low-latency routing updates, caching/precomputation for offline route continuation |
+| 7 | Design a real-time data distribution layer between multiple ECUs (electronic control units) over CAN or Ethernet | Vehicle-Internal Networking | Low-latency, deterministic delivery, message prioritization, bandwidth constraints of in-vehicle buses |
+| 8 | Design a reservation and inventory management system for Rivian's direct-to-consumer sales model | E-Commerce / Inventory | Standard distributed inventory concerns: consistency vs. availability, handling concurrent reservations, order fulfillment workflows |
+| 9 | Design a secure, automated OTA deployment pipeline with rollback capabilities (DevOps/infra-leaning variant) | OTA / CI-CD | Secrets/credential management across hybrid cloud and factory environments, automated canary + rollback gates, audit/traceability |
+| 10 | How would you architect a software-update mechanism that guarantees safe, fail-secure rollbacks if an update is interrupted? | OTA / Safety | Atomic/transactional update application, watchdog + fallback partition, functional-safety considerations (e.g. ISO 26262) for safety-critical ECUs like steer-by-wire |
+
+### Core Themes to Address in Any Answer
+
+1. **Offline-first / intermittent connectivity**: store-and-forward on the vehicle, local buffering, opportunistic sync, adaptive retry/backoff instead of aggressive reconnection.
+2. **Eventual consistency across edge and cloud**: reconcile vehicle-local state with backend state once connectivity resumes; discuss conflict resolution.
+3. **Safety-critical rollout mechanics**: staged/canary rollouts, A/B partitions, checkpointed/resumable transfers, delta (differential) updates to minimize payload size, automatic rollback on failure.
+4. **Scale**: fleet sizes in the hundreds of thousands to millions of vehicles — horizontal scalability of ingestion pipelines, partitioning/sharding strategies, backpressure handling.
+5. **Standard system design fundamentals still apply**: clarify requirements first, sketch high-level architecture, identify bottlenecks, discuss trade-offs — the vehicle theme changes the constraints, not the methodology.
+
+### Suggested Prep Order
+
+1. Master the two most-reported themes first: **OTA Update System** (#1, #9, #10) and **Vehicle Telemetry & Data Pipeline** (#2, #5).
+2. Then cover **Charging Network** (#3) and **Vehicle-to-Cloud Connectivity** (#4), since both hinge on the same intermittent-connectivity constraint.
+3. Round out with the less-frequently-reported but still-seen prompts: **Navigation** (#6), **ECU-to-ECU Networking** (#7), and the non-vehicle **Reservation/Inventory** system (#8), which tests general distributed-systems fluency without the automotive twist.
