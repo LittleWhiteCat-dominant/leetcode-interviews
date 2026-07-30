@@ -90,6 +90,32 @@ Stack holding operands
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — each token is processed once with O(1) stack operations.
+**Space Complexity:** O(n) — the stack can hold up to n operands in the worst case.
+
+## Reference Solution (Python)
+
+```python
+def evalRPN(tokens: list[str]) -> int:
+    stack: list[int] = []
+    operators = {
+        '+': lambda a, b: a + b,
+        '-': lambda a, b: a - b,
+        '*': lambda a, b: a * b,
+        '/': lambda a, b: int(a / b),
+    }
+
+    for token in tokens:
+        if token in operators:
+            b = stack.pop()
+            a = stack.pop()
+            stack.append(operators[token](a, b))
+        else:
+            stack.append(int(token))
+
+    return stack[0]
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/evaluate-reverse-polish-notation/

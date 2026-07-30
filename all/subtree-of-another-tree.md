@@ -58,6 +58,33 @@ Recursive node-by-node comparison
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(m * n) — in the worst case, `isSameTree` (O(n)) is invoked at each of the m nodes of `root`.
+**Space Complexity:** O(m + n) — recursion stack depth from `isSubtree` plus `isSameTree`.
+
+## Reference Solution (Python)
+
+```python
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def isSubtree(root: TreeNode, subRoot: TreeNode) -> bool:
+    def isSameTree(p: TreeNode, q: TreeNode) -> bool:
+        if not p and not q:
+            return True
+        if not p or not q or p.val != q.val:
+            return False
+        return isSameTree(p.left, q.left) and isSameTree(p.right, q.right)
+
+    if not root:
+        return subRoot is None
+    if isSameTree(root, subRoot):
+        return True
+    return isSubtree(root.left, subRoot) or isSubtree(root.right, subRoot)
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/subtree-of-another-tree/

@@ -77,6 +77,27 @@ Left/right pointers instead of a hash map, O(1) space
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — the two pointers together traverse the array at most once.
+**Space Complexity:** O(1) — only the two pointer indices are used, no extra data structures.
+
+## Reference Solution (Python)
+
+```python
+def twoSum(numbers: list[int], target: int) -> list[int]:
+    left, right = 0, len(numbers) - 1
+
+    while left < right:
+        current_sum = numbers[left] + numbers[right]
+        if current_sum == target:
+            return [left + 1, right + 1]
+        if current_sum < target:
+            left += 1
+        else:
+            right -= 1
+
+    return []
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/two-sum-ii-input-array-is-sorted/

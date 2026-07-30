@@ -80,6 +80,35 @@ Binary search on the answer
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n log(sum(weights))) — binary search over the capacity range, with an O(n) feasibility check at each step.
+**Space Complexity:** O(1) extra space.
+
+## Reference Solution (Python)
+
+```python
+def shipWithinDays(weights: list[int], days: int) -> int:
+    def days_needed(capacity: int) -> int:
+        required_days = 1
+        current_load = 0
+        for weight in weights:
+            if current_load + weight > capacity:
+                required_days += 1
+                current_load = 0
+            current_load += weight
+        return required_days
+
+    left, right = max(weights), sum(weights)
+
+    while left < right:
+        mid = (left + right) // 2
+        if days_needed(mid) <= days:
+            right = mid
+        else:
+            left = mid + 1
+
+    return left
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/capacity-to-ship-packages-within-d-days/

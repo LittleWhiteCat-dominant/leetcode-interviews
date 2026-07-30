@@ -76,6 +76,36 @@ Dijkstra's single-source shortest path
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(E log V) — Dijkstra's algorithm with a binary heap, where each edge relaxation is a heap push.
+**Space Complexity:** O(V + E) — for the adjacency list, the distance map, and the heap.
+
+## Reference Solution (Python)
+
+```python
+import heapq
+from collections import defaultdict
+
+
+def networkDelayTime(times: list[list[int]], n: int, k: int) -> int:
+    graph = defaultdict(list)
+    for u, v, w in times:
+        graph[u].append((v, w))
+
+    dist: dict[int, int] = {}
+    heap = [(0, k)]
+
+    while heap:
+        d, node = heapq.heappop(heap)
+        if node in dist:
+            continue
+        dist[node] = d
+        for neighbor, weight in graph[node]:
+            if neighbor not in dist:
+                heapq.heappush(heap, (d + weight, neighbor))
+
+    return max(dist.values()) if len(dist) == n else -1
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/network-delay-time/

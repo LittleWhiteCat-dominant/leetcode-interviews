@@ -59,6 +59,36 @@ Post-order recursion returning both height and balance status
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — each node is visited exactly once.
+**Space Complexity:** O(h) — recursion stack, where h is the tree height (O(n) worst case, O(log n) if balanced).
+
+## Reference Solution (Python)
+
+```python
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def isBalanced(root: TreeNode | None) -> bool:
+    def height(node: TreeNode | None) -> int:
+        if node is None:
+            return 0
+        left_height = height(node.left)
+        if left_height == -1:
+            return -1
+        right_height = height(node.right)
+        if right_height == -1:
+            return -1
+        if abs(left_height - right_height) > 1:
+            return -1
+        return max(left_height, right_height) + 1
+
+    return height(root) != -1
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/balanced-binary-tree/

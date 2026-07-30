@@ -71,6 +71,34 @@ Find the insertion point and merge overlapping intervals
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — a single linear pass through the intervals.
+**Space Complexity:** O(n) — for the result list (excluding the output, O(1) extra space).
+
+## Reference Solution (Python)
+
+```python
+def insert(intervals: list[list[int]], newInterval: list[int]) -> list[list[int]]:
+    result: list[list[int]] = []
+    i, n = 0, len(intervals)
+    start, end = newInterval
+
+    while i < n and intervals[i][1] < start:
+        result.append(intervals[i])
+        i += 1
+
+    while i < n and intervals[i][0] <= end:
+        start = min(start, intervals[i][0])
+        end = max(end, intervals[i][1])
+        i += 1
+    result.append([start, end])
+
+    while i < n:
+        result.append(intervals[i])
+        i += 1
+
+    return result
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/insert-interval/

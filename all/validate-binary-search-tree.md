@@ -62,6 +62,30 @@ Recursively pass down lower/upper bounds
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — every node is visited exactly once.
+**Space Complexity:** O(h) — recursion stack depth equals the tree height (`h`); O(n) worst case for a skewed tree.
+
+## Reference Solution (Python)
+
+```python
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def isValidBST(root: TreeNode | None) -> bool:
+    def validate(node: TreeNode | None, lower: float, upper: float) -> bool:
+        if node is None:
+            return True
+        if not (lower < node.val < upper):
+            return False
+        return validate(node.left, lower, node.val) and validate(node.right, node.val, upper)
+
+    return validate(root, float('-inf'), float('inf'))
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/validate-binary-search-tree/

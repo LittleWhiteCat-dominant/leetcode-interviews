@@ -61,6 +61,27 @@ DFS to compute the size of each connected component, take the max
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(m * n) — every cell is visited a constant number of times across all DFS calls.
+**Space Complexity:** O(m * n) — for the recursion stack in the worst case of one giant island.
+
+## Reference Solution (Python)
+
+```python
+def maxAreaOfIsland(grid: list[list[int]]) -> int:
+    rows, cols = len(grid), len(grid[0])
+
+    def dfs(r: int, c: int) -> int:
+        if r < 0 or r >= rows or c < 0 or c >= cols or grid[r][c] != 1:
+            return 0
+        grid[r][c] = 0
+        return 1 + dfs(r + 1, c) + dfs(r - 1, c) + dfs(r, c + 1) + dfs(r, c - 1)
+
+    return max(
+        (dfs(r, c) for r in range(rows) for c in range(cols) if grid[r][c] == 1),
+        default=0,
+    )
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/max-area-of-island/

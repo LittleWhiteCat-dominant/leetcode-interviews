@@ -83,6 +83,25 @@ Compare with the right endpoint to shrink the interval
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(log n) — binary search halves the search space each iteration.
+**Space Complexity:** O(1) — only pointer variables are used.
+
+## Reference Solution (Python)
+
+```python
+def findMin(nums: list[int]) -> int:
+    lo, hi = 0, len(nums) - 1
+
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if nums[mid] > nums[hi]:
+            lo = mid + 1
+        else:
+            hi = mid
+
+    return nums[lo]
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/

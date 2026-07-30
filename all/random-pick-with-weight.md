@@ -86,6 +86,31 @@ Prefix sum + binary search to locate the interval
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) for construction, O(log n) per `pickIndex` call via binary search.
+**Space Complexity:** O(n) — for the prefix sum array.
+
+## Reference Solution (Python)
+
+```python
+import bisect
+import random
+from typing import List
+
+
+class Solution:
+    def __init__(self, w: List[int]):
+        self.prefix_sums = []
+        total = 0
+        for weight in w:
+            total += weight
+            self.prefix_sums.append(total)
+        self.total = total
+
+    def pickIndex(self) -> int:
+        target = random.randint(1, self.total)
+        return bisect.bisect_left(self.prefix_sums, target)
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/random-pick-with-weight/

@@ -78,6 +78,37 @@ numMatrix.sumRegion(1, 2, 2, 4); // return 12 (i.e sum of the blue rectangle)
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(m \* n) to build the 2D prefix sum, O(1) per `sumRegion` query.
+**Space Complexity:** O(m \* n) — for the prefix sum matrix.
+
+## Reference Solution (Python)
+
+```python
+from typing import List
+
+
+class NumMatrix:
+    def __init__(self, matrix: List[List[int]]):
+        m, n = len(matrix), len(matrix[0])
+        self.prefix = [[0] * (n + 1) for _ in range(m + 1)]
+        for r in range(m):
+            for c in range(n):
+                self.prefix[r + 1][c + 1] = (
+                    matrix[r][c]
+                    + self.prefix[r][c + 1]
+                    + self.prefix[r + 1][c]
+                    - self.prefix[r][c]
+                )
+
+    def sumRegion(self, row1: int, col1: int, row2: int, col2: int) -> int:
+        return (
+            self.prefix[row2 + 1][col2 + 1]
+            - self.prefix[row1][col2 + 1]
+            - self.prefix[row2 + 1][col1]
+            + self.prefix[row1][col1]
+        )
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/range-sum-query-2d-immutable/

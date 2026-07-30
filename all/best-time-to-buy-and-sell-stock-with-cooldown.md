@@ -58,6 +58,29 @@ State-machine DP: holding/not-holding/cooldown
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — a single pass through the prices array, updating three running states.
+**Space Complexity:** O(1) — only the `hold`, `sold`, and `rest` states are kept.
+
+## Reference Solution (Python)
+
+```python
+def maxProfit(prices: list[int]) -> int:
+    if not prices:
+        return 0
+
+    hold = float("-inf")
+    sold = 0
+    rest = 0
+
+    for price in prices:
+        prev_sold = sold
+        sold = hold + price
+        hold = max(hold, rest - price)
+        rest = max(rest, prev_sold)
+
+    return max(sold, rest)
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/

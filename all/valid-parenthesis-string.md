@@ -70,6 +70,33 @@ Greedily maintain the possible range of open-bracket counts
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — a single pass tracking the feasible range of open-bracket counts.
+**Space Complexity:** O(1) — only two running bounds (`low`, `high`) are kept.
+
+## Reference Solution (Python)
+
+```python
+def checkValidString(s: str) -> bool:
+    low, high = 0, 0
+
+    for ch in s:
+        if ch == '(':
+            low += 1
+            high += 1
+        elif ch == ')':
+            low -= 1
+            high -= 1
+        else:
+            low -= 1
+            high += 1
+
+        if high < 0:
+            return False
+        low = max(low, 0)
+
+    return low == 0
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/valid-parenthesis-string/

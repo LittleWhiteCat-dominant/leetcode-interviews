@@ -71,6 +71,30 @@ Three transitions: insert/delete/replace
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(m * n) — where m = len(word1), n = len(word2), one DP transition per cell.
+**Space Complexity:** O(n) — a single 1D DP row, updated in place with a rolling `prev` value for the diagonal term.
+
+## Reference Solution (Python)
+
+```python
+def minDistance(word1: str, word2: str) -> int:
+    m, n = len(word1), len(word2)
+    dp = list(range(n + 1))
+
+    for i in range(1, m + 1):
+        prev = dp[0]
+        dp[0] = i
+        for j in range(1, n + 1):
+            temp = dp[j]
+            if word1[i - 1] == word2[j - 1]:
+                dp[j] = prev
+            else:
+                dp[j] = 1 + min(prev, dp[j], dp[j - 1])
+            prev = temp
+
+    return dp[n]
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/edit-distance/

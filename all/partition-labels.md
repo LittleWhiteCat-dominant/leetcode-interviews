@@ -58,6 +58,28 @@ Record each character's last occurrence, greedily extend the interval
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — one pass to record last occurrences, one pass to build partitions.
+**Space Complexity:** O(1) — the last-occurrence map holds at most 26 lowercase letters.
+
+## Reference Solution (Python)
+
+```python
+from typing import List
+
+def partitionLabels(s: str) -> List[int]:
+    last = {ch: i for i, ch in enumerate(s)}
+    result = []
+    start = end = 0
+
+    for i, ch in enumerate(s):
+        end = max(end, last[ch])
+        if i == end:
+            result.append(end - start + 1)
+            start = i + 1
+
+    return result
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/partition-labels/

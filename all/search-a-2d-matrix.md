@@ -66,6 +66,29 @@ Flatten to 1D binary search or start from a corner with two pointers
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(log(m * n)) — binary search over the matrix treated as a flattened sorted array.
+**Space Complexity:** O(1) — no extra data structures, just index math.
+
+## Reference Solution (Python)
+
+```python
+def searchMatrix(matrix: list[list[int]], target: int) -> bool:
+    rows, cols = len(matrix), len(matrix[0])
+    lo, hi = 0, rows * cols - 1
+
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        val = matrix[mid // cols][mid % cols]
+        if val == target:
+            return True
+        if val < target:
+            lo = mid + 1
+        else:
+            hi = mid - 1
+
+    return False
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/search-a-2d-matrix/

@@ -69,6 +69,20 @@ State-machine DP
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — a single pass through the prices array.
+**Space Complexity:** O(1) — only a running profit total is kept.
+
+## Reference Solution (Python)
+
+```python
+def maxProfit(prices: list[int]) -> int:
+    profit = 0
+    for i in range(1, len(prices)):
+        if prices[i] > prices[i - 1]:
+            profit += prices[i] - prices[i - 1]
+    return profit
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/best-time-to-buy-and-sell-stock-ii/

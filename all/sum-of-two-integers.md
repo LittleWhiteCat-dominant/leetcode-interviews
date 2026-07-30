@@ -45,6 +45,28 @@ Simulate addition with bit operations (XOR + carry)
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(1) — bounded by the fixed 32-bit width, so the carry loop runs at most 32 times.
+**Space Complexity:** O(1) — only a fixed number of integer variables.
+
+## Reference Solution (Python)
+
+```python
+def getSum(a: int, b: int) -> int:
+    mask = 0xFFFFFFFF
+    a &= mask
+    b &= mask
+
+    while b:
+        carry = (a & b) << 1 & mask
+        a = a ^ b
+        b = carry
+
+    if a > 0x7FFFFFFF:
+        a = ~(a ^ mask)
+
+    return a
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/sum-of-two-integers/

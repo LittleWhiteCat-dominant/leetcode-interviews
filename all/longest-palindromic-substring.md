@@ -51,6 +51,35 @@ Expand around center, or interval DP
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n^2) — expanding around each of the 2n - 1 centers takes O(n) in the worst case.
+**Space Complexity:** O(1) — only a few index variables are kept, excluding the output substring.
+
+## Reference Solution (Python)
+
+```python
+def longestPalindrome(s: str) -> str:
+    if not s:
+        return ""
+
+    start, end = 0, 0
+
+    def expand(left: int, right: int) -> tuple[int, int]:
+        while left >= 0 and right < len(s) and s[left] == s[right]:
+            left -= 1
+            right += 1
+        return left + 1, right - 1
+
+    for i in range(len(s)):
+        l1, r1 = expand(i, i)
+        if r1 - l1 > end - start:
+            start, end = l1, r1
+        l2, r2 = expand(i, i + 1)
+        if r2 - l2 > end - start:
+            start, end = l2, r2
+
+    return s[start:end + 1]
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/longest-palindromic-substring/

@@ -88,6 +88,59 @@ Hash map + frequency-bucketed doubly linked lists
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(1) average per `get` and `put` — hash map lookups plus `OrderedDict` insert/pop/move operations are all O(1).
+**Space Complexity:** O(capacity) — for the key-to-value map, key-to-frequency map, and the frequency-bucketed ordered dictionaries.
+
+## Reference Solution (Python)
+
+```python
+from collections import OrderedDict, defaultdict
+
+
+class LFUCache:
+    def __init__(self, capacity: int):
+        self.capacity = capacity
+        self.min_freq = 0
+        self.key_to_val: dict[int, int] = {}
+        self.key_to_freq: dict[int, int] = {}
+        self.freq_to_keys: dict[int, OrderedDict] = defaultdict(OrderedDict)
+
+    def get(self, key: int) -> int:
+        if key not in self.key_to_val:
+            return -1
+        self._touch(key)
+        return self.key_to_val[key]
+
+    def put(self, key: int, value: int) -> None:
+        if self.capacity <= 0:
+            return
+
+        if key in self.key_to_val:
+            self.key_to_val[key] = value
+            self._touch(key)
+            return
+
+        if len(self.key_to_val) >= self.capacity:
+            oldest_key, _ = self.freq_to_keys[self.min_freq].popitem(last=False)
+            del self.key_to_val[oldest_key]
+            del self.key_to_freq[oldest_key]
+
+        self.key_to_val[key] = value
+        self.key_to_freq[key] = 1
+        self.freq_to_keys[1][key] = None
+        self.min_freq = 1
+
+    def _touch(self, key: int) -> None:
+        freq = self.key_to_freq[key]
+        del self.freq_to_keys[freq][key]
+        if not self.freq_to_keys[freq] and freq == self.min_freq:
+            self.min_freq += 1
+
+        new_freq = freq + 1
+        self.key_to_freq[key] = new_freq
+        self.freq_to_keys[new_freq][key] = None
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/lfu-cache/

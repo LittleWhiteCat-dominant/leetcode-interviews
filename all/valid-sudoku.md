@@ -89,6 +89,34 @@ Hash sets tracking rows/columns/sub-boxes
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(1) — the board is always a fixed 9x9 size, so the single pass over its 81 cells is constant time (equivalently O(n^2) for an n x n board).
+**Space Complexity:** O(1) — the row/column/box sets are bounded by the fixed 9x9x9 board size.
+
+## Reference Solution (Python)
+
+```python
+def isValidSudoku(board: list[list[str]]) -> bool:
+    rows = [set() for _ in range(9)]
+    cols = [set() for _ in range(9)]
+    boxes = [set() for _ in range(9)]
+
+    for r in range(9):
+        for c in range(9):
+            val = board[r][c]
+            if val == '.':
+                continue
+
+            box_idx = (r // 3) * 3 + c // 3
+            if val in rows[r] or val in cols[c] or val in boxes[box_idx]:
+                return False
+
+            rows[r].add(val)
+            cols[c].add(val)
+            boxes[box_idx].add(val)
+
+    return True
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/valid-sudoku/

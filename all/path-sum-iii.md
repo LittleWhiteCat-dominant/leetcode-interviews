@@ -56,6 +56,43 @@ DFS + prefix sum/hash map
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — each node is visited once, with O(1) amortized hash map operations.
+**Space Complexity:** O(n) — for the prefix-sum hash map and the recursion stack.
+
+## Reference Solution (Python)
+
+```python
+from collections import defaultdict
+from typing import Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def pathSum(root: Optional[TreeNode], targetSum: int) -> int:
+    prefix_counts = defaultdict(int)
+    prefix_counts[0] = 1
+
+    def dfs(node: Optional[TreeNode], current_sum: int) -> int:
+        if not node:
+            return 0
+
+        current_sum += node.val
+        count = prefix_counts[current_sum - targetSum]
+
+        prefix_counts[current_sum] += 1
+        count += dfs(node.left, current_sum) + dfs(node.right, current_sum)
+        prefix_counts[current_sum] -= 1
+
+        return count
+
+    return dfs(root, 0)
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/path-sum-iii/

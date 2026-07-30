@@ -64,6 +64,26 @@ Monotonic queue / prefix sum optimization
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(1) amortized per `ping` call — each request is pushed once and popped at most once across all calls.
+**Space Complexity:** O(w) — where `w` is the number of requests within the 3000ms window currently stored in the queue.
+
+## Reference Solution (Python)
+
+```python
+from collections import deque
+
+
+class RecentCounter:
+    def __init__(self) -> None:
+        self.requests: deque[int] = deque()
+
+    def ping(self, t: int) -> int:
+        self.requests.append(t)
+        while self.requests[0] < t - 3000:
+            self.requests.popleft()
+        return len(self.requests)
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/number-of-recent-calls/

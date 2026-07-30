@@ -70,6 +70,44 @@ Each node stores child pointers + an end-of-word marker
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(k) for `insert`, `search`, and `startsWith`, where `k` is the length of the word/prefix.
+**Space Complexity:** O(total characters inserted) — each unique character path allocates one trie node.
+
+## Reference Solution (Python)
+
+```python
+class TrieNode:
+    def __init__(self):
+        self.children: dict[str, "TrieNode"] = {}
+        self.is_end = False
+
+
+class Trie:
+    def __init__(self):
+        self.root = TrieNode()
+
+    def insert(self, word: str) -> None:
+        node = self.root
+        for ch in word:
+            node = node.children.setdefault(ch, TrieNode())
+        node.is_end = True
+
+    def _find(self, word: str) -> "TrieNode | None":
+        node = self.root
+        for ch in word:
+            if ch not in node.children:
+                return None
+            node = node.children[ch]
+        return node
+
+    def search(self, word: str) -> bool:
+        node = self._find(word)
+        return node is not None and node.is_end
+
+    def startsWith(self, prefix: str) -> bool:
+        return self._find(prefix) is not None
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/implement-trie-prefix-tree/

@@ -71,6 +71,39 @@ Recursive/iterative traversal using BST properties
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(h) — where `h` is the height of the tree (O(log n) average, O(n) worst case for a skewed tree).
+**Space Complexity:** O(h) — for the iterative approach's implicit call depth is O(1); using recursion would be O(h) for the call stack.
+
+## Reference Solution (Python)
+
+```python
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def insertIntoBST(root: "TreeNode | None", val: int) -> "TreeNode | None":
+    if root is None:
+        return TreeNode(val)
+
+    node = root
+    while True:
+        if val < node.val:
+            if node.left is None:
+                node.left = TreeNode(val)
+                break
+            node = node.left
+        else:
+            if node.right is None:
+                node.right = TreeNode(val)
+                break
+            node = node.right
+
+    return root
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/insert-into-a-binary-search-tree/

@@ -71,6 +71,34 @@ Determine which half is sorted to decide the shrink direction
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(log n) — standard binary search with one extra comparison per iteration to determine the sorted half.
+**Space Complexity:** O(1) — only a few index variables.
+
+## Reference Solution (Python)
+
+```python
+def search(nums: list[int], target: int) -> int:
+    lo, hi = 0, len(nums) - 1
+
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        if nums[mid] == target:
+            return mid
+
+        if nums[lo] <= nums[mid]:
+            if nums[lo] <= target < nums[mid]:
+                hi = mid - 1
+            else:
+                lo = mid + 1
+        else:
+            if nums[mid] < target <= nums[hi]:
+                lo = mid + 1
+            else:
+                hi = mid - 1
+
+    return -1
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/search-in-rotated-sorted-array/

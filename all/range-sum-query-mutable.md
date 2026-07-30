@@ -79,6 +79,46 @@ Segment tree or Binary Indexed Tree (Fenwick Tree)
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(log n) per `update` or `sumRange` call using a Binary Indexed Tree; O(n log n) to build.
+**Space Complexity:** O(n) — for the Fenwick tree and the shadow copy of `nums`.
+
+## Reference Solution (Python)
+
+```python
+from typing import List
+
+
+class NumArray:
+    def __init__(self, nums: List[int]):
+        self.n = len(nums)
+        self.nums = [0] * self.n
+        self.tree = [0] * (self.n + 1)
+        for i, num in enumerate(nums):
+            self.update(i, num)
+
+    def _update_tree(self, index: int, delta: int) -> None:
+        i = index + 1
+        while i <= self.n:
+            self.tree[i] += delta
+            i += i & (-i)
+
+    def _prefix_sum(self, index: int) -> int:
+        total = 0
+        i = index + 1
+        while i > 0:
+            total += self.tree[i]
+            i -= i & (-i)
+        return total
+
+    def update(self, index: int, val: int) -> None:
+        delta = val - self.nums[index]
+        self.nums[index] = val
+        self._update_tree(index, delta)
+
+    def sumRange(self, left: int, right: int) -> int:
+        return self._prefix_sum(right) - self._prefix_sum(left - 1)
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/range-sum-query-mutable/

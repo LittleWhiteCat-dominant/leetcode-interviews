@@ -55,6 +55,23 @@ Transpose then reverse each row
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n^2) — every cell is visited a constant number of times.
+**Space Complexity:** O(1) — rotation is done in-place.
+
+## Reference Solution (Python)
+
+```python
+def rotate(matrix: list[list[int]]) -> None:
+    n = len(matrix)
+
+    for i in range(n):
+        for j in range(i + 1, n):
+            matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
+
+    for row in matrix:
+        row.reverse()
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/rotate-image/

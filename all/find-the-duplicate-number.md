@@ -78,6 +78,29 @@ Treat the array as a linked list, apply Floyd's algorithm
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — Floyd's cycle detection makes a constant number of passes over the implicit linked list.
+**Space Complexity:** O(1) — only two pointers are used, and the array is not modified.
+
+## Reference Solution (Python)
+
+```python
+def findDuplicate(nums: list[int]) -> int:
+    slow = fast = nums[0]
+
+    while True:
+        slow = nums[slow]
+        fast = nums[nums[fast]]
+        if slow == fast:
+            break
+
+    slow = nums[0]
+    while slow != fast:
+        slow = nums[slow]
+        fast = nums[fast]
+
+    return slow
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/find-the-duplicate-number/

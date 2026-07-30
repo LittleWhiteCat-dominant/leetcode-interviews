@@ -56,6 +56,25 @@ Monotonically decreasing stack to find the next greater element
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — each index is pushed and popped from the stack at most once.
+**Space Complexity:** O(n) — the monotonic stack can hold up to n indices in the worst case.
+
+## Reference Solution (Python)
+
+```python
+def dailyTemperatures(temperatures: list[int]) -> list[int]:
+    answer = [0] * len(temperatures)
+    stack: list[int] = []  # indices with strictly decreasing temperatures
+
+    for i, temp in enumerate(temperatures):
+        while stack and temperatures[stack[-1]] < temp:
+            prev = stack.pop()
+            answer[prev] = i - prev
+        stack.append(i)
+
+    return answer
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/daily-temperatures/

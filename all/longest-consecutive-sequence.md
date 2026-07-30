@@ -62,6 +62,26 @@ Hash set for O(1) lookup; only expand from sequence starting points
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — each number is visited a constant number of times because inner while-loops only run for true sequence starting points.
+**Space Complexity:** O(n) — for the hash set holding all numbers.
+
+## Reference Solution (Python)
+
+```python
+def longestConsecutive(nums: list[int]) -> int:
+    num_set = set(nums)
+    longest = 0
+
+    for num in num_set:
+        if num - 1 not in num_set:
+            length = 1
+            while num + length in num_set:
+                length += 1
+            longest = max(longest, length)
+
+    return longest
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/longest-consecutive-sequence/

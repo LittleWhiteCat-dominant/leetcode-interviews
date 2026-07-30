@@ -61,6 +61,33 @@ Monotonic queue / prefix sum optimization
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — each prefix-sum index is pushed and popped from the deque at most once.
+**Space Complexity:** O(n) — the prefix sum array and the monotonic deque.
+
+## Reference Solution (Python)
+
+```python
+from collections import deque
+
+def shortestSubarray(nums: list[int], k: int) -> int:
+    n = len(nums)
+    prefix = [0] * (n + 1)
+    for i in range(n):
+        prefix[i + 1] = prefix[i] + nums[i]
+
+    result = n + 1
+    dq = deque()
+
+    for i, p in enumerate(prefix):
+        while dq and p - prefix[dq[0]] >= k:
+            result = min(result, i - dq.popleft())
+        while dq and prefix[dq[-1]] >= p:
+            dq.pop()
+        dq.append(i)
+
+    return result if result <= n else -1
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/shortest-subarray-with-sum-at-least-k/

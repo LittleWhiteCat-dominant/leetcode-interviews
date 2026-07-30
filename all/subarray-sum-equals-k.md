@@ -53,6 +53,28 @@ Prefix sum + hash map counting occurrences
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — one pass while maintaining running prefix sums and a hash map.
+**Space Complexity:** O(n) — the hash map can store up to n distinct prefix sums.
+
+## Reference Solution (Python)
+
+```python
+from collections import defaultdict
+
+def subarraySum(nums: list[int], k: int) -> int:
+    count = 0
+    prefix_sum = 0
+    seen = defaultdict(int)
+    seen[0] = 1
+
+    for num in nums:
+        prefix_sum += num
+        count += seen[prefix_sum - k]
+        seen[prefix_sum] += 1
+
+    return count
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/subarray-sum-equals-k/

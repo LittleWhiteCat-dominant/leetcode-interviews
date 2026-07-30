@@ -67,6 +67,35 @@ Max-heap by frequency with greedy scheduling + a cooldown queue
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(m log k) — `m` is the number of tasks and `k` (at most 26) is the number of distinct labels; each task triggers at most one heap push/pop.
+**Space Complexity:** O(k) — the heap and cooldown queue each hold at most one entry per distinct task label.
+
+## Reference Solution (Python)
+
+```python
+from collections import Counter, deque
+import heapq
+
+
+def leastInterval(tasks: list[str], n: int) -> int:
+    counts = Counter(tasks)
+    max_heap = [-count for count in counts.values()]
+    heapq.heapify(max_heap)
+    cooldown = deque()  # (available_time, remaining_count)
+    time = 0
+
+    while max_heap or cooldown:
+        time += 1
+        if max_heap:
+            remaining = 1 + heapq.heappop(max_heap)
+            if remaining:
+                cooldown.append((time + n, remaining))
+        if cooldown and cooldown[0][0] == time:
+            heapq.heappush(max_heap, cooldown.popleft()[1])
+
+    return time
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/task-scheduler/

@@ -67,6 +67,26 @@ Sort by right endpoint, greedy selection
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n log n) — dominated by sorting the intervals by end time; the greedy scan afterward is O(n).
+**Space Complexity:** O(1) extra — aside from the space used by the sort.
+
+## Reference Solution (Python)
+
+```python
+def eraseOverlapIntervals(intervals: list[list[int]]) -> int:
+    intervals.sort(key=lambda interval: interval[1])
+    removed = 0
+    prev_end = float('-inf')
+
+    for start, end in intervals:
+        if start >= prev_end:
+            prev_end = end
+        else:
+            removed += 1
+
+    return removed
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/non-overlapping-intervals/

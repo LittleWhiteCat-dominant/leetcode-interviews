@@ -54,6 +54,30 @@ Two pointers tracking left/right max height, or monotonic stack
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — a single pass with two pointers moving inward.
+**Space Complexity:** O(1) — only a constant number of running max/pointer variables are kept.
+
+## Reference Solution (Python)
+
+```python
+def trap(height: list[int]) -> int:
+    left, right = 0, len(height) - 1
+    left_max, right_max = 0, 0
+    water = 0
+
+    while left < right:
+        if height[left] <= height[right]:
+            left_max = max(left_max, height[left])
+            water += left_max - height[left]
+            left += 1
+        else:
+            right_max = max(right_max, height[right])
+            water += right_max - height[right]
+            right -= 1
+
+    return water
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/trapping-rain-water/

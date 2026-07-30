@@ -55,6 +55,35 @@ Post-order recursion; diameter = sum of left/right subtree depths
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — every node is visited exactly once.
+**Space Complexity:** O(h) — recursion stack proportional to the tree height.
+
+## Reference Solution (Python)
+
+```python
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def diameterOfBinaryTree(root: TreeNode | None) -> int:
+    diameter = 0
+
+    def depth(node: TreeNode | None) -> int:
+        nonlocal diameter
+        if not node:
+            return 0
+        left_depth = depth(node.left)
+        right_depth = depth(node.right)
+        diameter = max(diameter, left_depth + right_depth)
+        return 1 + max(left_depth, right_depth)
+
+    depth(root)
+    return diameter
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/diameter-of-binary-tree/

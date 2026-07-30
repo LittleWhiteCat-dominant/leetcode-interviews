@@ -56,6 +56,19 @@ dp[i] = max(dp[i-1], dp[i-2] + nums[i]); split the circular array into two segme
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — a single linear pass through the houses.
+**Space Complexity:** O(1) — only two running variables are kept instead of a full DP array.
+
+## Reference Solution (Python)
+
+```python
+def rob(nums: list[int]) -> int:
+    prev, curr = 0, 0
+    for money in nums:
+        prev, curr = curr, max(curr, prev + money)
+    return curr
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/house-robber/

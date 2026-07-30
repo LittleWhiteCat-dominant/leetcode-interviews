@@ -61,6 +61,33 @@ Sort + hash-map counting for greedy group formation
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n log n) — dominated by sorting the distinct card values; the greedy pass over counts is O(n).
+**Space Complexity:** O(n) — for the frequency map.
+
+## Reference Solution (Python)
+
+```python
+from collections import Counter
+
+
+def isNStraightHand(hand: list[int], groupSize: int) -> bool:
+    if len(hand) % groupSize != 0:
+        return False
+
+    count = Counter(hand)
+
+    for card in sorted(count):
+        need = count[card]
+        if need <= 0:
+            continue
+        for start in range(card, card + groupSize):
+            if count[start] < need:
+                return False
+            count[start] -= need
+
+    return True
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/hand-of-straights/

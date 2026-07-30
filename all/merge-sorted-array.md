@@ -83,6 +83,24 @@ Merge back-to-front with two pointers to avoid overwrites
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(m + n) — each element of both arrays is visited exactly once.
+**Space Complexity:** O(1) — merging is done in place within `nums1`, using only pointer variables.
+
+## Reference Solution (Python)
+
+```python
+def merge(nums1: list[int], m: int, nums2: list[int], n: int) -> None:
+    i, j, k = m - 1, n - 1, m + n - 1
+    while j >= 0:
+        if i >= 0 and nums1[i] > nums2[j]:
+            nums1[k] = nums1[i]
+            i -= 1
+        else:
+            nums1[k] = nums2[j]
+            j -= 1
+        k -= 1
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/merge-sorted-array/

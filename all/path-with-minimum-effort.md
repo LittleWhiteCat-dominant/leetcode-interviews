@@ -73,6 +73,39 @@ Dijkstra variant, or binary search + BFS
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(m \* n \* log(m \* n)) — Dijkstra with a binary heap over all cells.
+**Space Complexity:** O(m \* n) — for the effort grid and the priority queue.
+
+## Reference Solution (Python)
+
+```python
+import heapq
+from typing import List
+
+def minimumEffortPath(heights: List[List[int]]) -> int:
+    rows, cols = len(heights), len(heights[0])
+    effort = [[float("inf")] * cols for _ in range(rows)]
+    effort[0][0] = 0
+    heap = [(0, 0, 0)]
+
+    while heap:
+        cur_effort, r, c = heapq.heappop(heap)
+        if r == rows - 1 and c == cols - 1:
+            return cur_effort
+        if cur_effort > effort[r][c]:
+            continue
+
+        for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols:
+                new_effort = max(cur_effort, abs(heights[nr][nc] - heights[r][c]))
+                if new_effort < effort[nr][nc]:
+                    effort[nr][nc] = new_effort
+                    heapq.heappush(heap, (new_effort, nr, nc))
+
+    return 0
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/path-with-minimum-effort/

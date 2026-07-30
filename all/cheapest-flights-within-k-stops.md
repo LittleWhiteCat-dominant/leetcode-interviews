@@ -92,6 +92,26 @@ Bellman-Ford, or a layer-limited BFS
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(k * E) — Bellman-Ford relaxes all E edges over at most k + 1 rounds.
+**Space Complexity:** O(n) — for the cost arrays, where n is the number of cities.
+
+## Reference Solution (Python)
+
+```python
+def findCheapestPrice(n: int, flights: list[list[int]], src: int, dst: int, k: int) -> int:
+    costs = [float("inf")] * n
+    costs[src] = 0
+
+    for _ in range(k + 1):
+        updated_costs = costs[:]
+        for u, v, price in flights:
+            if costs[u] != float("inf") and costs[u] + price < updated_costs[v]:
+                updated_costs[v] = costs[u] + price
+        costs = updated_costs
+
+    return costs[dst] if costs[dst] != float("inf") else -1
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/cheapest-flights-within-k-stops/

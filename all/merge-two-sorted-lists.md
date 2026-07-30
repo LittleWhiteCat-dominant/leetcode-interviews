@@ -66,6 +66,35 @@ Two pointers + dummy head node
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(m + n) — each node from both lists is visited exactly once.
+**Space Complexity:** O(1) extra — nodes are relinked in place; only a dummy head and pointers are allocated.
+
+## Reference Solution (Python)
+
+```python
+class ListNode:
+    def __init__(self, val: int = 0, next: "ListNode | None" = None):
+        self.val = val
+        self.next = next
+
+
+def mergeTwoLists(list1: ListNode | None, list2: ListNode | None) -> ListNode | None:
+    dummy = ListNode()
+    tail = dummy
+
+    while list1 and list2:
+        if list1.val <= list2.val:
+            tail.next = list1
+            list1 = list1.next
+        else:
+            tail.next = list2
+            list2 = list2.next
+        tail = tail.next
+
+    tail.next = list1 if list1 else list2
+    return dummy.next
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/merge-two-sorted-lists/

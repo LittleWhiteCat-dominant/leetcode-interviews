@@ -98,6 +98,39 @@ DFS/BFS + hash map recording the original→clone mapping
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(V + E) — every node and edge is visited exactly once.
+**Space Complexity:** O(V) — for the `visited` map and the recursion stack.
+
+## Reference Solution (Python)
+
+```python
+class Node:
+    def __init__(self, val=0, neighbors=None):
+        self.val = val
+        self.neighbors = neighbors if neighbors is not None else []
+
+
+def cloneGraph(node: "Node | None") -> "Node | None":
+    if node is None:
+        return None
+
+    visited = {}
+
+    def dfs(original: "Node") -> "Node":
+        if original in visited:
+            return visited[original]
+
+        clone = Node(original.val)
+        visited[original] = clone
+
+        for neighbor in original.neighbors:
+            clone.neighbors.append(dfs(neighbor))
+
+        return clone
+
+    return dfs(node)
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/clone-graph/

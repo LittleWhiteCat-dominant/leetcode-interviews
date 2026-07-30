@@ -56,6 +56,30 @@ Expand around center, counting palindromes
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n^2) — expanding around each of the 2n - 1 centers takes up to O(n).
+**Space Complexity:** O(1) — only a running counter and pointers are used.
+
+## Reference Solution (Python)
+
+```python
+def countSubstrings(s: str) -> int:
+    n = len(s)
+    count = 0
+
+    def expand(left: int, right: int) -> None:
+        nonlocal count
+        while left >= 0 and right < n and s[left] == s[right]:
+            count += 1
+            left -= 1
+            right += 1
+
+    for center in range(n):
+        expand(center, center)
+        expand(center, center + 1)
+
+    return count
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/palindromic-substrings/

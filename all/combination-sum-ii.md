@@ -67,6 +67,36 @@ Sort first, skip duplicates at the same level, elements used once each
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(2^n) worst case — for exploring subsets of the candidates, though sorting and early pruning (breaking once the remaining target is exceeded, skipping duplicates) cut this down substantially in practice.
+**Space Complexity:** O(n) — for the recursion depth and the current path, excluding the output.
+
+## Reference Solution (Python)
+
+```python
+def combinationSum2(candidates: list[int], target: int) -> list[list[int]]:
+    candidates.sort()
+    result = []
+    path = []
+
+    def backtrack(start: int, remaining: int) -> None:
+        if remaining == 0:
+            result.append(path[:])
+            return
+
+        for i in range(start, len(candidates)):
+            if candidates[i] > remaining:
+                break
+            if i > start and candidates[i] == candidates[i - 1]:
+                continue
+
+            path.append(candidates[i])
+            backtrack(i + 1, remaining - candidates[i])
+            path.pop()
+
+    backtrack(0, target)
+    return result
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/combination-sum-ii/

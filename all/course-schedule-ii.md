@@ -79,6 +79,37 @@ Same as 207, but output the topological order
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(V + E) — build the adjacency list once and process every vertex and edge exactly once during Kahn's BFS.
+**Space Complexity:** O(V + E) — adjacency list, in-degree array, and the BFS queue.
+
+## Reference Solution (Python)
+
+```python
+from collections import deque
+
+
+def findOrder(numCourses: int, prerequisites: list[list[int]]) -> list[int]:
+    graph: list[list[int]] = [[] for _ in range(numCourses)]
+    indegree = [0] * numCourses
+
+    for course, prereq in prerequisites:
+        graph[prereq].append(course)
+        indegree[course] += 1
+
+    queue = deque(c for c in range(numCourses) if indegree[c] == 0)
+    order: list[int] = []
+
+    while queue:
+        course = queue.popleft()
+        order.append(course)
+        for nxt in graph[course]:
+            indegree[nxt] -= 1
+            if indegree[nxt] == 0:
+                queue.append(nxt)
+
+    return order if len(order) == numCourses else []
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/course-schedule-ii/

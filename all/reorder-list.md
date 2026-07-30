@@ -66,6 +66,38 @@ Find the midpoint + reverse the second half + interleave merge
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — one pass to find the midpoint, one pass to reverse the second half, one pass to merge.
+**Space Complexity:** O(1) — pointers only, no extra data structures.
+
+## Reference Solution (Python)
+
+```python
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+def reorderList(head: ListNode) -> None:
+    if not head or not head.next:
+        return
+
+    slow, fast = head, head
+    while fast.next and fast.next.next:
+        slow = slow.next
+        fast = fast.next.next
+
+    second = slow.next
+    slow.next = None
+    prev = None
+    while second:
+        second.next, prev, second = prev, second, second.next
+
+    first, second = head, prev
+    while second:
+        first.next, first = second, first.next
+        second.next, second = first, second.next
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/reorder-list/

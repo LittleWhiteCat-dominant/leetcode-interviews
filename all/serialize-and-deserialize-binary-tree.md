@@ -54,6 +54,48 @@ Pre-order traversal + null-node placeholders
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) for both `serialize` and `deserialize` — each node is visited exactly once.
+**Space Complexity:** O(n) — the serialized string/list and the recursion stack both scale with the number of nodes.
+
+## Reference Solution (Python)
+
+```python
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+class Codec:
+    def serialize(self, root: TreeNode) -> str:
+        values = []
+
+        def dfs(node: TreeNode) -> None:
+            if not node:
+                values.append("N")
+                return
+            values.append(str(node.val))
+            dfs(node.left)
+            dfs(node.right)
+
+        dfs(root)
+        return ",".join(values)
+
+    def deserialize(self, data: str) -> TreeNode:
+        values = iter(data.split(","))
+
+        def build() -> TreeNode:
+            val = next(values)
+            if val == "N":
+                return None
+            node = TreeNode(int(val))
+            node.left = build()
+            node.right = build()
+            return node
+
+        return build()
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/serialize-and-deserialize-binary-tree/

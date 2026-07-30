@@ -93,6 +93,32 @@ DFS carrying the max value seen along the path
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — every node is visited exactly once.
+**Space Complexity:** O(h) — recursion stack proportional to the tree height.
+
+## Reference Solution (Python)
+
+```python
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def goodNodes(root: TreeNode) -> int:
+    def dfs(node: TreeNode | None, max_so_far: int) -> int:
+        if not node:
+            return 0
+        count = 1 if node.val >= max_so_far else 0
+        max_so_far = max(max_so_far, node.val)
+        count += dfs(node.left, max_so_far)
+        count += dfs(node.right, max_so_far)
+        return count
+
+    return dfs(root, root.val)
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/count-good-nodes-in-binary-tree/

@@ -69,6 +69,34 @@ Detect a cycle while unioning
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n \* alpha(n)) — near-linear thanks to Union-Find with path compression.
+**Space Complexity:** O(n) — for the parent array.
+
+## Reference Solution (Python)
+
+```python
+from typing import List
+
+
+def findRedundantConnection(edges: List[List[int]]) -> List[int]:
+    n = len(edges)
+    parent = list(range(n + 1))
+
+    def find(x: int) -> int:
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    for u, v in edges:
+        root_u, root_v = find(u), find(v)
+        if root_u == root_v:
+            return [u, v]
+        parent[root_u] = root_v
+
+    return []
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/redundant-connection/

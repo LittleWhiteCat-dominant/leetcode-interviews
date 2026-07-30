@@ -61,6 +61,61 @@ Hash map counting by coordinate
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O((n + q) log(n + q) + (n + q) * L) — for sorting nums and queries by threshold, and L = ~31 bit trie operations per element/query.
+**Space Complexity:** O(n * L + q) — for the trie built from `nums` and the answer array.
+
+## Reference Solution (Python)
+
+```python
+class TrieNode:
+    __slots__ = ("children",)
+
+    def __init__(self):
+        self.children: list["TrieNode | None"] = [None, None]
+
+
+def maximizeXor(nums: list[int], queries: list[list[int]]) -> list[int]:
+    HIGH_BIT = 30
+    root = TrieNode()
+
+    def insert(num: int) -> None:
+        node = root
+        for i in range(HIGH_BIT, -1, -1):
+            bit = (num >> i) & 1
+            if node.children[bit] is None:
+                node.children[bit] = TrieNode()
+            node = node.children[bit]
+
+    def query(x: int) -> int:
+        node = root
+        result = 0
+        for i in range(HIGH_BIT, -1, -1):
+            bit = (x >> i) & 1
+            toggled = 1 - bit
+            if node.children[toggled]:
+                result |= (1 << i)
+                node = node.children[toggled]
+            else:
+                node = node.children[bit]
+        return result
+
+    nums.sort()
+    indexed_queries = sorted(range(len(queries)), key=lambda i: queries[i][1])
+
+    answer = [-1] * len(queries)
+    num_idx = 0
+
+    for qi in indexed_queries:
+        x, m = queries[qi]
+        while num_idx < len(nums) and nums[num_idx] <= m:
+            insert(nums[num_idx])
+            num_idx += 1
+        if num_idx > 0:
+            answer[qi] = query(x)
+
+    return answer
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/maximum-xor-with-an-element-from-array/

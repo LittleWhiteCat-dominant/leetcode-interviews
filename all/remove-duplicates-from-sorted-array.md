@@ -81,6 +81,28 @@ Fast/slow pointers overwriting in place
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — a single pass with the fast pointer.
+**Space Complexity:** O(1) — overwrites `nums` in place.
+
+## Reference Solution (Python)
+
+```python
+from typing import List
+
+
+def removeDuplicates(nums: List[int]) -> int:
+    if not nums:
+        return 0
+
+    slow = 0
+    for fast in range(1, len(nums)):
+        if nums[fast] != nums[slow]:
+            slow += 1
+            nums[slow] = nums[fast]
+
+    return slow + 1
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/remove-duplicates-from-sorted-array/

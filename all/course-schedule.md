@@ -68,6 +68,37 @@ BFS in-degree table, or DFS three-color cycle detection
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(V + E) — build the adjacency list once and process every vertex and edge exactly once during Kahn's BFS.
+**Space Complexity:** O(V + E) — adjacency list, in-degree array, and the BFS queue.
+
+## Reference Solution (Python)
+
+```python
+from collections import deque
+
+
+def canFinish(numCourses: int, prerequisites: list[list[int]]) -> bool:
+    graph: list[list[int]] = [[] for _ in range(numCourses)]
+    indegree = [0] * numCourses
+
+    for course, prereq in prerequisites:
+        graph[prereq].append(course)
+        indegree[course] += 1
+
+    queue = deque(c for c in range(numCourses) if indegree[c] == 0)
+    visited = 0
+
+    while queue:
+        course = queue.popleft()
+        visited += 1
+        for nxt in graph[course]:
+            indegree[nxt] -= 1
+            if indegree[nxt] == 0:
+                queue.append(nxt)
+
+    return visited == numCourses
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/course-schedule/

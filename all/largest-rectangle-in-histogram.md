@@ -52,6 +52,28 @@ Monotonically increasing stack; compute area on pop
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — each index is pushed onto and popped from the stack at most once.
+**Space Complexity:** O(n) — for the monotonic stack of indices.
+
+## Reference Solution (Python)
+
+```python
+def largestRectangleArea(heights: list[int]) -> int:
+    n = len(heights)
+    stack: list[int] = []
+    max_area = 0
+
+    for i in range(n + 1):
+        cur_height = heights[i] if i < n else 0
+        while stack and heights[stack[-1]] >= cur_height:
+            height = heights[stack.pop()]
+            width = i if not stack else i - stack[-1] - 1
+            max_area = max(max_area, height * width)
+        stack.append(i)
+
+    return max_area
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/largest-rectangle-in-histogram/

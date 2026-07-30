@@ -60,6 +60,21 @@ Hash-map counting + min-heap keeping the top K
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n log k) — counting is O(n), and maintaining a heap of size `k` over the distinct elements beats the required O(n log n) bound.
+**Space Complexity:** O(n) — the frequency map plus the heap.
+
+## Reference Solution (Python)
+
+```python
+import heapq
+from collections import Counter
+
+
+def topKFrequent(nums: list[int], k: int) -> list[int]:
+    counts = Counter(nums)
+    return heapq.nlargest(k, counts.keys(), key=counts.get)
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/top-k-frequent-elements/

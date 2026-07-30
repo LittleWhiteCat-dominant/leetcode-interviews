@@ -73,6 +73,30 @@ Floyd's fast/slow pointer cycle detection
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — the fast pointer visits at most 2n nodes before either reaching the end or meeting the slow pointer.
+**Space Complexity:** O(1) — only two pointers are used regardless of list size.
+
+## Reference Solution (Python)
+
+```python
+class ListNode:
+    def __init__(self, x):
+        self.val = x
+        self.next = None
+
+
+def hasCycle(head: ListNode) -> bool:
+    slow = fast = head
+
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+        if slow is fast:
+            return True
+
+    return False
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/linked-list-cycle/

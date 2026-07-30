@@ -55,6 +55,32 @@ Recursively pick the midpoint as root
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — every element becomes exactly one tree node, visited once.
+**Space Complexity:** O(log n) — recursion stack depth for a height-balanced tree (excluding the O(n) output tree itself).
+
+## Reference Solution (Python)
+
+```python
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def sortedArrayToBST(nums: list[int]) -> TreeNode | None:
+    def build(lo: int, hi: int) -> TreeNode | None:
+        if lo > hi:
+            return None
+        mid = (lo + hi + 1) // 2
+        root = TreeNode(nums[mid])
+        root.left = build(lo, mid - 1)
+        root.right = build(mid + 1, hi)
+        return root
+
+    return build(0, len(nums) - 1)
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/convert-sorted-array-to-binary-search-tree/

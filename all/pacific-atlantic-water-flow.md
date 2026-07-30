@@ -79,6 +79,44 @@ Reverse DFS from both ocean borders, take the intersection
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(m \* n) — each cell is visited at most once per ocean during the reverse DFS.
+**Space Complexity:** O(m \* n) — for the visited sets and recursion stack.
+
+## Reference Solution (Python)
+
+```python
+from typing import List
+
+def pacificAtlantic(heights: List[List[int]]) -> List[List[int]]:
+    if not heights or not heights[0]:
+        return []
+
+    m, n = len(heights), len(heights[0])
+    pacific = set()
+    atlantic = set()
+
+    def dfs(r: int, c: int, visited: set) -> None:
+        visited.add((r, c))
+        for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nr, nc = r + dr, c + dc
+            if (
+                0 <= nr < m
+                and 0 <= nc < n
+                and (nr, nc) not in visited
+                and heights[nr][nc] >= heights[r][c]
+            ):
+                dfs(nr, nc, visited)
+
+    for c in range(n):
+        dfs(0, c, pacific)
+        dfs(m - 1, c, atlantic)
+    for r in range(m):
+        dfs(r, 0, pacific)
+        dfs(r, n - 1, atlantic)
+
+    return [[r, c] for r, c in pacific & atlantic]
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/pacific-atlantic-water-flow/

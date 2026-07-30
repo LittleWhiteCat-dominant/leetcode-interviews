@@ -70,6 +70,33 @@ Eulerian path + greedy/backtracking
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(E log E) — dominated by sorting the tickets, where E is the number of tickets.
+**Space Complexity:** O(E) — for the adjacency list and the recursion/route stack.
+
+## Reference Solution (Python)
+
+```python
+from collections import defaultdict
+from typing import List
+
+
+def findItinerary(tickets: List[List[str]]) -> List[str]:
+    graph = defaultdict(list)
+    for src, dst in sorted(tickets, reverse=True):
+        graph[src].append(dst)
+
+    route = []
+
+    def visit(airport: str) -> None:
+        destinations = graph[airport]
+        while destinations:
+            visit(destinations.pop())
+        route.append(airport)
+
+    visit("JFK")
+    return route[::-1]
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/reconstruct-itinerary/

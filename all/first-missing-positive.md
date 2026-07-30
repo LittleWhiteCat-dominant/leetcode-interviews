@@ -64,6 +64,27 @@ In-place hashing by placing each value at its target index
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — each element is swapped into place at most once, amortized across the single pass.
+**Space Complexity:** O(1) — the input array is rearranged in place, no extra data structures.
+
+## Reference Solution (Python)
+
+```python
+def firstMissingPositive(nums: list[int]) -> int:
+    n = len(nums)
+
+    for i in range(n):
+        while 1 <= nums[i] <= n and nums[nums[i] - 1] != nums[i]:
+            target = nums[i] - 1
+            nums[i], nums[target] = nums[target], nums[i]
+
+    for i in range(n):
+        if nums[i] != i + 1:
+            return i + 1
+
+    return n + 1
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/first-missing-positive/

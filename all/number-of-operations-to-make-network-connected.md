@@ -80,6 +80,43 @@ Determine the number of connected components; answer = components - 1
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n + E) — with path compression, each union/find is close to O(1) amortized, over `n` computers and `E` connections.
+**Space Complexity:** O(n) — for the parent array.
+
+## Reference Solution (Python)
+
+```python
+class UnionFind:
+    def __init__(self, size: int) -> None:
+        self.parent = list(range(size))
+        self.count = size
+
+    def find(self, x: int) -> int:
+        while self.parent[x] != x:
+            self.parent[x] = self.parent[self.parent[x]]
+            x = self.parent[x]
+        return x
+
+    def union(self, a: int, b: int) -> bool:
+        root_a, root_b = self.find(a), self.find(b)
+        if root_a == root_b:
+            return False
+        self.parent[root_a] = root_b
+        self.count -= 1
+        return True
+
+
+def makeConnected(n: int, connections: list[list[int]]) -> int:
+    if len(connections) < n - 1:
+        return -1
+
+    uf = UnionFind(n)
+    for a, b in connections:
+        uf.union(a, b)
+
+    return uf.count - 1
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/number-of-operations-to-make-network-connected/

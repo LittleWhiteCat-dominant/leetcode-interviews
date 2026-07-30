@@ -71,6 +71,42 @@ Hash map + dynamic array, swap-to-end for deletion
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(1) average for `insert`, `remove`, and `getRandom`.
+**Space Complexity:** O(n) — the array and the hash map both hold up to `n` elements.
+
+## Reference Solution (Python)
+
+```python
+import random
+
+
+class RandomizedSet:
+    def __init__(self):
+        self.values: list[int] = []
+        self.index: dict[int, int] = {}
+
+    def insert(self, val: int) -> bool:
+        if val in self.index:
+            return False
+        self.index[val] = len(self.values)
+        self.values.append(val)
+        return True
+
+    def remove(self, val: int) -> bool:
+        if val not in self.index:
+            return False
+        idx = self.index[val]
+        last_val = self.values[-1]
+        self.values[idx] = last_val
+        self.index[last_val] = idx
+        self.values.pop()
+        del self.index[val]
+        return True
+
+    def getRandom(self) -> int:
+        return random.choice(self.values)
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/insert-delete-getrandom-o1/

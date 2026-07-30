@@ -53,6 +53,37 @@ Fixed-size window + character frequency comparison
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — where n is the length of `s2`; the fixed-size window slides once across it.
+**Space Complexity:** O(1) — the frequency counters are bounded by 26 lowercase letters.
+
+## Reference Solution (Python)
+
+```python
+from collections import Counter
+
+def checkInclusion(s1: str, s2: str) -> bool:
+    n1, n2 = len(s1), len(s2)
+    if n1 > n2:
+        return False
+
+    need = Counter(s1)
+    window = Counter(s2[:n1])
+
+    if window == need:
+        return True
+
+    for i in range(n1, n2):
+        window[s2[i]] += 1
+        left_char = s2[i - n1]
+        window[left_char] -= 1
+        if window[left_char] == 0:
+            del window[left_char]
+        if window == need:
+            return True
+
+    return False
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/permutation-in-string/

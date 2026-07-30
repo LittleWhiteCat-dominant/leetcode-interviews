@@ -61,6 +61,27 @@ Three-pointer Dutch National Flag problem
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — a single pass with the Dutch National Flag three-pointer technique.
+**Space Complexity:** O(1) — sorted in-place with swaps only.
+
+## Reference Solution (Python)
+
+```python
+def sortColors(nums: list[int]) -> None:
+    low, mid, high = 0, 0, len(nums) - 1
+
+    while mid <= high:
+        if nums[mid] == 0:
+            nums[low], nums[mid] = nums[mid], nums[low]
+            low += 1
+            mid += 1
+        elif nums[mid] == 1:
+            mid += 1
+        else:
+            nums[mid], nums[high] = nums[high], nums[mid]
+            high -= 1
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/sort-colors/

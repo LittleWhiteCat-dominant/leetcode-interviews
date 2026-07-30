@@ -77,6 +77,43 @@ Stack + lazy expansion
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) total across all `next()`/`hasNext()` calls — each integer and list is pushed/popped from the stack exactly once, where `n` is the total number of integers and lists.
+**Space Complexity:** O(n) — the stack holds nested list iterators in the worst case (e.g. deeply nested lists).
+
+## Reference Solution (Python)
+
+```python
+# This is the interface that allows for creating nested lists.
+# You should not implement it, or speculate about its implementation.
+class NestedInteger:
+    def isInteger(self) -> bool:
+        ...
+
+    def getInteger(self) -> int:
+        ...
+
+    def getList(self) -> list["NestedInteger"]:
+        ...
+
+
+class NestedIterator:
+    def __init__(self, nestedList: list[NestedInteger]):
+        self.stack = list(reversed(nestedList))
+
+    def _flatten_top(self) -> None:
+        while self.stack and not self.stack[-1].isInteger():
+            top = self.stack.pop()
+            self.stack.extend(reversed(top.getList()))
+
+    def next(self) -> int:
+        self._flatten_top()
+        return self.stack.pop().getInteger()
+
+    def hasNext(self) -> bool:
+        self._flatten_top()
+        return len(self.stack) > 0
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/flatten-nested-list-iterator/

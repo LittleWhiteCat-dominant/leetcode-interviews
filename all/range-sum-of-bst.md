@@ -58,6 +58,38 @@ Prune the recursion using BST ordering properties
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) worst case — pruned using BST ordering, closer to O(log n + k) on balanced trees where k nodes are in range.
+**Space Complexity:** O(h) — recursion stack proportional to the tree height.
+
+## Reference Solution (Python)
+
+```python
+from typing import Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def rangeSumBST(root: Optional[TreeNode], low: int, high: int) -> int:
+    if not root:
+        return 0
+
+    if root.val < low:
+        return rangeSumBST(root.right, low, high)
+    if root.val > high:
+        return rangeSumBST(root.left, low, high)
+
+    return (
+        root.val
+        + rangeSumBST(root.left, low, high)
+        + rangeSumBST(root.right, low, high)
+    )
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/range-sum-of-bst/

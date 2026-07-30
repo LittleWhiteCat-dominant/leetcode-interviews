@@ -75,6 +75,28 @@ If total gas is sufficient, some starting point guarantees completing the loop
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — a single pass through the stations.
+**Space Complexity:** O(1) — only a few running totals are tracked.
+
+## Reference Solution (Python)
+
+```python
+def canCompleteCircuit(gas: list[int], cost: list[int]) -> int:
+    total_tank = 0
+    current_tank = 0
+    start = 0
+
+    for i in range(len(gas)):
+        diff = gas[i] - cost[i]
+        total_tank += diff
+        current_tank += diff
+        if current_tank < 0:
+            start = i + 1
+            current_tank = 0
+
+    return start if total_tank >= 0 else -1
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/gas-station/

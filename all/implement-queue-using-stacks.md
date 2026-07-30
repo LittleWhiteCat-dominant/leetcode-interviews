@@ -81,6 +81,37 @@ Simulate one structure with the other
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(1) amortized for `push`, `pop`, `peek`, and `empty` — each element is moved between the two stacks at most once.
+**Space Complexity:** O(n) — both stacks together hold all currently enqueued elements.
+
+## Reference Solution (Python)
+
+```python
+class MyQueue:
+    def __init__(self):
+        self.in_stack: list[int] = []
+        self.out_stack: list[int] = []
+
+    def push(self, x: int) -> None:
+        self.in_stack.append(x)
+
+    def _transfer_if_needed(self) -> None:
+        if not self.out_stack:
+            while self.in_stack:
+                self.out_stack.append(self.in_stack.pop())
+
+    def pop(self) -> int:
+        self._transfer_if_needed()
+        return self.out_stack.pop()
+
+    def peek(self) -> int:
+        self._transfer_if_needed()
+        return self.out_stack[-1]
+
+    def empty(self) -> bool:
+        return not self.in_stack and not self.out_stack
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/implement-queue-using-stacks/

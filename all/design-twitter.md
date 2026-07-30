@@ -80,6 +80,55 @@ Heap sorted by timestamp + hash map for follow relationships
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** `postTweet` is O(1). `getNewsFeed` is O(F log F) where F is the number of followees, using a heap to merge their most recent tweets. `follow`/`unfollow` are O(1).
+**Space Complexity:** O(T + U) — O(T) to store all tweets across users and O(U) for the follow graph.
+
+## Reference Solution (Python)
+
+```python
+import heapq
+from collections import defaultdict
+
+
+class Twitter:
+    def __init__(self):
+        self.timestamp = 0
+        self.tweets: dict[int, list[tuple[int, int]]] = defaultdict(list)
+        self.following: dict[int, set[int]] = defaultdict(set)
+
+    def postTweet(self, userId: int, tweetId: int) -> None:
+        self.tweets[userId].append((self.timestamp, tweetId))
+        self.timestamp -= 1
+
+    def getNewsFeed(self, userId: int) -> list[int]:
+        heap: list[tuple[int, int, int, int]] = []
+        users = self.following[userId] | {userId}
+
+        for uid in users:
+            tweets = self.tweets.get(uid)
+            if tweets:
+                idx = len(tweets) - 1
+                time, tweetId = tweets[idx]
+                heapq.heappush(heap, (time, tweetId, uid, idx - 1))
+
+        result: list[int] = []
+        while heap and len(result) < 10:
+            time, tweetId, uid, idx = heapq.heappop(heap)
+            result.append(tweetId)
+            if idx >= 0:
+                next_time, next_tweetId = self.tweets[uid][idx]
+                heapq.heappush(heap, (next_time, next_tweetId, uid, idx - 1))
+
+        return result
+
+    def follow(self, followerId: int, followeeId: int) -> None:
+        if followerId != followeeId:
+            self.following[followerId].add(followeeId)
+
+    def unfollow(self, followerId: int, followeeId: int) -> None:
+        self.following[followerId].discard(followeeId)
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/design-twitter/

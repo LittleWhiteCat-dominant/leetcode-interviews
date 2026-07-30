@@ -82,6 +82,33 @@ Max-heap (left half) + min-heap (right half)
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(log n) per `addNum` (heap push/pop), O(1) per `findMedian`.
+**Space Complexity:** O(n) — both heaps together hold all inserted numbers.
+
+## Reference Solution (Python)
+
+```python
+import heapq
+
+
+class MedianFinder:
+    def __init__(self):
+        self.small: list[int] = []  # max-heap (values negated), holds the smaller half
+        self.large: list[int] = []  # min-heap, holds the larger half
+
+    def addNum(self, num: int) -> None:
+        heapq.heappush(self.small, -num)
+        heapq.heappush(self.large, -heapq.heappop(self.small))
+
+        if len(self.large) > len(self.small):
+            heapq.heappush(self.small, -heapq.heappop(self.large))
+
+    def findMedian(self) -> float:
+        if len(self.small) > len(self.large):
+            return -self.small[0]
+        return (-self.small[0] + self.large[0]) / 2.0
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/find-median-from-data-stream/

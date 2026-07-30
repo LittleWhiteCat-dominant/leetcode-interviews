@@ -56,6 +56,23 @@ Vertical/horizontal scanning, or a Trie
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(S) — where S is the total number of characters across all strings, since each character is examined at most once.
+**Space Complexity:** O(1) — excluding the output string, only a constant amount of extra space is used.
+
+## Reference Solution (Python)
+
+```python
+def longestCommonPrefix(strs: list[str]) -> str:
+    if not strs:
+        return ""
+
+    for i, chars in enumerate(zip(*strs)):
+        if len(set(chars)) > 1:
+            return strs[0][:i]
+
+    return min(strs, key=len)
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/longest-common-prefix/

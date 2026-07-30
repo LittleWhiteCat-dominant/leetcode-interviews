@@ -54,6 +54,26 @@ Fast/slow pointers, fast pointer moves at 2x speed
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — the fast pointer traverses the list once.
+**Space Complexity:** O(1) — only two pointers are used.
+
+## Reference Solution (Python)
+
+```python
+class ListNode:
+    def __init__(self, val: int = 0, next: "ListNode | None" = None):
+        self.val = val
+        self.next = next
+
+
+def middleNode(head: ListNode | None) -> ListNode | None:
+    slow = fast = head
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+    return slow
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/middle-of-the-linked-list/

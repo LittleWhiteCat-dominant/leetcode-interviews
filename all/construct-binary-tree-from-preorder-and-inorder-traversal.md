@@ -65,6 +65,41 @@ Recursively split the array ranges
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — each node is created once, and the hash map gives O(1) lookups for the root's position in `inorder`.
+**Space Complexity:** O(n) — for the index map and the recursion stack.
+
+## Reference Solution (Python)
+
+```python
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def buildTree(preorder: list[int], inorder: list[int]) -> TreeNode | None:
+    index_in_inorder = {val: i for i, val in enumerate(inorder)}
+    pre_idx = 0
+
+    def build(left: int, right: int) -> TreeNode | None:
+        nonlocal pre_idx
+        if left > right:
+            return None
+
+        root_val = preorder[pre_idx]
+        pre_idx += 1
+        root = TreeNode(root_val)
+
+        mid = index_in_inorder[root_val]
+        root.left = build(left, mid - 1)
+        root.right = build(mid + 1, right)
+
+        return root
+
+    return build(0, len(inorder) - 1)
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal/

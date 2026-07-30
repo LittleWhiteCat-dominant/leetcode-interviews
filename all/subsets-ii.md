@@ -50,6 +50,30 @@ Sort first, then skip duplicate elements at the same recursion level
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n * 2^n) — up to 2^n subsets, each taking O(n) to copy.
+**Space Complexity:** O(n) — the recursion depth and the current path, excluding the output.
+
+## Reference Solution (Python)
+
+```python
+def subsetsWithDup(nums: list[int]) -> list[list[int]]:
+    nums.sort()
+    result = []
+    path = []
+
+    def backtrack(start: int) -> None:
+        result.append(path[:])
+        for i in range(start, len(nums)):
+            if i > start and nums[i] == nums[i - 1]:
+                continue
+            path.append(nums[i])
+            backtrack(i + 1)
+            path.pop()
+
+    backtrack(0)
+    return result
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/subsets-ii/

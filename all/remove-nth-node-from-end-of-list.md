@@ -69,6 +69,36 @@ Fast pointer advances N steps first, then move both in sync
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — a single pass with the two-pointer technique.
+**Space Complexity:** O(1) — only a dummy node and two pointers are used.
+
+## Reference Solution (Python)
+
+```python
+from typing import Optional
+
+
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+
+def removeNthFromEnd(head: Optional[ListNode], n: int) -> Optional[ListNode]:
+    dummy = ListNode(0, head)
+    fast = slow = dummy
+
+    for _ in range(n):
+        fast = fast.next
+
+    while fast.next:
+        fast = fast.next
+        slow = slow.next
+
+    slow.next = slow.next.next
+    return dummy.next
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/remove-nth-node-from-end-of-list/

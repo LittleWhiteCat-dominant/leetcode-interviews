@@ -65,6 +65,28 @@ Greedy monotonic stack for the smallest lexicographic result
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — each digit is pushed and popped from the stack at most once.
+**Space Complexity:** O(n) — for the monotonic stack holding the result digits.
+
+## Reference Solution (Python)
+
+```python
+def removeKdigits(num: str, k: int) -> str:
+    stack = []
+
+    for digit in num:
+        while k > 0 and stack and stack[-1] > digit:
+            stack.pop()
+            k -= 1
+        stack.append(digit)
+
+    if k > 0:
+        stack = stack[:-k]
+
+    result = "".join(stack).lstrip("0")
+    return result if result else "0"
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/remove-k-digits/

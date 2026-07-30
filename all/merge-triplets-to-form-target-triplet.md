@@ -84,6 +84,25 @@ Greedily filter triplets that satisfy the condition
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — a single pass over the triplets array.
+**Space Complexity:** O(1) — only a fixed-size `good` flag array is used.
+
+## Reference Solution (Python)
+
+```python
+def mergeTriplets(triplets: list[list[int]], target: list[int]) -> bool:
+    x, y, z = target
+    good = [False, False, False]
+
+    for a, b, c in triplets:
+        if a <= x and b <= y and c <= z:
+            good[0] |= a == x
+            good[1] |= b == y
+            good[2] |= c == z
+
+    return all(good)
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/merge-triplets-to-form-target-triplet/

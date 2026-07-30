@@ -58,6 +58,34 @@ Window allowing up to k replacements
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — the sliding window's left and right pointers each move forward at most n times.
+**Space Complexity:** O(1) — the character counts table has a fixed size of 26.
+
+## Reference Solution (Python)
+
+```python
+from collections import Counter
+
+
+def characterReplacement(s: str, k: int) -> int:
+    counts = Counter()
+    left = 0
+    max_count = 0
+    result = 0
+
+    for right, ch in enumerate(s):
+        counts[ch] += 1
+        max_count = max(max_count, counts[ch])
+
+        while (right - left + 1) - max_count > k:
+            counts[s[left]] -= 1
+            left += 1
+
+        result = max(result, right - left + 1)
+
+    return result
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/longest-repeating-character-replacement/

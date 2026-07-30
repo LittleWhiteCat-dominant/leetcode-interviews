@@ -69,6 +69,30 @@ Array + Fisher–Yates shuffle
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) per call to `shuffle` or `reset` — each element is touched once.
+**Space Complexity:** O(n) — storing the original array plus the working copy.
+
+## Reference Solution (Python)
+
+```python
+import random
+
+class Solution:
+    def __init__(self, nums: list[int]):
+        self.original = nums[:]
+        self.array = nums[:]
+
+    def reset(self) -> list[int]:
+        self.array = self.original[:]
+        return self.array
+
+    def shuffle(self) -> list[int]:
+        for i in range(len(self.array) - 1, 0, -1):
+            j = random.randint(0, i)
+            self.array[i], self.array[j] = self.array[j], self.array[i]
+        return self.array
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/shuffle-an-array/

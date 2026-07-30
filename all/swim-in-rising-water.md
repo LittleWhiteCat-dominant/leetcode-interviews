@@ -72,6 +72,37 @@ Dijkstra variant / binary search + BFS
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n^2 log n) — each of the n^2 cells is pushed/popped from the min-heap at most once, at O(log n^2) cost each.
+**Space Complexity:** O(n^2) — the visited grid and the heap.
+
+## Reference Solution (Python)
+
+```python
+import heapq
+
+def swimInWater(grid: list[list[int]]) -> int:
+    n = len(grid)
+    visited = [[False] * n for _ in range(n)]
+    heap = [(grid[0][0], 0, 0)]
+    visited[0][0] = True
+    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+    result = 0
+    while heap:
+        elevation, r, c = heapq.heappop(heap)
+        result = max(result, elevation)
+        if r == n - 1 and c == n - 1:
+            return result
+
+        for dr, dc in directions:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < n and 0 <= nc < n and not visited[nr][nc]:
+                visited[nr][nc] = True
+                heapq.heappush(heap, (grid[nr][nc], nr, nc))
+
+    return result
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/swim-in-rising-water/

@@ -54,6 +54,28 @@ Greedy monotonic stack for the smallest lexicographic result
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — each character is pushed and popped from the stack at most once.
+**Space Complexity:** O(1) — the stack and helper sets hold at most 26 lowercase letters.
+
+## Reference Solution (Python)
+
+```python
+def removeDuplicateLetters(s: str) -> str:
+    last_occurrence = {ch: i for i, ch in enumerate(s)}
+    stack = []
+    in_stack = set()
+
+    for i, ch in enumerate(s):
+        if ch in in_stack:
+            continue
+        while stack and stack[-1] > ch and last_occurrence[stack[-1]] > i:
+            in_stack.remove(stack.pop())
+        stack.append(ch)
+        in_stack.add(ch)
+
+    return "".join(stack)
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/remove-duplicate-letters/

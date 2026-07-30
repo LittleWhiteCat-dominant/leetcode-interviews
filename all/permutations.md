@@ -59,6 +59,36 @@ Use a `visited` array, or swap in place to generate permutations
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n \* n!) — there are n! permutations, each taking O(n) to build.
+**Space Complexity:** O(n) — recursion depth and the `used` array, excluding the output.
+
+## Reference Solution (Python)
+
+```python
+from typing import List
+
+def permute(nums: List[int]) -> List[List[int]]:
+    result = []
+    path = []
+    used = [False] * len(nums)
+
+    def backtrack() -> None:
+        if len(path) == len(nums):
+            result.append(path[:])
+            return
+        for i, num in enumerate(nums):
+            if used[i]:
+                continue
+            used[i] = True
+            path.append(num)
+            backtrack()
+            path.pop()
+            used[i] = False
+
+    backtrack()
+    return result
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/permutations/

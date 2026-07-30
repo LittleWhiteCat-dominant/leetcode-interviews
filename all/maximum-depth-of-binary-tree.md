@@ -52,6 +52,25 @@ Bottom-up recursion returning height
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — every node is visited exactly once.
+**Space Complexity:** O(H) — for the recursion stack, where H is the tree height (O(n) worst case for a skewed tree).
+
+## Reference Solution (Python)
+
+```python
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def maxDepth(root: TreeNode) -> int:
+    if root is None:
+        return 0
+    return 1 + max(maxDepth(root.left), maxDepth(root.right))
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/maximum-depth-of-binary-tree/

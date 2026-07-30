@@ -67,6 +67,25 @@ numArray.sumRange(0, 5); // return (-2) + 0 + 3 + (-5) + 2 + (-1) = -3
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) to build the prefix sum, O(1) per `sumRange` query.
+**Space Complexity:** O(n) — for the prefix sum array.
+
+## Reference Solution (Python)
+
+```python
+from typing import List
+
+
+class NumArray:
+    def __init__(self, nums: List[int]):
+        self.prefix = [0] * (len(nums) + 1)
+        for i, num in enumerate(nums):
+            self.prefix[i + 1] = self.prefix[i] + num
+
+    def sumRange(self, left: int, right: int) -> int:
+        return self.prefix[right + 1] - self.prefix[left]
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/range-sum-query-immutable/

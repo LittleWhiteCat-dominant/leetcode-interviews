@@ -77,6 +77,30 @@ An auxiliary stack tracking the running minimum
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(1) — every operation (`push`, `pop`, `top`, `getMin`) only touches the top of the stack.
+**Space Complexity:** O(n) — each stack entry stores both the value and the running minimum.
+
+## Reference Solution (Python)
+
+```python
+class MinStack:
+    def __init__(self) -> None:
+        self._stack: list[tuple[int, int]] = []
+
+    def push(self, val: int) -> None:
+        current_min = min(val, self._stack[-1][1]) if self._stack else val
+        self._stack.append((val, current_min))
+
+    def pop(self) -> None:
+        self._stack.pop()
+
+    def top(self) -> int:
+        return self._stack[-1][0]
+
+    def getMin(self) -> int:
+        return self._stack[-1][1]
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/min-stack/

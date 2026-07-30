@@ -72,6 +72,33 @@ Use value comparisons to directly decide the search direction
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(H) — where H is the tree height, since we walk a single root-to-node path using BST ordering.
+**Space Complexity:** O(1) — the iterative approach uses no extra space beyond a single pointer.
+
+## Reference Solution (Python)
+
+```python
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def lowestCommonAncestor(root: TreeNode, p: TreeNode, q: TreeNode) -> TreeNode:
+    node = root
+
+    while node:
+        if p.val < node.val and q.val < node.val:
+            node = node.left
+        elif p.val > node.val and q.val > node.val:
+            node = node.right
+        else:
+            return node
+
+    return None
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-search-tree/

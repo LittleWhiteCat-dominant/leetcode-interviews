@@ -67,6 +67,37 @@ Union Find handling equivalence relations
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — with union by find and path compression over a fixed alphabet of 26 letters, each union/find is amortized near O(1).
+**Space Complexity:** O(1) — the parent array is a fixed size of 26.
+
+## Reference Solution (Python)
+
+```python
+def equationsPossible(equations: list[str]) -> bool:
+    parent = list(range(26))
+
+    def find(x: int) -> int:
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    def union(x: int, y: int) -> None:
+        rx, ry = find(x), find(y)
+        if rx != ry:
+            parent[rx] = ry
+
+    for eq in equations:
+        if eq[1] == "=":
+            union(ord(eq[0]) - ord("a"), ord(eq[3]) - ord("a"))
+
+    for eq in equations:
+        if eq[1] == "!" and find(ord(eq[0]) - ord("a")) == find(ord(eq[3]) - ord("a")):
+            return False
+
+    return True
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/satisfiability-of-equality-equations/

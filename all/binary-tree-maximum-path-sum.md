@@ -56,6 +56,38 @@ Post-order recursion returning single-side max, global variable tracks the answe
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — each node is visited exactly once in the post-order recursion.
+**Space Complexity:** O(h) — recursion stack, where h is the tree height.
+
+## Reference Solution (Python)
+
+```python
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def maxPathSum(root: TreeNode | None) -> int:
+    best = float("-inf")
+
+    def single_side_max(node: TreeNode | None) -> int:
+        nonlocal best
+        if node is None:
+            return 0
+
+        left_gain = max(single_side_max(node.left), 0)
+        right_gain = max(single_side_max(node.right), 0)
+
+        best = max(best, node.val + left_gain + right_gain)
+
+        return node.val + max(left_gain, right_gain)
+
+    single_side_max(root)
+    return best
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/binary-tree-maximum-path-sum/

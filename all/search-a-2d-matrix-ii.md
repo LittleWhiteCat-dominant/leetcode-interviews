@@ -71,6 +71,27 @@ Flatten to 1D binary search or start from a corner with two pointers
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(m + n) — the search pointer moves at most `m` times down and `n` times left.
+**Space Complexity:** O(1) — only two index pointers are used.
+
+## Reference Solution (Python)
+
+```python
+def searchMatrix(matrix: list[list[int]], target: int) -> bool:
+    rows, cols = len(matrix), len(matrix[0])
+    row, col = 0, cols - 1
+
+    while row < rows and col >= 0:
+        if matrix[row][col] == target:
+            return True
+        if matrix[row][col] > target:
+            col -= 1
+        else:
+            row += 1
+
+    return False
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/search-a-2d-matrix-ii/

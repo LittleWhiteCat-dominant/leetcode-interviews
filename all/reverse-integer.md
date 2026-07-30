@@ -58,6 +58,29 @@ Build digit by digit with modulo, watch for overflow
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(log₁₀|x|) — one iteration per digit of `x`.
+**Space Complexity:** O(1) — only a handful of scalar variables.
+
+## Reference Solution (Python)
+
+```python
+def reverse(x: int) -> int:
+    INT_MIN, INT_MAX = -2**31, 2**31 - 1
+    sign = -1 if x < 0 else 1
+    x = abs(x)
+
+    result = 0
+    while x:
+        digit = x % 10
+        x //= 10
+        result = result * 10 + digit
+        if result > INT_MAX:
+            return 0
+
+    result *= sign
+    return result if INT_MIN <= result <= INT_MAX else 0
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/reverse-integer/

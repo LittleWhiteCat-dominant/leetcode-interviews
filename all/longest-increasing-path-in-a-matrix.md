@@ -69,6 +69,33 @@ DFS + memoization
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(m * n) — memoization ensures each cell's longest increasing path is computed exactly once.
+**Space Complexity:** O(m * n) — for the memoization cache and the recursion stack.
+
+## Reference Solution (Python)
+
+```python
+from functools import lru_cache
+
+
+def longestIncreasingPath(matrix: list[list[int]]) -> int:
+    if not matrix or not matrix[0]:
+        return 0
+
+    rows, cols = len(matrix), len(matrix[0])
+
+    @lru_cache(maxsize=None)
+    def dfs(r: int, c: int) -> int:
+        best = 1
+        for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols and matrix[nr][nc] > matrix[r][c]:
+                best = max(best, 1 + dfs(nr, nc))
+        return best
+
+    return max(dfs(r, c) for r in range(rows) for c in range(cols))
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/longest-increasing-path-in-a-matrix/

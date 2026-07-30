@@ -64,6 +64,27 @@ Sorted string / character count as the hash key
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n * k) — where `n` is the number of strings and `k` is the max string length; using a 26-count tuple as the key avoids the O(k log k) sort per string.
+**Space Complexity:** O(n * k) — to store all strings grouped in the hash map.
+
+## Reference Solution (Python)
+
+```python
+from collections import defaultdict
+
+
+def groupAnagrams(strs: list[str]) -> list[list[str]]:
+    groups: dict[tuple[int, ...], list[str]] = defaultdict(list)
+
+    for s in strs:
+        count = [0] * 26
+        for ch in s:
+            count[ord(ch) - ord('a')] += 1
+        groups[tuple(count)].append(s)
+
+    return list(groups.values())
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/group-anagrams/

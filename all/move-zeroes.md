@@ -54,6 +54,23 @@ Fast/slow pointers overwriting in place
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — a single pass to compact non-zero elements, plus a final pass to zero the tail.
+**Space Complexity:** O(1) — the array is rearranged in place.
+
+## Reference Solution (Python)
+
+```python
+def moveZeroes(nums: list[int]) -> None:
+    insert_pos = 0
+    for num in nums:
+        if num != 0:
+            nums[insert_pos] = num
+            insert_pos += 1
+
+    for i in range(insert_pos, len(nums)):
+        nums[i] = 0
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/move-zeroes/

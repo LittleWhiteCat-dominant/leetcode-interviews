@@ -61,6 +61,36 @@ Kruskal's or Prim's minimum spanning tree
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n^2) — Prim's algorithm with an array-based minimum search, which is efficient on this dense (complete) graph.
+**Space Complexity:** O(n) — for the `in_mst` and `min_dist` arrays.
+
+## Reference Solution (Python)
+
+```python
+import math
+
+
+def minCostConnectPoints(points: list[list[int]]) -> int:
+    n = len(points)
+    in_mst = [False] * n
+    min_dist = [math.inf] * n
+    min_dist[0] = 0
+    total = 0
+
+    for _ in range(n):
+        u = min((i for i in range(n) if not in_mst[i]), key=lambda i: min_dist[i])
+        in_mst[u] = True
+        total += min_dist[u]
+
+        for v in range(n):
+            if not in_mst[v]:
+                dist = abs(points[u][0] - points[v][0]) + abs(points[u][1] - points[v][1])
+                if dist < min_dist[v]:
+                    min_dist[v] = dist
+
+    return total
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/min-cost-to-connect-all-points/

@@ -75,6 +75,41 @@ Counted window, shrink to find the minimal valid window
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(m + n) — `s` is scanned with two pointers that each advance at most `m` times total; `t` is scanned once to build the counts.
+**Space Complexity:** O(m + n) — the `Counter` holds at most the distinct characters of `t`.
+
+## Reference Solution (Python)
+
+```python
+from collections import Counter
+
+
+def minWindow(s: str, t: str) -> str:
+    if not t or not s:
+        return ""
+
+    need = Counter(t)
+    missing = len(t)
+    left = start = end = 0
+
+    for right, ch in enumerate(s, 1):
+        if need[ch] > 0:
+            missing -= 1
+        need[ch] -= 1
+
+        if missing == 0:
+            while need[s[left]] < 0:
+                need[s[left]] += 1
+                left += 1
+            if end == 0 or right - left < end - start:
+                start, end = left, right
+            need[s[left]] += 1
+            missing += 1
+            left += 1
+
+    return s[start:end]
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/minimum-window-substring/

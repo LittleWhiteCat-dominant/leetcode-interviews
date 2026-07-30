@@ -66,6 +66,37 @@ Two binary searches for left/right boundaries
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(log n) — two independent binary searches over the array.
+**Space Complexity:** O(1) — only a few pointer variables are used.
+
+## Reference Solution (Python)
+
+```python
+def searchRange(nums: list[int], target: int) -> list[int]:
+    def find_bound(is_lower: bool) -> int:
+        lo, hi = 0, len(nums) - 1
+        bound = -1
+        while lo <= hi:
+            mid = (lo + hi) // 2
+            if nums[mid] == target:
+                bound = mid
+                if is_lower:
+                    hi = mid - 1
+                else:
+                    lo = mid + 1
+            elif nums[mid] < target:
+                lo = mid + 1
+            else:
+                hi = mid - 1
+        return bound
+
+    left = find_bound(True)
+    if left == -1:
+        return [-1, -1]
+    right = find_bound(False)
+    return [left, right]
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/find-first-and-last-position-of-element-in-sorted-array/

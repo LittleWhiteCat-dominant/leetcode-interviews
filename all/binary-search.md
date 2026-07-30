@@ -60,6 +60,27 @@ Basic template
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(log n) — the search space is halved on each iteration.
+**Space Complexity:** O(1) — only a few pointers are used.
+
+## Reference Solution (Python)
+
+```python
+def search(nums: list[int], target: int) -> int:
+    left, right = 0, len(nums) - 1
+
+    while left <= right:
+        mid = (left + right) // 2
+        if nums[mid] == target:
+            return mid
+        elif nums[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+
+    return -1
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/binary-search/

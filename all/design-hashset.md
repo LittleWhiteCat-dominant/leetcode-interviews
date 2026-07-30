@@ -65,6 +65,35 @@ Array + linked list for collision handling (chaining)
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(1) average per operation — assuming a good hash spread, each bucket holds O(n / capacity) entries.
+**Space Complexity:** O(n + capacity) — one fixed-size bucket array plus the stored keys.
+
+## Reference Solution (Python)
+
+```python
+class MyHashSet:
+    def __init__(self):
+        self.capacity = 1000
+        self.buckets: list[list[int]] = [[] for _ in range(self.capacity)]
+
+    def _hash(self, key: int) -> int:
+        return key % self.capacity
+
+    def add(self, key: int) -> None:
+        bucket = self.buckets[self._hash(key)]
+        if key not in bucket:
+            bucket.append(key)
+
+    def remove(self, key: int) -> None:
+        bucket = self.buckets[self._hash(key)]
+        if key in bucket:
+            bucket.remove(key)
+
+    def contains(self, key: int) -> bool:
+        bucket = self.buckets[self._hash(key)]
+        return key in bucket
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/design-hashset/

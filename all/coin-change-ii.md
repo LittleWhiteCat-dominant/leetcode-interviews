@@ -77,6 +77,23 @@ Unbounded knapsack counting the number of combinations
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(amount * len(coins)) — for each coin, we update every amount from that coin's value up to the target.
+**Space Complexity:** O(amount) — for the 1D `dp` array.
+
+## Reference Solution (Python)
+
+```python
+def change(amount: int, coins: list[int]) -> int:
+    dp = [0] * (amount + 1)
+    dp[0] = 1
+
+    for coin in coins:
+        for i in range(coin, amount + 1):
+            dp[i] += dp[i - coin]
+
+    return dp[amount]
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/coin-change-ii/

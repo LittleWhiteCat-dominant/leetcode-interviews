@@ -63,6 +63,20 @@ n & (n-1) clears the lowest set bit
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(k) — where `k` is the number of set bits (at most 32); each iteration clears exactly one set bit.
+**Space Complexity:** O(1) — only a counter is used.
+
+## Reference Solution (Python)
+
+```python
+def hammingWeight(n: int) -> int:
+    count = 0
+    while n:
+        n &= n - 1
+        count += 1
+    return count
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/number-of-1-bits/

@@ -61,6 +61,29 @@ DP, or a stack tracking unmatched open-bracket positions
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — each index is pushed and popped from the stack at most once.
+**Space Complexity:** O(n) — for the stack of unmatched indices.
+
+## Reference Solution (Python)
+
+```python
+def longestValidParentheses(s: str) -> int:
+    stack = [-1]
+    longest = 0
+
+    for i, ch in enumerate(s):
+        if ch == '(':
+            stack.append(i)
+        else:
+            stack.pop()
+            if not stack:
+                stack.append(i)
+            else:
+                longest = max(longest, i - stack[-1])
+
+    return longest
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/longest-valid-parentheses/

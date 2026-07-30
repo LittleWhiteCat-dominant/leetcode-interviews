@@ -73,6 +73,27 @@ String DP; a Trie can speed up lookups
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n^2) — for each end position we try every earlier split point, with O(1) average dictionary lookups via a hash set.
+**Space Complexity:** O(n) — the `dp` array plus the hash set of dictionary words.
+
+## Reference Solution (Python)
+
+```python
+def wordBreak(s: str, wordDict: list[str]) -> bool:
+    word_set = set(wordDict)
+    n = len(s)
+    dp = [False] * (n + 1)
+    dp[0] = True
+
+    for i in range(1, n + 1):
+        for j in range(i):
+            if dp[j] and s[j:i] in word_set:
+                dp[i] = True
+                break
+
+    return dp[n]
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/word-break/

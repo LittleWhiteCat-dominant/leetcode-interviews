@@ -84,6 +84,42 @@ Recursive/iterative traversal using BST properties
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(h) — where h is the tree height, since we descend once to find the node and once more (in the right subtree) to find its successor.
+**Space Complexity:** O(h) — recursion stack depth.
+
+## Reference Solution (Python)
+
+```python
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def deleteNode(root: TreeNode | None, key: int) -> TreeNode | None:
+    if not root:
+        return None
+
+    if key < root.val:
+        root.left = deleteNode(root.left, key)
+    elif key > root.val:
+        root.right = deleteNode(root.right, key)
+    else:
+        if not root.left:
+            return root.right
+        if not root.right:
+            return root.left
+
+        successor = root.right
+        while successor.left:
+            successor = successor.left
+        root.val = successor.val
+        root.right = deleteNode(root.right, successor.val)
+
+    return root
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/delete-node-in-a-bst/

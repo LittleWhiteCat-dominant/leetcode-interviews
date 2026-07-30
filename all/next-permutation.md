@@ -77,6 +77,27 @@ See company-specific high-frequency lists.
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — the pivot scan, the successor scan, and the final reversal are each linear.
+**Space Complexity:** O(1) — the array is rearranged in place.
+
+## Reference Solution (Python)
+
+```python
+def nextPermutation(nums: list[int]) -> None:
+    n = len(nums)
+    i = n - 2
+    while i >= 0 and nums[i] >= nums[i + 1]:
+        i -= 1
+
+    if i >= 0:
+        j = n - 1
+        while nums[j] <= nums[i]:
+            j -= 1
+        nums[i], nums[j] = nums[j], nums[i]
+
+    nums[i + 1:] = reversed(nums[i + 1:])
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/next-permutation/

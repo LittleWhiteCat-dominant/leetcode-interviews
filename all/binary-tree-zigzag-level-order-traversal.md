@@ -59,6 +59,48 @@ BFS + queue
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — every node is enqueued and dequeued exactly once.
+**Space Complexity:** O(n) — for the queue and the output, up to O(n) nodes at the widest level.
+
+## Reference Solution (Python)
+
+```python
+from collections import deque
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def zigzagLevelOrder(root: TreeNode | None) -> list[list[int]]:
+    if not root:
+        return []
+
+    result = []
+    queue = deque([root])
+    left_to_right = True
+
+    while queue:
+        level = deque()
+        for _ in range(len(queue)):
+            node = queue.popleft()
+            if left_to_right:
+                level.append(node.val)
+            else:
+                level.appendleft(node.val)
+            if node.left:
+                queue.append(node.left)
+            if node.right:
+                queue.append(node.right)
+        result.append(list(level))
+        left_to_right = not left_to_right
+
+    return result
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/binary-tree-zigzag-level-order-traversal/

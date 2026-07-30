@@ -55,6 +55,22 @@ The test cases are generated so that the answer will be less than or equal to `2
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(m * n) — every cell of the grid is visited once.
+**Space Complexity:** O(n) — a single rolling row is reused instead of a full 2D table.
+
+## Reference Solution (Python)
+
+```python
+def uniquePaths(m: int, n: int) -> int:
+    row = [1] * n
+
+    for _ in range(1, m):
+        for j in range(1, n):
+            row[j] += row[j - 1]
+
+    return row[-1]
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/unique-paths/

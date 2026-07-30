@@ -74,6 +74,35 @@ String DP; a Trie can speed up lookups
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n * 2^n) worst case — the memoized DP explores O(n^2) substring states, but the number of valid sentences to build and join can itself be exponential in `n` (bounded here since `s.length <= 20`).
+**Space Complexity:** O(n * 2^n) — the memo table stores every valid decomposition suffix, dominated by the exponentially many stored sentences; recursion depth is O(n).
+
+## Reference Solution (Python)
+
+```python
+def wordBreak(s: str, wordDict: list[str]) -> list[str]:
+    word_set = set(wordDict)
+    memo: dict[int, list[list[str]]] = {}
+
+    def backtrack(start: int) -> list[list[str]]:
+        if start == len(s):
+            return [[]]
+        if start in memo:
+            return memo[start]
+
+        sentences = []
+        for end in range(start + 1, len(s) + 1):
+            word = s[start:end]
+            if word in word_set:
+                for rest in backtrack(end):
+                    sentences.append([word] + rest)
+
+        memo[start] = sentences
+        return sentences
+
+    return [" ".join(words) for words in backtrack(0)]
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/word-break-ii/

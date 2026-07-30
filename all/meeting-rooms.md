@@ -20,6 +20,22 @@ Sort + sweep line / min-heap
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n log n) — dominated by sorting the intervals by start time.
+**Space Complexity:** O(1) extra — excluding the space used by the sort itself.
+
+## Reference Solution (Python)
+
+```python
+def canAttendMeetings(intervals: list[list[int]]) -> bool:
+    intervals.sort(key=lambda interval: interval[0])
+
+    for i in range(1, len(intervals)):
+        if intervals[i][0] < intervals[i - 1][1]:
+            return False
+
+    return True
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/meeting-rooms/

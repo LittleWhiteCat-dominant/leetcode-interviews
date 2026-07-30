@@ -67,6 +67,28 @@ Max-heap, repeatedly pop the two largest and push back the difference
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n log n) — each of the up to n smashes performs two heap pops and at most one push, each O(log n).
+**Space Complexity:** O(n) — for the heap storing the negated stone weights.
+
+## Reference Solution (Python)
+
+```python
+import heapq
+
+
+def lastStoneWeight(stones: list[int]) -> int:
+    heap = [-s for s in stones]
+    heapq.heapify(heap)
+
+    while len(heap) > 1:
+        y = -heapq.heappop(heap)
+        x = -heapq.heappop(heap)
+        if y != x:
+            heapq.heappush(heap, -(y - x))
+
+    return -heap[0] if heap else 0
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/last-stone-weight/

@@ -65,6 +65,22 @@ Similar to #70, with weighted DP transitions
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — one pass computing the DP transition for each step.
+**Space Complexity:** O(1) — only the two previous DP values are kept.
+
+## Reference Solution (Python)
+
+```python
+def minCostClimbingStairs(cost: list[int]) -> int:
+    n = len(cost)
+    dp0, dp1 = 0, 0
+
+    for i in range(2, n + 1):
+        dp0, dp1 = dp1, min(dp1 + cost[i - 1], dp0 + cost[i - 2])
+
+    return dp1
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/min-cost-climbing-stairs/

@@ -73,6 +73,34 @@ Timestamps stored in order, binary search + design
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** `set` is O(1) amortized; `get` is O(log m) where `m` is the number of timestamps stored for that key, via binary search.
+**Space Complexity:** O(N) — where `N` is the total number of `set` calls made across all keys.
+
+## Reference Solution (Python)
+
+```python
+from bisect import bisect_right
+from collections import defaultdict
+
+
+class TimeMap:
+    def __init__(self):
+        self.timestamps: dict[str, list[int]] = defaultdict(list)
+        self.values: dict[str, list[str]] = defaultdict(list)
+
+    def set(self, key: str, value: str, timestamp: int) -> None:
+        self.timestamps[key].append(timestamp)
+        self.values[key].append(value)
+
+    def get(self, key: str, timestamp: int) -> str:
+        times = self.timestamps.get(key)
+        if not times:
+            return ""
+
+        idx = bisect_right(times, timestamp) - 1
+        return self.values[key][idx] if idx >= 0 else ""
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/time-based-key-value-store/

@@ -76,6 +76,42 @@ Segment tree/sweep line + a max-heap
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n log n) — sorting the critical x-coordinates plus O(log n) heap push/pop per building edge.
+**Space Complexity:** O(n) — the max-heap of active buildings and the grouping of buildings by start x-coordinate.
+
+## Reference Solution (Python)
+
+```python
+import heapq
+from collections import defaultdict
+
+
+def getSkyline(buildings: list[list[int]]) -> list[list[int]]:
+    starts = defaultdict(list)
+    xs = set()
+    for left, right, height in buildings:
+        starts[left].append((right, height))
+        xs.add(left)
+        xs.add(right)
+
+    result = []
+    live = []  # max-heap of (-height, right_edge)
+    prev_height = 0
+
+    for x in sorted(xs):
+        for right, height in starts[x]:
+            heapq.heappush(live, (-height, right))
+        while live and live[0][1] <= x:
+            heapq.heappop(live)
+
+        current_height = -live[0][0] if live else 0
+        if current_height != prev_height:
+            result.append([x, current_height])
+            prev_height = current_height
+
+    return result
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/the-skyline-problem/

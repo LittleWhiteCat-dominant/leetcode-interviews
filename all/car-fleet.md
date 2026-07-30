@@ -95,6 +95,26 @@ Sort by position + monotonic stack to check catch-up
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n log n) — dominated by sorting the cars by starting position.
+**Space Complexity:** O(n) — for the sorted list of (position, speed) pairs.
+
+## Reference Solution (Python)
+
+```python
+def carFleet(target: int, position: list[int], speed: list[int]) -> int:
+    cars = sorted(zip(position, speed), reverse=True)
+    fleets = 0
+    current_time = 0.0
+
+    for pos, spd in cars:
+        time_to_reach = (target - pos) / spd
+        if time_to_reach > current_time:
+            fleets += 1
+            current_time = time_to_reach
+
+    return fleets
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/car-fleet/

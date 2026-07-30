@@ -64,6 +64,28 @@ dp[i] = LIS ending at i, or a binary-search optimization
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n log n) — each element performs one binary search over the `tails` array.
+**Space Complexity:** O(n) — for the `tails` array tracking the smallest tail of increasing subsequences of each length.
+
+## Reference Solution (Python)
+
+```python
+from bisect import bisect_left
+
+
+def lengthOfLIS(nums: list[int]) -> int:
+    tails: list[int] = []
+
+    for num in nums:
+        idx = bisect_left(tails, num)
+        if idx == len(tails):
+            tails.append(num)
+        else:
+            tails[idx] = num
+
+    return len(tails)
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/longest-increasing-subsequence/

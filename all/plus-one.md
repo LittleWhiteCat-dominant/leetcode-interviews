@@ -73,6 +73,25 @@ Simulate digit-wise addition with carry on an array
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — at most one pass through the digits.
+**Space Complexity:** O(1) extra — modifies `digits` in place (a new array is only allocated on overflow).
+
+## Reference Solution (Python)
+
+```python
+from typing import List
+
+def plusOne(digits: List[int]) -> List[int]:
+    n = len(digits)
+    for i in range(n - 1, -1, -1):
+        if digits[i] < 9:
+            digits[i] += 1
+            return digits
+        digits[i] = 0
+
+    return [1] + digits
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/plus-one/

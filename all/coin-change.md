@@ -67,6 +67,23 @@ Unbounded knapsack style 1D DP
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(amount * len(coins)) — for each amount from 1 to `amount`, we try every coin.
+**Space Complexity:** O(amount) — for the 1D `dp` array.
+
+## Reference Solution (Python)
+
+```python
+def coinChange(coins: list[int], amount: int) -> int:
+    dp = [0] + [float("inf")] * amount
+
+    for i in range(1, amount + 1):
+        for coin in coins:
+            if coin <= i:
+                dp[i] = min(dp[i], dp[i - coin] + 1)
+
+    return dp[amount] if dp[amount] != float("inf") else -1
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/coin-change/

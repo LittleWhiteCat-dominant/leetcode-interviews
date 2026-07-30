@@ -71,6 +71,33 @@ Stack holding repeat counts and the string built so far
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — where n is the length of the fully decoded output string (bounded by the problem's 10^5 limit).
+**Space Complexity:** O(n) — the stack of partial strings/counts plus the string being built.
+
+## Reference Solution (Python)
+
+```python
+def decodeString(s: str) -> str:
+    stack: list[tuple[str, int]] = []
+    current_string = ""
+    current_num = 0
+
+    for char in s:
+        if char.isdigit():
+            current_num = current_num * 10 + int(char)
+        elif char == '[':
+            stack.append((current_string, current_num))
+            current_string = ""
+            current_num = 0
+        elif char == ']':
+            prev_string, num = stack.pop()
+            current_string = prev_string + current_string * num
+        else:
+            current_string += char
+
+    return current_string
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/decode-string/

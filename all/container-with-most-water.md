@@ -60,6 +60,27 @@ Move the shorter side inward
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — each pointer moves inward at most n times total, so the array is scanned once.
+**Space Complexity:** O(1) — only a few pointer/variable references are used.
+
+## Reference Solution (Python)
+
+```python
+def maxArea(height: list[int]) -> int:
+    left, right = 0, len(height) - 1
+    best = 0
+
+    while left < right:
+        area = (right - left) * min(height[left], height[right])
+        best = max(best, area)
+        if height[left] < height[right]:
+            left += 1
+        else:
+            right -= 1
+
+    return best
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/container-with-most-water/

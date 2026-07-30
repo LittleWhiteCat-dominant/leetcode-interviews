@@ -69,6 +69,43 @@ Array + linked list for collision handling (chaining)
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(1) average per operation — assuming a good hash spread, each bucket holds O(n / capacity) entries.
+**Space Complexity:** O(n + capacity) — one fixed-size bucket array plus the stored key-value pairs.
+
+## Reference Solution (Python)
+
+```python
+class MyHashMap:
+    def __init__(self):
+        self.capacity = 1000
+        self.buckets: list[list[list[int]]] = [[] for _ in range(self.capacity)]
+
+    def _hash(self, key: int) -> int:
+        return key % self.capacity
+
+    def put(self, key: int, value: int) -> None:
+        bucket = self.buckets[self._hash(key)]
+        for pair in bucket:
+            if pair[0] == key:
+                pair[1] = value
+                return
+        bucket.append([key, value])
+
+    def get(self, key: int) -> int:
+        bucket = self.buckets[self._hash(key)]
+        for k, v in bucket:
+            if k == key:
+                return v
+        return -1
+
+    def remove(self, key: int) -> None:
+        bucket = self.buckets[self._hash(key)]
+        for i, pair in enumerate(bucket):
+            if pair[0] == key:
+                bucket.pop(i)
+                return
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/design-hashmap/

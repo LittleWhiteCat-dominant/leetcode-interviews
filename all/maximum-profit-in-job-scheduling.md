@@ -76,6 +76,29 @@ See company-specific high-frequency lists.
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n log n) — for sorting jobs by end time and performing a binary search per job during the DP.
+**Space Complexity:** O(n) — for the sorted jobs array and the DP array.
+
+## Reference Solution (Python)
+
+```python
+from bisect import bisect_right
+
+
+def jobScheduling(startTime: list[int], endTime: list[int], profit: list[int]) -> int:
+    jobs = sorted(zip(endTime, startTime, profit))
+    n = len(jobs)
+    ends = [job[0] for job in jobs]
+    dp = [0] * (n + 1)
+
+    for i in range(1, n + 1):
+        end, start, prof = jobs[i - 1]
+        j = bisect_right(ends, start, 0, i - 1)
+        dp[i] = max(dp[i - 1], dp[j] + prof)
+
+    return dp[n]
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/maximum-profit-in-job-scheduling/

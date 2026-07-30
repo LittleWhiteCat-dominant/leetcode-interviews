@@ -59,6 +59,29 @@ Interval DP; think backward about the last balloon burst
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n^3) — three nested loops over the interval length, left boundary, and the last balloon burst in that interval.
+**Space Complexity:** O(n^2) — for the `dp` table over all sub-intervals.
+
+## Reference Solution (Python)
+
+```python
+def maxCoins(nums: list[int]) -> int:
+    balloons = [1] + nums + [1]
+    n = len(balloons)
+    dp = [[0] * n for _ in range(n)]
+
+    for length in range(2, n):
+        for left in range(n - length):
+            right = left + length
+            for k in range(left + 1, right):
+                dp[left][right] = max(
+                    dp[left][right],
+                    dp[left][k] + dp[k][right] + balloons[left] * balloons[k] * balloons[right],
+                )
+
+    return dp[0][n - 1]
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/burst-balloons/

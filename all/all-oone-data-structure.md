@@ -79,6 +79,85 @@ Hash map + doubly linked list bucketed by count
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(1) average — every operation (`inc`, `dec`, `getMaxKey`, `getMinKey`) does a constant amount of bucket-list and set bookkeeping.
+**Space Complexity:** O(n) — to store the n distinct keys and their buckets.
+
+## Reference Solution (Python)
+
+```python
+class Bucket:
+    __slots__ = ("count", "keys", "prev", "next")
+
+    def __init__(self, count: int):
+        self.count = count
+        self.keys: set[str] = set()
+        self.prev: "Bucket | None" = None
+        self.next: "Bucket | None" = None
+
+
+class AllOne:
+    def __init__(self):
+        self.head = Bucket(0)
+        self.tail = Bucket(0)
+        self.head.next = self.tail
+        self.tail.prev = self.head
+        self.key_to_bucket: dict[str, Bucket] = {}
+
+    def _insert_after(self, node: Bucket, new_count: int) -> Bucket:
+        bucket = Bucket(new_count)
+        bucket.prev = node
+        bucket.next = node.next
+        node.next.prev = bucket
+        node.next = bucket
+        return bucket
+
+    def _remove(self, node: Bucket) -> None:
+        node.prev.next = node.next
+        node.next.prev = node.prev
+
+    def inc(self, key: str) -> None:
+        if key not in self.key_to_bucket:
+            bucket = self.head
+        else:
+            bucket = self.key_to_bucket[key]
+            bucket.keys.remove(key)
+
+        next_bucket = bucket.next
+        if next_bucket is self.tail or next_bucket.count != bucket.count + 1:
+            next_bucket = self._insert_after(bucket, bucket.count + 1)
+        next_bucket.keys.add(key)
+        self.key_to_bucket[key] = next_bucket
+
+        if bucket is not self.head and not bucket.keys:
+            self._remove(bucket)
+
+    def dec(self, key: str) -> None:
+        bucket = self.key_to_bucket[key]
+        bucket.keys.remove(key)
+
+        if bucket.count == 1:
+            del self.key_to_bucket[key]
+        else:
+            prev_bucket = bucket.prev
+            if prev_bucket is self.head or prev_bucket.count != bucket.count - 1:
+                prev_bucket = self._insert_after(prev_bucket, bucket.count - 1)
+            prev_bucket.keys.add(key)
+            self.key_to_bucket[key] = prev_bucket
+
+        if not bucket.keys:
+            self._remove(bucket)
+
+    def getMaxKey(self) -> str:
+        if self.tail.prev is self.head:
+            return ""
+        return next(iter(self.tail.prev.keys))
+
+    def getMinKey(self) -> str:
+        if self.head.next is self.tail:
+            return ""
+        return next(iter(self.head.next.keys))
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/all-oone-data-structure/

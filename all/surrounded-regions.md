@@ -65,6 +65,42 @@ Reverse DFS starting from the border
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(m * n) — each cell is visited a constant number of times across the border DFS and final sweep.
+**Space Complexity:** O(m * n) — worst-case DFS recursion stack when the board is mostly `'O'`.
+
+## Reference Solution (Python)
+
+```python
+def solve(board: list[list[str]]) -> None:
+    if not board or not board[0]:
+        return
+
+    rows, cols = len(board), len(board[0])
+
+    def dfs(r: int, c: int) -> None:
+        if r < 0 or r >= rows or c < 0 or c >= cols or board[r][c] != "O":
+            return
+        board[r][c] = "#"
+        dfs(r + 1, c)
+        dfs(r - 1, c)
+        dfs(r, c + 1)
+        dfs(r, c - 1)
+
+    for r in range(rows):
+        dfs(r, 0)
+        dfs(r, cols - 1)
+    for c in range(cols):
+        dfs(0, c)
+        dfs(rows - 1, c)
+
+    for r in range(rows):
+        for c in range(cols):
+            if board[r][c] == "O":
+                board[r][c] = "X"
+            elif board[r][c] == "#":
+                board[r][c] = "O"
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/surrounded-regions/

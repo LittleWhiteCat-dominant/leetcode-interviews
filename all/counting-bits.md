@@ -67,6 +67,19 @@ dp[i] = dp[i >> 1] + (i & 1)
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — one constant-time DP transition per value from 1 to n.
+**Space Complexity:** O(n) — the output array itself (O(1) extra beyond it).
+
+## Reference Solution (Python)
+
+```python
+def countBits(n: int) -> list[int]:
+    ans = [0] * (n + 1)
+    for i in range(1, n + 1):
+        ans[i] = ans[i >> 1] + (i & 1)
+    return ans
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/counting-bits/

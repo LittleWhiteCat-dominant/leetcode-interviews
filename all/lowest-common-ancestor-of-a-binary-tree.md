@@ -72,6 +72,31 @@ Recursively check whether left/right subtree contains p/q
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — every node may be visited once in the worst case.
+**Space Complexity:** O(H) — for the recursion stack, where H is the tree height.
+
+## Reference Solution (Python)
+
+```python
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def lowestCommonAncestor(root: TreeNode, p: TreeNode, q: TreeNode) -> TreeNode:
+    if root is None or root is p or root is q:
+        return root
+
+    left = lowestCommonAncestor(root.left, p, q)
+    right = lowestCommonAncestor(root.right, p, q)
+
+    if left and right:
+        return root
+    return left if left else right
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree/

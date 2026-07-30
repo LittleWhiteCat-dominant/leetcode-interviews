@@ -65,6 +65,29 @@ Hash set to detect cycles
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(log n) per digit-square-sum step, and the cycle detection terminates in a bounded number of steps for 32-bit integers.
+**Space Complexity:** O(1) — using Floyd's cycle detection avoids the O(k) hash set of visited values.
+
+## Reference Solution (Python)
+
+```python
+def isHappy(n: int) -> bool:
+    def get_next(num: int) -> int:
+        total = 0
+        while num > 0:
+            digit = num % 10
+            num //= 10
+            total += digit * digit
+        return total
+
+    slow, fast = n, get_next(n)
+    while fast != 1 and slow != fast:
+        slow = get_next(slow)
+        fast = get_next(get_next(fast))
+
+    return fast == 1
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/happy-number/

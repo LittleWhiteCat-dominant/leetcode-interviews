@@ -69,6 +69,42 @@ Sort + fix one number + two pointers with dedup
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n^2) — sorting takes O(n log n), then fixing one number and scanning with two pointers takes O(n) for each of the n numbers.
+**Space Complexity:** O(1) extra space beyond the output (not counting the O(log n) to O(n) space used by the sort itself).
+
+## Reference Solution (Python)
+
+```python
+def threeSum(nums: list[int]) -> list[list[int]]:
+    nums.sort()
+    n = len(nums)
+    result = []
+
+    for i in range(n - 2):
+        if i > 0 and nums[i] == nums[i - 1]:
+            continue
+        if nums[i] > 0:
+            break
+
+        left, right = i + 1, n - 1
+        while left < right:
+            total = nums[i] + nums[left] + nums[right]
+            if total < 0:
+                left += 1
+            elif total > 0:
+                right -= 1
+            else:
+                result.append([nums[i], nums[left], nums[right]])
+                left += 1
+                right -= 1
+                while left < right and nums[left] == nums[left - 1]:
+                    left += 1
+                while left < right and nums[right] == nums[right + 1]:
+                    right -= 1
+
+    return result
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/3sum/

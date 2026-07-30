@@ -88,6 +88,20 @@ Construct bit by bit via shifting
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(1) — always exactly 32 iterations regardless of input.
+**Space Complexity:** O(1) — a single accumulator integer.
+
+## Reference Solution (Python)
+
+```python
+def reverseBits(n: int) -> int:
+    result = 0
+    for _ in range(32):
+        result = (result << 1) | (n & 1)
+        n >>= 1
+    return result
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/reverse-bits/

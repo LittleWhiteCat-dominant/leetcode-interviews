@@ -80,6 +80,43 @@ Multi-source BFS, expanding layer by layer to compute time
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(m * n) — every cell is enqueued and processed at most once.
+**Space Complexity:** O(m * n) — the BFS queue can hold up to all cells.
+
+## Reference Solution (Python)
+
+```python
+from collections import deque
+
+def orangesRotting(grid: list[list[int]]) -> int:
+    rows, cols = len(grid), len(grid[0])
+    queue = deque()
+    fresh = 0
+
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] == 2:
+                queue.append((r, c))
+            elif grid[r][c] == 1:
+                fresh += 1
+
+    minutes = 0
+    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+    while queue and fresh > 0:
+        minutes += 1
+        for _ in range(len(queue)):
+            r, c = queue.popleft()
+            for dr, dc in directions:
+                nr, nc = r + dr, c + dc
+                if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == 1:
+                    grid[nr][nc] = 2
+                    fresh -= 1
+                    queue.append((nr, nc))
+
+    return minutes if fresh == 0 else -1
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/rotting-oranges/

@@ -54,6 +54,23 @@ Track the farthest reachable position so far
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — a single pass through the array.
+**Space Complexity:** O(1) — only the running "farthest reachable" value is tracked.
+
+## Reference Solution (Python)
+
+```python
+def canJump(nums: list[int]) -> bool:
+    farthest = 0
+
+    for i, num in enumerate(nums):
+        if i > farthest:
+            return False
+        farthest = max(farthest, i + num)
+
+    return True
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/jump-game/

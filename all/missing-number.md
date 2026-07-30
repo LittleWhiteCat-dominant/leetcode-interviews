@@ -80,6 +80,19 @@ XOR trick, or the sum formula
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — a single pass XOR-ing every index and value.
+**Space Complexity:** O(1) — only a running XOR accumulator is used.
+
+## Reference Solution (Python)
+
+```python
+def missingNumber(nums: list[int]) -> int:
+    missing = len(nums)
+    for i, num in enumerate(nums):
+        missing ^= i ^ num
+    return missing
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/missing-number/

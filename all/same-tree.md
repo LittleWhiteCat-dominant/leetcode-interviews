@@ -61,6 +61,26 @@ Recursive node-by-node comparison
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — every node in both trees is visited at most once.
+**Space Complexity:** O(h) — recursion stack depth equal to the tree height.
+
+## Reference Solution (Python)
+
+```python
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def isSameTree(p: TreeNode, q: TreeNode) -> bool:
+    if not p and not q:
+        return True
+    if not p or not q or p.val != q.val:
+        return False
+    return isSameTree(p.left, q.left) and isSameTree(p.right, q.right)
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/same-tree/

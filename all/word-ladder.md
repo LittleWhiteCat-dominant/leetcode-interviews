@@ -78,6 +78,40 @@ BFS for the shortest transformation path length
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(N * L^2) — for each of the `N` words in the word list, BFS tries `L` positions times 26 letter substitutions, each costing O(L) to build the candidate string.
+**Space Complexity:** O(N * L) — the word set and BFS queue store up to all words of length `L`.
+
+## Reference Solution (Python)
+
+```python
+from collections import deque
+
+
+def ladderLength(beginWord: str, endWord: str, wordList: list[str]) -> int:
+    word_set = set(wordList)
+    if endWord not in word_set:
+        return 0
+
+    queue = deque([(beginWord, 1)])
+    word_set.discard(beginWord)
+
+    while queue:
+        word, steps = queue.popleft()
+        if word == endWord:
+            return steps
+
+        for i in range(len(word)):
+            for c in "abcdefghijklmnopqrstuvwxyz":
+                if c == word[i]:
+                    continue
+                next_word = word[:i] + c + word[i + 1:]
+                if next_word in word_set:
+                    word_set.discard(next_word)
+                    queue.append((next_word, steps + 1))
+
+    return 0
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/word-ladder/

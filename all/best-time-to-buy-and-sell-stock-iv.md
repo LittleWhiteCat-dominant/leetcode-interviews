@@ -59,6 +59,27 @@ State-machine DP
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n * k) — for each of the n prices, we update k transaction states.
+**Space Complexity:** O(k) — two length-(k + 1) arrays track the hold/cash states.
+
+## Reference Solution (Python)
+
+```python
+def maxProfit(k: int, prices: list[int]) -> int:
+    if not prices or k == 0:
+        return 0
+
+    hold = [float("-inf")] * (k + 1)
+    cash = [0] * (k + 1)
+
+    for price in prices:
+        for j in range(1, k + 1):
+            hold[j] = max(hold[j], cash[j - 1] - price)
+            cash[j] = max(cash[j], hold[j] + price)
+
+    return cash[k]
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iv/

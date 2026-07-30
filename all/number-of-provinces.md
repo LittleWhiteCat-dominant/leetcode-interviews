@@ -68,6 +68,42 @@ Traverse the adjacency matrix, unioning cities
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n^2) — dominated by scanning the upper triangle of the `n x n` adjacency matrix; union/find operations are near O(1) amortized.
+**Space Complexity:** O(n) — for the parent array.
+
+## Reference Solution (Python)
+
+```python
+class UnionFind:
+    def __init__(self, size: int) -> None:
+        self.parent = list(range(size))
+        self.count = size
+
+    def find(self, x: int) -> int:
+        while self.parent[x] != x:
+            self.parent[x] = self.parent[self.parent[x]]
+            x = self.parent[x]
+        return x
+
+    def union(self, a: int, b: int) -> None:
+        root_a, root_b = self.find(a), self.find(b)
+        if root_a != root_b:
+            self.parent[root_a] = root_b
+            self.count -= 1
+
+
+def findCircleNum(isConnected: list[list[int]]) -> int:
+    n = len(isConnected)
+    uf = UnionFind(n)
+
+    for i in range(n):
+        for j in range(i + 1, n):
+            if isConnected[i][j] == 1:
+                uf.union(i, j)
+
+    return uf.count
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/number-of-provinces/

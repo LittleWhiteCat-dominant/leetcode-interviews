@@ -69,6 +69,27 @@ Fast exponentiation, recursive or iterative binary splitting
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(log n) — the exponent is halved on each iteration of fast exponentiation.
+**Space Complexity:** O(1) — computed iteratively with no extra recursion stack.
+
+## Reference Solution (Python)
+
+```python
+def myPow(x: float, n: int) -> float:
+    if n < 0:
+        x = 1 / x
+        n = -n
+
+    result = 1.0
+    while n:
+        if n & 1:
+            result *= x
+        x *= x
+        n >>= 1
+
+    return result
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/powx-n/

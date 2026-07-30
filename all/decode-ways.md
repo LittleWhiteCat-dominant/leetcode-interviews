@@ -91,6 +91,31 @@ String DP; careful with "0" and valid two-digit ranges
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — a single pass through the string with constant work per position.
+**Space Complexity:** O(1) — only the previous two DP states are kept.
+
+## Reference Solution (Python)
+
+```python
+def numDecodings(s: str) -> int:
+    if not s or s[0] == '0':
+        return 0
+
+    n = len(s)
+    prev2, prev1 = 1, 1  # dp[i - 2], dp[i - 1]
+
+    for i in range(1, n):
+        current = 0
+        if s[i] != '0':
+            current += prev1
+        two_digit = int(s[i - 1:i + 1])
+        if 10 <= two_digit <= 26:
+            current += prev2
+        prev2, prev1 = prev1, current
+
+    return prev1
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/decode-ways/

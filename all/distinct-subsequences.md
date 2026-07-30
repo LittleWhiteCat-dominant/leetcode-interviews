@@ -63,6 +63,25 @@ As shown below, there are 5 ways you can generate "bag" from s.
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(m * n) — where m = len(s), n = len(t), one DP transition per cell.
+**Space Complexity:** O(n) — a single 1D DP row, updated in place from right to left.
+
+## Reference Solution (Python)
+
+```python
+def numDistinct(s: str, t: str) -> int:
+    m, n = len(s), len(t)
+    dp = [0] * (n + 1)
+    dp[0] = 1
+
+    for i in range(1, m + 1):
+        for j in range(n, 0, -1):
+            if s[i - 1] == t[j - 1]:
+                dp[j] += dp[j - 1]
+
+    return dp[n]
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/distinct-subsequences/

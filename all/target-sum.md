@@ -69,6 +69,28 @@ Reformulate as a 0/1 knapsack subset-sum problem
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n * sum(nums)) — the DP fills a table of size `subset_sum + 1` once for each of the `n` numbers.
+**Space Complexity:** O(sum(nums)) — a 1D DP array sized to the target subset sum.
+
+## Reference Solution (Python)
+
+```python
+def findTargetSumWays(nums: list[int], target: int) -> int:
+    total = sum(nums)
+    if abs(target) > total or (total + target) % 2 != 0:
+        return 0
+
+    subset_sum = (total + target) // 2
+    dp = [0] * (subset_sum + 1)
+    dp[0] = 1
+
+    for num in nums:
+        for s in range(subset_sum, num - 1, -1):
+            dp[s] += dp[s - num]
+
+    return dp[subset_sum]
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/target-sum/

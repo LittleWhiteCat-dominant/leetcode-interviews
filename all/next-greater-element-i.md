@@ -73,6 +73,24 @@ Monotonic stack + hash map lookup
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n2 + n1) — the monotonic stack pass over `nums2` is linear, plus a linear lookup pass for `nums1`.
+**Space Complexity:** O(n2) — for the stack and the next-greater hash map.
+
+## Reference Solution (Python)
+
+```python
+def nextGreaterElement(nums1: list[int], nums2: list[int]) -> list[int]:
+    next_greater = {}
+    stack: list[int] = []
+
+    for num in nums2:
+        while stack and stack[-1] < num:
+            next_greater[stack.pop()] = num
+        stack.append(num)
+
+    return [next_greater.get(num, -1) for num in nums1]
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/next-greater-element-i/

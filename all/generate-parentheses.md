@@ -45,6 +45,32 @@ Backtracking + stack-style pruning (open count ≥ close count)
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(4^n / sqrt(n)) — bounded by the nth Catalan number, the count of valid parentheses combinations.
+**Space Complexity:** O(4^n / sqrt(n)) for the output, plus O(n) recursion depth for the call stack.
+
+## Reference Solution (Python)
+
+```python
+def generateParenthesis(n: int) -> list[str]:
+    result: list[str] = []
+
+    def backtrack(current: list[str], open_count: int, close_count: int) -> None:
+        if len(current) == 2 * n:
+            result.append("".join(current))
+            return
+        if open_count < n:
+            current.append("(")
+            backtrack(current, open_count + 1, close_count)
+            current.pop()
+        if close_count < open_count:
+            current.append(")")
+            backtrack(current, open_count, close_count + 1)
+            current.pop()
+
+    backtrack([], 0, 0)
+    return result
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/generate-parentheses/

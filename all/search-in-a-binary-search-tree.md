@@ -58,6 +58,24 @@ Recursive/iterative traversal using BST properties
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(h) — each step follows the BST invariant down a single path.
+**Space Complexity:** O(1) — iterative traversal with no recursion stack.
+
+## Reference Solution (Python)
+
+```python
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def searchBST(root: TreeNode, val: int) -> TreeNode:
+    while root and root.val != val:
+        root = root.left if val < root.val else root.right
+    return root
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/search-in-a-binary-search-tree/

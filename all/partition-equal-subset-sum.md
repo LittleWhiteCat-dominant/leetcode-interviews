@@ -52,6 +52,31 @@ Given an integer array `nums`, return `true` *if you can partition the array int
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n \* target) — where `target` is half the total sum, one pass per number over the DP array.
+**Space Complexity:** O(target) — a 1D boolean DP array of reachable sums.
+
+## Reference Solution (Python)
+
+```python
+from typing import List
+
+def canPartition(nums: List[int]) -> bool:
+    total = sum(nums)
+    if total % 2 != 0:
+        return False
+
+    target = total // 2
+    dp = [False] * (target + 1)
+    dp[0] = True
+
+    for num in nums:
+        for s in range(target, num - 1, -1):
+            if dp[s - num]:
+                dp[s] = True
+
+    return dp[target]
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/partition-equal-subset-sum/

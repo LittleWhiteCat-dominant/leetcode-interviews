@@ -57,6 +57,34 @@ Fixed-size window + character frequency comparison
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n + m) — where `n = len(s)` and `m = len(p)`; each of the 26 letter counts is compared in O(1) as the window slides.
+**Space Complexity:** O(1) — fixed-size arrays of 26 counters regardless of input size.
+
+## Reference Solution (Python)
+
+```python
+def findAnagrams(s: str, p: str) -> list[int]:
+    n, m = len(s), len(p)
+    if n < m:
+        return []
+
+    p_count = [0] * 26
+    s_count = [0] * 26
+
+    for ch in p:
+        p_count[ord(ch) - ord('a')] += 1
+
+    result = []
+    for i in range(n):
+        s_count[ord(s[i]) - ord('a')] += 1
+        if i >= m:
+            s_count[ord(s[i - m]) - ord('a')] -= 1
+        if i >= m - 1 and s_count == p_count:
+            result.append(i - m + 1)
+
+    return result
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/find-all-anagrams-in-a-string/

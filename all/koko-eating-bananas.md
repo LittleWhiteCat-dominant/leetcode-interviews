@@ -68,6 +68,30 @@ Binary search on the answer + a feasibility check function
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n log m) — where `n` is the number of piles and `m` is the max pile size; binary search over the speed range, with an O(n) feasibility check each iteration.
+**Space Complexity:** O(1) — only a few scalar variables are used.
+
+## Reference Solution (Python)
+
+```python
+import math
+
+
+def minEatingSpeed(piles: list[int], h: int) -> int:
+    def hours_needed(speed: int) -> int:
+        return sum(math.ceil(pile / speed) for pile in piles)
+
+    lo, hi = 1, max(piles)
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if hours_needed(mid) <= h:
+            hi = mid
+        else:
+            lo = mid + 1
+
+    return lo
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/koko-eating-bananas/

@@ -74,6 +74,29 @@ Stack tracking indices to delete
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — one pass to find indices to remove, one pass to build the result.
+**Space Complexity:** O(n) — for the stack and the set of indices to remove.
+
+## Reference Solution (Python)
+
+```python
+def minRemoveToMakeValid(s: str) -> str:
+    to_remove = set()
+    stack: list[int] = []
+
+    for i, ch in enumerate(s):
+        if ch == '(':
+            stack.append(i)
+        elif ch == ')':
+            if stack:
+                stack.pop()
+            else:
+                to_remove.add(i)
+
+    to_remove.update(stack)
+    return ''.join(ch for i, ch in enumerate(s) if i not in to_remove)
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/minimum-remove-to-make-valid-parentheses/

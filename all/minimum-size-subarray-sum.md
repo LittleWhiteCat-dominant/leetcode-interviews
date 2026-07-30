@@ -67,6 +67,27 @@ Shrink the left pointer once the window sum exceeds target
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — the left and right pointers each traverse the array at most once.
+**Space Complexity:** O(1) — only a running sum and a couple of indices are tracked.
+
+## Reference Solution (Python)
+
+```python
+def minSubArrayLen(target: int, nums: list[int]) -> int:
+    left = 0
+    window_sum = 0
+    best = len(nums) + 1
+
+    for right, num in enumerate(nums):
+        window_sum += num
+        while window_sum >= target:
+            best = min(best, right - left + 1)
+            window_sum -= nums[left]
+            left += 1
+
+    return best if best <= len(nums) else 0
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/minimum-size-subarray-sum/

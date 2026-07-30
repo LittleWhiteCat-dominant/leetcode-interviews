@@ -71,6 +71,32 @@ Use the first row/column as markers for O(1) extra space
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(m * n) — a constant number of passes over the matrix.
+**Space Complexity:** O(1) — the first row and column of the matrix itself serve as the marker storage.
+
+## Reference Solution (Python)
+
+```python
+def setZeroes(matrix: list[list[int]]) -> None:
+    rows, cols = len(matrix), len(matrix[0])
+    first_col_has_zero = False
+
+    for r in range(rows):
+        if matrix[r][0] == 0:
+            first_col_has_zero = True
+        for c in range(1, cols):
+            if matrix[r][c] == 0:
+                matrix[r][0] = 0
+                matrix[0][c] = 0
+
+    for r in range(rows - 1, -1, -1):
+        for c in range(cols - 1, 0, -1):
+            if matrix[r][0] == 0 or matrix[0][c] == 0:
+                matrix[r][c] = 0
+        if first_col_has_zero:
+            matrix[r][0] = 0
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/set-matrix-zeroes/

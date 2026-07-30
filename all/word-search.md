@@ -74,6 +74,40 @@ Backtracking DFS on the matrix, with pruning + visited marking
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(m * n * 4^L) — worst case, DFS/backtracking may explore up to 4 directions at each of the `L` characters of `word`, starting from each of the `m * n` cells.
+**Space Complexity:** O(L) — recursion stack depth equals the length of `word` (the board is mutated in place instead of using a separate visited set).
+
+## Reference Solution (Python)
+
+```python
+def exist(board: list[list[str]], word: str) -> bool:
+    rows, cols = len(board), len(board[0])
+
+    def dfs(r: int, c: int, idx: int) -> bool:
+        if idx == len(word):
+            return True
+        if r < 0 or r >= rows or c < 0 or c >= cols or board[r][c] != word[idx]:
+            return False
+
+        temp = board[r][c]
+        board[r][c] = "#"
+        found = (
+            dfs(r + 1, c, idx + 1)
+            or dfs(r - 1, c, idx + 1)
+            or dfs(r, c + 1, idx + 1)
+            or dfs(r, c - 1, idx + 1)
+        )
+        board[r][c] = temp
+        return found
+
+    for r in range(rows):
+        for c in range(cols):
+            if dfs(r, c, 0):
+                return True
+
+    return False
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/word-search/

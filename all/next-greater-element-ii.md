@@ -55,6 +55,27 @@ Monotonic stack + hash map lookup
 3. Confirm edge cases and state time/space complexity before coding.
 4. Implement and verify against the examples above / on LeetCode.
 
+**Time Complexity:** O(n) — each index is pushed and popped from the monotonic stack at most once across the two virtual passes.
+**Space Complexity:** O(n) — for the stack and the result array.
+
+## Reference Solution (Python)
+
+```python
+def nextGreaterElements(nums: list[int]) -> list[int]:
+    n = len(nums)
+    result = [-1] * n
+    stack: list[int] = []
+
+    for i in range(2 * n):
+        idx = i % n
+        while stack and nums[stack[-1]] < nums[idx]:
+            result[stack.pop()] = nums[idx]
+        if i < n:
+            stack.append(idx)
+
+    return result
+```
+
 ## Reference
 
 - LeetCode: https://leetcode.com/problems/next-greater-element-ii/
