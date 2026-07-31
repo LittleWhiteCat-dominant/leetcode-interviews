@@ -63,10 +63,12 @@ Traverse the adjacency matrix, unioning cities
 
 ## Approach
 
-1. Identify the core pattern for this category: **10. Union Find**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **Union-Find (Disjoint Set Union)**:
+
+1. Initialize a `UnionFind` structure over the `n` cities, each starting as its own province, with `count = n`.
+2. Scan the upper triangle of the `isConnected` matrix (`i < j`, since the matrix is symmetric) and whenever `isConnected[i][j] == 1`, call `union(i, j)` to merge the two cities' components.
+3. Each successful union (merging two previously separate components) decrements `count` by one, since two provinces just became one.
+4. After scanning the whole matrix, `count` holds the number of remaining disjoint components, which is exactly the number of provinces.
 
 **Time Complexity:** O(n^2) — dominated by scanning the upper triangle of the `n x n` adjacency matrix; union/find operations are near O(1) amortized.
 **Space Complexity:** O(n) — for the parent array.

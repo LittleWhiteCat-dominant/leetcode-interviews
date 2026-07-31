@@ -53,10 +53,13 @@ Prune the recursion using BST ordering properties
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.2 Binary Search Tree (BST)**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **DFS that prunes branches using BST ordering**:
+
+1. At the base case, if the current node is `None`, its contribution to the sum is 0.
+2. If the current node's value is less than `low`, every value in its left subtree is even smaller (BST property), so skip the left subtree entirely and only recurse right.
+3. If the current node's value is greater than `high`, every value in its right subtree is even larger, so skip the right subtree entirely and only recurse left.
+4. Otherwise the node's value is within `[low, high]`, so include it in the sum and recurse into both children to collect any additional in-range values.
+5. This pruning avoids visiting subtrees that provably cannot contain any value in range.
 
 **Time Complexity:** O(n) worst case — pruned using BST ordering, closer to O(log n + k) on balanced trees where k nodes are in range.
 **Space Complexity:** O(h) — recursion stack proportional to the tree height.

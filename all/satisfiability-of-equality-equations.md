@@ -62,10 +62,12 @@ Union Find handling equivalence relations
 
 ## Approach
 
-1. Identify the core pattern for this category: **10. Union Find**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **Union-Find over the 26 lowercase letters**:
+
+1. Initialize a `parent` array of size 26, one slot per letter, each initially its own root.
+2. Make a first pass over all equations processing only the `"=="` ones: union the two letters' components using `find` (with path compression) and `union`.
+3. Make a second pass over the `"!="` equations: for each, check whether the two letters now share the same root via `find`.
+4. If any `"!="` pair ends up in the same component, the constraints are contradictory, so return `False`; otherwise return `True`.
 
 **Time Complexity:** O(n) — with union by find and path compression over a fixed alphabet of 26 letters, each union/find is amortized near O(1).
 **Space Complexity:** O(1) — the parent array is a fixed size of 26.

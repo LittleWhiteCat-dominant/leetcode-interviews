@@ -90,10 +90,13 @@ Sort by position + monotonic stack to check catch-up
 
 ## Approach
 
-1. Identify the core pattern for this category: **4.2 Monotonic Stack**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved by **sorting cars by starting position and sweeping from closest-to-target backward, treating arrival times like a monotonic stack**:
+
+1. Pair each car's `position` with its `speed`, then sort these pairs in descending order of position (closest to `target` first).
+2. For each car, compute `time_to_reach = (target - pos) / spd`, the time it would take to reach the target if unobstructed.
+3. Track `current_time`, the arrival time of the fleet currently "in front" (i.e., the slowest, most delayed fleet formed so far among cars already processed).
+4. If a car's own `time_to_reach` is greater than `current_time`, it never catches the fleet ahead, so it forms a brand-new fleet, and `current_time` updates to its (larger) arrival time.
+5. Otherwise, the car catches up to and merges into the fleet ahead without changing `current_time`. The total count of "new fleet" events is the answer.
 
 **Time Complexity:** O(n log n) — dominated by sorting the cars by starting position.
 **Space Complexity:** O(n) — for the sorted list of (position, speed) pairs.

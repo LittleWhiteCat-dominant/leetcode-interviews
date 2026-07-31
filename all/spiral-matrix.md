@@ -51,10 +51,14 @@ Maintain top/bottom/left/right boundaries, shrinking layer by layer
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.6 Matrix**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **shrinking boundary pointers traced in a repeating four-direction cycle**:
+
+1. Track four boundaries: `top`, `bottom`, `left`, `right`, initialized to the matrix's outer edges.
+2. Traverse the top row from `left` to `right`, then move `top` down by one.
+3. Traverse the right column from `top` to `bottom`, then move `right` left by one.
+4. If `top <= bottom` still holds, traverse the bottom row from `right` to `left`, then move `bottom` up by one.
+5. If `left <= right` still holds, traverse the left column from `bottom` to `top`, then move `left` right by one.
+6. Repeat this four-step cycle while `top <= bottom and left <= right`, appending each visited value to the result list.
 
 **Time Complexity:** O(m * n) — every cell is visited exactly once.
 **Space Complexity:** O(1) extra space — only four boundary pointers, excluding the output list.

@@ -56,10 +56,13 @@ Hash map counting by coordinate
 
 ## Approach
 
-1. Identify the core pattern for this category: **15. Design Problems**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **offline processing: sort queries by their threshold `m` and incrementally build a bitwise Trie of eligible numbers**:
+
+1. Sort `nums` ascending, and sort the query indices by their threshold `m` so queries are processed from smallest to largest threshold.
+2. Maintain a bitwise Trie (same structure as Maximum XOR of Two Numbers) that is built up incrementally.
+3. For each query in threshold order, insert all numbers from `nums` that are `<= m` and haven't been inserted yet, advancing a pointer through the sorted array.
+4. If no numbers have been inserted yet (all exceed `m`), the answer for that query is `-1`.
+5. Otherwise, query the trie with `x`, greedily choosing the opposite bit at each level to maximize the XOR result, and store it at the query's original index.
 
 **Time Complexity:** O((n + q) log(n + q) + (n + q) * L) — for sorting nums and queries by threshold, and L = ~31 bit trie operations per element/query.
 **Space Complexity:** O(n * L + q) — for the trie built from `nums` and the answer array.

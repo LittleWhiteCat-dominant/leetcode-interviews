@@ -40,10 +40,13 @@ Backtracking + stack-style pruning (open count ≥ close count)
 
 ## Approach
 
-1. Identify the core pattern for this category: **4.1 Basic Stack Applications**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **backtracking, pruning any prefix that could never become balanced**:
+
+1. Build strings character by character via DFS, tracking how many `(` and `)` have been placed so far.
+2. Only add `(` if `open_count < n` (there's still room to open more pairs).
+3. Only add `)` if `close_count < open_count` (never close more than currently open, which would make the prefix invalid).
+4. When the current string reaches length `2 * n`, it is guaranteed to be a valid combination, so record it.
+5. Backtrack by undoing the last character after each branch to explore the next possibility.
 
 **Time Complexity:** O(4^n / sqrt(n)) — bounded by the nth Catalan number, the count of valid parentheses combinations.
 **Space Complexity:** O(4^n / sqrt(n)) for the output, plus O(n) recursion depth for the call stack.

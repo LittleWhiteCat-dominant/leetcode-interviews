@@ -74,10 +74,13 @@ Hash map + doubly linked list bucketed by count
 
 ## Approach
 
-1. Identify the core pattern for this category: **15. Design Problems**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a hash map to buckets combined with a doubly linked list of count buckets, kept sorted by count**:
+
+1. Maintain a doubly linked list of `Bucket` nodes, each holding a distinct count value and the set of keys currently at that count, bounded by sentinel `head` (count 0) and `tail` nodes.
+2. Keep a hash map from each key to the bucket it currently belongs to, so any key's bucket can be found in O(1).
+3. For `inc`, move the key from its current bucket (or from `head` if it is new) to the next bucket in the list if one exists with `count + 1`, otherwise insert a fresh bucket right after; remove the old bucket if it becomes empty.
+4. For `dec`, do the mirror operation toward the previous bucket, deleting the key entirely if its count drops to `0`.
+5. `getMaxKey` and `getMinKey` simply peek at any key in `tail.prev` (highest count) or `head.next` (lowest count), returning `""` if that bucket is a sentinel.
 
 **Time Complexity:** O(1) average — every operation (`inc`, `dec`, `getMaxKey`, `getMinKey`) does a constant amount of bucket-list and set bookkeeping.
 **Space Complexity:** O(n) — to store the n distinct keys and their buckets.

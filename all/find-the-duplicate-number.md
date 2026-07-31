@@ -73,10 +73,12 @@ Treat the array as a linked list, apply Floyd's algorithm
 
 ## Approach
 
-1. Identify the core pattern for this category: **3. Linked List**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **Floyd's cycle detection, treating array values as "next pointers"**:
+
+1. View `nums` as a linked list where each index `i` points to index `nums[i]`; since a duplicate value exists, this implicit list must contain a cycle.
+2. Move a slow pointer one step (`slow = nums[slow]`) and a fast pointer two steps (`fast = nums[nums[fast]]`) each iteration until they meet inside the cycle.
+3. Reset `slow` to the start (`nums[0]`) while leaving `fast` at the meeting point.
+4. Advance both pointers one step at a time; the index where they meet again is the entrance to the cycle, which is exactly the duplicate number.
 
 **Time Complexity:** O(n) — Floyd's cycle detection makes a constant number of passes over the implicit linked list.
 **Space Complexity:** O(1) — only two pointers are used, and the array is not modified.

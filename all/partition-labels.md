@@ -53,10 +53,13 @@ Record each character's last occurrence, greedily extend the interval
 
 ## Approach
 
-1. Identify the core pattern for this category: **13. Greedy**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with a **greedy sweep using last-occurrence indices**:
+
+1. Precompute, for every character, the index of its last occurrence in `s` using a hash map.
+2. Sweep through `s` while tracking `start` (the beginning of the current partition) and `end` (the farthest last-occurrence seen so far within the current partition).
+3. For each character at index `i`, extend `end = max(end, last[ch])`, since that character must not appear again after the partition closes.
+4. Whenever `i == end`, the current partition can safely close here (every character seen so far has its last occurrence within `[start, end]`): record its length `end - start + 1` and start a new partition at `i + 1`.
+5. Return the list of recorded partition lengths.
 
 **Time Complexity:** O(n) — one pass to record last occurrences, one pass to build partitions.
 **Space Complexity:** O(1) — the last-occurrence map holds at most 26 lowercase letters.

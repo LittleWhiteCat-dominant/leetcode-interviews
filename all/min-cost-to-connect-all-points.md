@@ -56,10 +56,13 @@ Kruskal's or Prim's minimum spanning tree
 
 ## Approach
 
-1. Identify the core pattern for this category: **9.3 Advanced Graph Algorithms (Shortest Path / MST)**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **Prim's minimum spanning tree algorithm using an array-based min search**:
+
+1. Treat every pair of points as a potential edge weighted by their Manhattan distance, and build the MST greedily starting from an arbitrary point (point `0`).
+2. Maintain `min_dist[v]`, the cheapest known distance connecting each unvisited point `v` to the growing tree, initialized to infinity except `min_dist[0] = 0`.
+3. Repeat `n` times: pick the unvisited point `u` with the smallest `min_dist`, mark it as added to the tree, and add its cost to the running total.
+4. After adding `u`, relax `min_dist[v]` for every unvisited `v` using the Manhattan distance between `u` and `v`.
+5. Since the graph is dense (complete), this array-based selection avoids the overhead of a heap and stays efficient at O(n^2).
 
 **Time Complexity:** O(n^2) — Prim's algorithm with an array-based minimum search, which is efficient on this dense (complete) graph.
 **Space Complexity:** O(n) — for the `in_mst` and `min_dist` arrays.

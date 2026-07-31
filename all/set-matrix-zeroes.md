@@ -66,10 +66,12 @@ Use the first row/column as markers for O(1) extra space
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.6 Matrix**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **using the matrix's own first row and column as O(1) marker storage**:
+
+1. Before overwriting anything, record separately whether the first column contains any zero (since it doubles as a marker for other rows).
+2. Scan the rest of the matrix (rows fully, columns from index 1): whenever `matrix[r][c] == 0`, mark its row and column by zeroing `matrix[r][0]` and `matrix[0][c]`.
+3. Walk the matrix a second time from bottom-right to top-left (excluding the first row/column): zero out `matrix[r][c]` if either its row marker `matrix[r][0]` or column marker `matrix[0][c]` is zero.
+4. Finally, zero out the first column entirely if the earlier recorded flag indicated it originally contained a zero, restoring correctness for column 0 which was reused as a marker.
 
 **Time Complexity:** O(m * n) — a constant number of passes over the matrix.
 **Space Complexity:** O(1) — the first row and column of the matrix itself serve as the marker storage.

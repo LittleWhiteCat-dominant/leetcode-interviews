@@ -15,10 +15,13 @@ BFS tracking column index, then group and sort by column
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.1 Binary Tree Traversal & Recursion**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **BFS while tracking each node's column offset from the root**:
+
+1. Return an empty list immediately if `root` is `None`.
+2. Run a standard BFS, but enqueue `(node, column)` pairs instead of just nodes, starting the root at column `0`.
+3. When visiting a node, append its value to `columns[column]`, then enqueue its left child at `column - 1` and its right child at `column + 1`.
+4. Because BFS processes nodes level by level, values within the same column naturally end up in top-to-bottom order.
+5. Once traversal finishes, build the result by iterating over the column keys in sorted order.
 
 **Time Complexity:** O(n log n) — O(n) for the BFS, plus sorting the up-to-n distinct column indices.
 **Space Complexity:** O(n) — for the queue and the column-to-values map.

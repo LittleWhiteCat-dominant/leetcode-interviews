@@ -52,10 +52,13 @@ The k-th element of an in-order traversal is the answer
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.2 Binary Search Tree (BST)**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **an iterative in-order traversal using an explicit stack**:
+
+1. Maintain a stack and a `node` pointer starting at the root.
+2. Push all left children onto the stack until `node` becomes `None`, reaching the smallest unvisited value.
+3. Pop the stack (this yields values in ascending order) and decrement `k`.
+4. If `k` reaches `0`, the popped node's value is the answer.
+5. Otherwise, move to the popped node's right child and repeat the left-spine push until the stack empties or `k` hits `0`.
 
 **Time Complexity:** O(H + k) — where H is the tree height; we push at most H nodes at a time and pop k nodes before stopping.
 **Space Complexity:** O(H) — the explicit stack holds at most one root-to-leaf path.

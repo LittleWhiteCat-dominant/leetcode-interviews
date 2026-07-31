@@ -78,10 +78,13 @@ Compare with the right endpoint to shrink the interval
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.4 Binary Search**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **binary search that compares the middle element to the right endpoint**:
+
+1. Maintain a search range `[lo, hi]` over the array.
+2. At each step compute `mid` and compare `nums[mid]` to `nums[hi]`.
+3. If `nums[mid] > nums[hi]`, the minimum must lie strictly to the right of `mid` (the rotation point is ahead), so set `lo = mid + 1`.
+4. Otherwise, `nums[mid] <= nums[hi]` means the minimum is at `mid` or to its left, so set `hi = mid`.
+5. Repeat until `lo == hi`; that index holds the minimum.
 
 **Time Complexity:** O(log n) — binary search halves the search space each iteration.
 **Space Complexity:** O(1) — only pointer variables are used.

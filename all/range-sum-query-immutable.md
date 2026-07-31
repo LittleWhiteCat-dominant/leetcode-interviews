@@ -62,10 +62,12 @@ numArray.sumRange(0, 5); // return (-2) + 0 + 3 + (-5) + 2 + (-1) = -3
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.3 Prefix Sum**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with a **1D prefix-sum array**:
+
+1. In the constructor, build a `prefix` array of length `n + 1` where `prefix[i]` is the sum of the first `i` elements of `nums`, with `prefix[0] = 0` as a sentinel.
+2. Compute it incrementally: `prefix[i + 1] = prefix[i] + nums[i]`.
+3. Since `sumRange(left, right)` needs `nums[left] + ... + nums[right]`, this equals `prefix[right + 1] - prefix[left]` — the cumulative sum up to `right` minus the cumulative sum up to (but not including) `left`.
+4. Because `prefix` is precomputed once, each `sumRange` query is answered in O(1) with a single subtraction.
 
 **Time Complexity:** O(n) to build the prefix sum, O(1) per `sumRange` query.
 **Space Complexity:** O(n) — for the prefix sum array.

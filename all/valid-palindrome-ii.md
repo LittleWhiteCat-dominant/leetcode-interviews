@@ -55,10 +55,13 @@ Allow skipping one mismatched character then re-verify
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.1 Two Pointers**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a two-pointer scan that branches once on the first mismatch**:
+
+1. Move `left` and `right` inward from both ends while characters match.
+2. As soon as a mismatch `s[left] != s[right]` is found, the answer depends on whether skipping exactly one of these two characters yields a palindrome.
+3. Check both possibilities: is `s[left+1..right]` a palindrome, or is `s[left..right-1]` a palindrome?
+4. Return `true` if either sub-range check succeeds.
+5. If the two pointers cross without ever mismatching, `s` is already a palindrome, so return `true` directly.
 
 **Time Complexity:** O(n) — the two-pointer scan runs once, and at most one extra O(n) palindrome check is triggered on the first mismatch.
 **Space Complexity:** O(1) — only pointer indices are used, no extra data structures.

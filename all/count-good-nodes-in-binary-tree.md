@@ -88,10 +88,13 @@ DFS carrying the max value seen along the path
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.1 Binary Tree Traversal & Recursion**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a top-down DFS that carries the maximum value seen so far on the path**:
+
+1. Recurse with the current node and `max_so_far`, the largest value encountered from the root down to (but not including) this node.
+2. A node counts as good if `node.val >= max_so_far`.
+3. Update `max_so_far` to `max(max_so_far, node.val)` before descending into the children, so each child sees the correct running maximum for its own path.
+4. Recurse into the left and right subtrees, summing their good-node counts along with the current node's contribution.
+5. Kick off the recursion at the root with `max_so_far` initialized to `root.val`.
 
 **Time Complexity:** O(n) — every node is visited exactly once.
 **Space Complexity:** O(h) — recursion stack proportional to the tree height.

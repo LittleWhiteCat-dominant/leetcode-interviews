@@ -63,10 +63,13 @@ BFS in-degree table, or DFS three-color cycle detection
 
 ## Approach
 
-1. Identify the core pattern for this category: **9.2 Topological Sort**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **Kahn's algorithm (BFS topological sort) to detect cycles via in-degrees**:
+
+1. Build an adjacency list `graph[prereq] -> [courses that depend on it]` and an `indegree` array counting prerequisites per course.
+2. Seed a queue with every course whose `indegree` is 0, since those can be taken immediately.
+3. Repeatedly pop a course, count it as visited, and decrement the indegree of each course it unlocks; enqueue any neighbor whose indegree drops to 0.
+4. Courses stuck in a cycle never reach indegree 0, so they're never enqueued or counted.
+5. Return `True` only if `visited == numCourses`, meaning every course was eventually processed with no cycle blocking it.
 
 **Time Complexity:** O(V + E) — build the adjacency list once and process every vertex and edge exactly once during Kahn's BFS.
 **Space Complexity:** O(V + E) — adjacency list, in-degree array, and the BFS queue.

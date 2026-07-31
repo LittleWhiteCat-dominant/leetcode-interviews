@@ -75,10 +75,13 @@ Determine the number of connected components; answer = components - 1
 
 ## Approach
 
-1. Identify the core pattern for this category: **10. Union Find**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **Union-Find (Disjoint Set Union)**:
+
+1. First check feasibility: connecting `n` computers into one network requires at least `n - 1` cables, so if `len(connections) < n - 1`, immediately return `-1`.
+2. Initialize a `UnionFind` structure over the `n` computers, each starting as its own component.
+3. For every existing cable `(a, b)`, call `union(a, b)`, merging components and decrementing the component count whenever `a` and `b` were previously in different components (redundant cables between already-connected computers simply do nothing).
+4. Each "extra" cable (one connecting two computers already in the same component) can be freed and used to link two separate components instead, so the number of moves needed is exactly `count - 1`, the number of merges still required to unify everything into a single component.
+5. Return `uf.count - 1`.
 
 **Time Complexity:** O(n + E) — with path compression, each union/find is close to O(1) amortized, over `n` computers and `E` connections.
 **Space Complexity:** O(n) — for the parent array.

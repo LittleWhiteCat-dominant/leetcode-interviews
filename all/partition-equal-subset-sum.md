@@ -47,10 +47,13 @@ Given an integer array `nums`, return `true` *if you can partition the array int
 
 ## Approach
 
-1. Identify the core pattern for this category: **12.1 1D DP**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved as a **0/1 knapsack "subset sum" DP**:
+
+1. If the total sum is odd, it's impossible to split into two equal-sum subsets, so return `false` immediately.
+2. Otherwise the problem reduces to: can some subset of `nums` sum to exactly `target = total // 2`?
+3. Maintain a boolean DP array `dp` of size `target + 1` where `dp[s]` means "sum `s` is achievable using numbers processed so far"; initialize `dp[0] = True` since an empty subset sums to 0.
+4. For each number, iterate `s` from `target` down to `num` (descending, so each number is used at most once) and set `dp[s] = True` whenever `dp[s - num]` is already `True`.
+5. After processing all numbers, `dp[target]` tells whether a subset summing to `target` exists.
 
 **Time Complexity:** O(n \* target) — where `target` is half the total sum, one pass per number over the DP array.
 **Space Complexity:** O(target) — a 1D boolean DP array of reachable sums.

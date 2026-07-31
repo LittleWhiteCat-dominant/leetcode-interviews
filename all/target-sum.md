@@ -64,10 +64,14 @@ Reformulate as a 0/1 knapsack subset-sum problem
 
 ## Approach
 
-1. Identify the core pattern for this category: **12.2 2D DP**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved by reframing symbol assignment as **a subset-sum 0/1 knapsack**:
+
+1. Split `nums` into a "positive" subset `P` and "negative" subset `N` such that `sum(P) - sum(N) == target`.
+2. Since `sum(P) + sum(N) == total`, this means `sum(P) == (total + target) / 2`; if that value is negative, not an integer, or exceeds `total`, return 0 immediately.
+3. The problem now reduces to: how many subsets of `nums` sum to `subset_sum = (total + target) // 2`.
+4. Run a 1D knapsack DP: `dp[s]` counts the number of ways to form sum `s`, initialized with `dp[0] = 1`.
+5. For each number, iterate `s` from `subset_sum` down to that number and add `dp[s - num]` into `dp[s]` (reverse iteration keeps each number used at most once).
+6. Return `dp[subset_sum]`.
 
 **Time Complexity:** O(n * sum(nums)) — the DP fills a table of size `subset_sum + 1` once for each of the `n` numbers.
 **Space Complexity:** O(sum(nums)) — a 1D DP array sized to the target subset sum.

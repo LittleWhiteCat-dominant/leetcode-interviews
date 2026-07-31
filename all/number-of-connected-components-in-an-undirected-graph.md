@@ -15,10 +15,12 @@ Union Find/DFS to count connected components
 
 ## Approach
 
-1. Identify the core pattern for this category: **9.2 Topological Sort**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **Union-Find (Disjoint Set Union)**:
+
+1. Initialize a `UnionFind` structure with `n` nodes, each its own parent, and a `count` of `n` components.
+2. `find(x)` walks up the parent chain with path halving (`parent[x] = parent[parent[x]]`) to keep future lookups fast.
+3. For each edge `(a, b)`, call `union(a, b)`: find both roots, and if they differ, merge them by pointing one root at the other and decrementing `count`, since two components just became one.
+4. After processing every edge, `count` holds exactly the number of connected components, since components only merge and never split.
 
 **Time Complexity:** O(n + E) — with path compression, each union/find is close to O(1) amortized, over `n` nodes and `E` edges.
 **Space Complexity:** O(n) — for the parent array.

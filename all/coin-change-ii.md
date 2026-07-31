@@ -72,10 +72,13 @@ Unbounded knapsack counting the number of combinations
 
 ## Approach
 
-1. Identify the core pattern for this category: **12.2 2D DP**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **unbounded-knapsack DP that counts combinations rather than minimizing coins**:
+
+1. Define `dp[i]` as the number of ways to make up amount `i` using the coins considered so far; initialize `dp[0] = 1` (one way to make `0`: use nothing) and all other entries to `0`.
+2. Process coins one denomination at a time in the outer loop — this is the key to counting *combinations* (order-independent) instead of *permutations*.
+3. For each coin, iterate `i` from `coin` up to `amount` in increasing order, updating `dp[i] += dp[i - coin]`.
+4. Because the coin loop is outermost, each way of using a given coin is only counted once regardless of order, avoiding permutation duplicates.
+5. After processing all coins, `dp[amount]` holds the total number of distinct combinations.
 
 **Time Complexity:** O(amount * len(coins)) — for each coin, we update every amount from that coin's value up to the target.
 **Space Complexity:** O(amount) — for the 1D `dp` array.

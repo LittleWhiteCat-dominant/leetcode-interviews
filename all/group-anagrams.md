@@ -59,10 +59,12 @@ Sorted string / character count as the hash key
 
 ## Approach
 
-1. Identify the core pattern for this category: **2. String**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a hash map keyed by each string's letter-frequency signature**:
+
+1. For each string, compute a 26-length count array of how many times each lowercase letter appears.
+2. Convert that count array to an immutable tuple so it can be used as a dictionary key (two strings are anagrams exactly when their tuples match).
+3. Append each string to the list stored under its signature tuple in a `defaultdict`.
+4. Return all the grouped lists from the map's values.
 
 **Time Complexity:** O(n * k) — where `n` is the number of strings and `k` is the max string length; using a 26-count tuple as the key avoids the O(k log k) sort per string.
 **Space Complexity:** O(n * k) — to store all strings grouped in the hash map.

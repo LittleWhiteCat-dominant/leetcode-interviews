@@ -15,10 +15,13 @@ DFS + prefix sum/hash map
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.1 Binary Tree Traversal & Recursion**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **post-order DFS that reports whether each subtree is univalue**:
+
+1. Define a helper `is_unival(node)` that returns whether the subtree rooted at `node` has all equal values, using an empty subtree (`None`) as trivially univalue.
+2. Recurse into the left and right children first (post-order), since a subtree can only be univalue if both of its children's subtrees are.
+3. If either child recursion returns `False`, or a present child's value differs from the current node's value, the current subtree is not univalue.
+4. Otherwise, increment the global `count` and return `True` for this subtree.
+5. Run the helper from `root` and return the accumulated `count`.
 
 **Time Complexity:** O(n) — every node is visited exactly once during the post-order pass.
 **Space Complexity:** O(h) — recursion stack proportional to the tree height.

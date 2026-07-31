@@ -60,10 +60,13 @@ Greedy monotonic stack for the smallest lexicographic result
 
 ## Approach
 
-1. Identify the core pattern for this category: **4.2 Monotonic Stack**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with a **greedy monotonic (increasing) stack**, since removing a digit is most beneficial when it's larger than the digit right after it:
+
+1. Scan `num` left to right, building the result digit by digit on a stack.
+2. Before pushing the current digit, pop any digits off the top of the stack that are strictly greater than it, as long as there are still removals left (`k > 0`) — a bigger digit followed by a smaller one should always be removed to shrink the number's magnitude.
+3. Push the current digit after the popping loop, keeping the stack non-decreasing from bottom to top whenever possible.
+4. If any removals (`k`) remain after the full scan (meaning `num` was entirely non-decreasing), remove the last `k` digits from the stack, since trailing large digits contribute the most to the number's value.
+5. Join the stack into a string and strip leading zeros (e.g. `"0200"` → `"200"`), returning `"0"` if the result is empty.
 
 **Time Complexity:** O(n) — each digit is pushed and popped from the stack at most once.
 **Space Complexity:** O(n) — for the monotonic stack holding the result digits.

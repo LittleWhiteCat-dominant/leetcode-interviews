@@ -50,10 +50,13 @@ Monotonic stack + hash map lookup
 
 ## Approach
 
-1. Identify the core pattern for this category: **4.2 Monotonic Stack**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a monotonic decreasing stack traversed over two virtual passes to simulate circularity**:
+
+1. Iterate `i` from `0` to `2n - 1`, but always work with the wrapped index `idx = i % n`, so the array effectively loops back on itself once.
+2. Maintain a stack of indices whose next greater element hasn't been found yet, kept in decreasing order of value from bottom to top.
+3. For each `idx`, pop every stack index whose value is smaller than `nums[idx]`, and record `nums[idx]` as that popped index's answer.
+4. Only push `idx` onto the stack during the first pass (`i < n`), since the second pass exists purely to let earlier elements find a wraparound successor, not to be searched themselves again.
+5. Indices never popped by the end keep their default answer of `-1`, meaning no greater element exists even after wrapping around.
 
 **Time Complexity:** O(n) — each index is pushed and popped from the monotonic stack at most once across the two virtual passes.
 **Space Complexity:** O(n) — for the stack and the result array.

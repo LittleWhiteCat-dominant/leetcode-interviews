@@ -61,10 +61,13 @@ Flatten to 1D binary search or start from a corner with two pointers
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.4 Binary Search**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **binary search over the matrix treated as a flattened sorted array**:
+
+1. Because each row is sorted and each row starts after the previous row ends, the entire matrix is equivalent to one sorted 1D array of length `rows * cols`.
+2. Run standard binary search over the virtual index range `[0, rows * cols - 1]`.
+3. For a given midpoint index `mid`, map it back to 2D coordinates with `mid // cols` and `mid % cols` to read the corresponding value.
+4. Compare that value to `target` and shrink the search range (`lo`/`hi`) exactly as in normal binary search.
+5. Return `True` on a match, or `False` once the range is exhausted.
 
 **Time Complexity:** O(log(m * n)) — binary search over the matrix treated as a flattened sorted array.
 **Space Complexity:** O(1) — no extra data structures, just index math.

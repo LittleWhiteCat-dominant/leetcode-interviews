@@ -59,10 +59,13 @@ dp[i] = LIS ending at i, or a binary-search optimization
 
 ## Approach
 
-1. Identify the core pattern for this category: **12.1 1D DP**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **the patience-sorting / binary-search optimization achieving O(n log n)**:
+
+1. Maintain a `tails` array where `tails[k]` is the smallest possible tail value of any increasing subsequence of length `k + 1`.
+2. For each number, use binary search (`bisect_left`) to find its insertion position in `tails`.
+3. If the number is larger than every element in `tails`, append it, extending the longest subsequence found so far by one.
+4. Otherwise, overwrite `tails[idx]` with the number, since it gives a smaller possible tail for subsequences of that length (improving future extensibility) without changing `tails`' length.
+5. The final length of `tails` is the length of the longest increasing subsequence.
 
 **Time Complexity:** O(n log n) — each element performs one binary search over the `tails` array.
 **Space Complexity:** O(n) — for the `tails` array tracking the smallest tail of increasing subsequences of each length.

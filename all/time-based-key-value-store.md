@@ -68,10 +68,13 @@ Timestamps stored in order, binary search + design
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.4 Binary Search**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **per-key sorted timestamp lists searched via binary search**:
+
+1. For each key, maintain two parallel lists: `timestamps` (kept in increasing order, since `set` calls arrive with strictly increasing timestamps) and `values`.
+2. On `set`, simply append the new timestamp and value to that key's lists in O(1).
+3. On `get`, if the key has never been set, return `""`.
+4. Otherwise use `bisect_right` on the key's timestamp list to find the insertion point for the query timestamp, then step back one index to get the largest stored timestamp that is `<=` the query.
+5. If that index is valid (`>= 0`), return the corresponding value; otherwise return `""` since no stored timestamp qualifies.
 
 **Time Complexity:** `set` is O(1) amortized; `get` is O(log m) where `m` is the number of timestamps stored for that key, via binary search.
 **Space Complexity:** O(N) — where `N` is the total number of `set` calls made across all keys.

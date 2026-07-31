@@ -15,10 +15,12 @@ Union Find/DFS to check the graph is acyclic and connected
 
 ## Approach
 
-1. Identify the core pattern for this category: **9.2 Topological Sort**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **Union-Find to check acyclicity and connectivity simultaneously**:
+
+1. A valid tree on `n` nodes must have exactly `n - 1` edges; if the edge count differs, return `False` immediately.
+2. Initialize a disjoint-set (Union-Find) structure with `n` singleton components, using path compression and union by rank.
+3. For each edge `(a, b)`, attempt to union their components; if `a` and `b` are already in the same component, this edge would create a cycle, so return `False`.
+4. If every edge unions successfully, exactly `n - 1` edges have merged `n` components into one connected, acyclic graph, so return `True`.
 
 **Time Complexity:** O(n * alpha(n)) — near-constant amortized time per union/find operation with path compression and union by rank, for `n` nodes and `n - 1` edges.
 **Space Complexity:** O(n) — for the parent and rank arrays.

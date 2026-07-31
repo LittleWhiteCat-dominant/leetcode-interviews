@@ -58,10 +58,13 @@ As shown below, there are 5 ways you can generate "bag" from s.
 
 ## Approach
 
-1. Identify the core pattern for this category: **12.2 2D DP**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **2D DP counting distinct subsequence matches, compressed into a 1D rolling row**:
+
+1. Conceptually, `dp[i][j]` counts the ways to form `t[:j]` as a subsequence of `s[:i]`; here it's compressed into a single row `dp[j]` that gets updated in place as `i` increases.
+2. Initialize `dp[0] = 1` (the empty target is always formed exactly one way, by choosing nothing) and all other `dp[j] = 0`.
+3. For each character `s[i-1]`, iterate `j` from `n` down to `1` (descending, so `dp[j-1]` still holds the previous row's value when read).
+4. If `s[i-1] == t[j-1]`, add `dp[j-1]` into `dp[j]`, since that matching character can either be used to extend a match ending at `t[j-1]` or be skipped, and skipping is already captured by the current `dp[j]`.
+5. After processing all of `s`, `dp[n]` holds the total number of distinct subsequences of `s` equal to `t`.
 
 **Time Complexity:** O(m * n) — where m = len(s), n = len(t), one DP transition per cell.
 **Space Complexity:** O(n) — a single 1D DP row, updated in place from right to left.

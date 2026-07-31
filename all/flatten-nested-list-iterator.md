@@ -72,10 +72,12 @@ Stack + lazy expansion
 
 ## Approach
 
-1. Identify the core pattern for this category: **4.1 Basic Stack Applications**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a stack holding the nested list in reverse order, expanded lazily**:
+
+1. Initialize a stack with the top-level `nestedList` reversed, so the first element to process ends up on top.
+2. Define a helper that "flattens the top": while the top of the stack is a nested list (not a plain integer), pop it and push its children back in reversed order.
+3. Call this helper before every `hasNext()`/`next()` so the top of the stack is always guaranteed to be an integer if one remains.
+4. `hasNext()` then simply checks whether the stack is non-empty, and `next()` pops and returns the integer on top.
 
 **Time Complexity:** O(n) total across all `next()`/`hasNext()` calls — each integer and list is pushed/popped from the stack exactly once, where `n` is the total number of integers and lists.
 **Space Complexity:** O(n) — the stack holds nested list iterators in the worst case (e.g. deeply nested lists).

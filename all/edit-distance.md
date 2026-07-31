@@ -66,10 +66,14 @@ Three transitions: insert/delete/replace
 
 ## Approach
 
-1. Identify the core pattern for this category: **12.2 2D DP**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **2D edit-distance DP, compressed into a 1D rolling row**:
+
+1. Conceptually, `dp[i][j]` is the edit distance between `word1[:i]` and `word2[:j]`; here it's compressed into a single row updated in place, with `dp[j]` initialized to `j` (converting the empty prefix of `word1` to `word2[:j]` takes `j` insertions).
+2. For each row `i`, save `dp[0]` into `prev` (representing the diagonal `dp[i-1][j-1]`) before overwriting `dp[0] = i`, since converting `word1[:i]` to the empty string takes `i` deletions.
+3. For each `j`, save the current `dp[j]` into `temp` before overwriting it, since it will become next iteration's diagonal value.
+4. If `word1[i-1] == word2[j-1]`, no edit is needed for this pair, so `dp[j] = prev` (the diagonal, i.e. `dp[i-1][j-1]`).
+5. Otherwise, take the minimum of `prev` (replace), `dp[j]` (delete from `word1`, the value above before this row's update), and `dp[j-1]` (insert into `word1`), plus 1 for that one edit.
+6. Slide `prev = temp` for the next column, and return `dp[n]` after processing all rows.
 
 **Time Complexity:** O(m * n) — where m = len(word1), n = len(word2), one DP transition per cell.
 **Space Complexity:** O(n) — a single 1D DP row, updated in place with a rolling `prev` value for the diagonal term.

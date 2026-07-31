@@ -56,10 +56,14 @@ Three-pointer Dutch National Flag problem
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.1 Two Pointers**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **the Dutch National Flag three-pointer partition**:
+
+1. Maintain three pointers: `low` (boundary for the next `0`), `mid` (current element being examined), and `high` (boundary for the next `2`).
+2. While `mid <= high`, inspect `nums[mid]`.
+3. If it's `0`, swap it with `nums[low]` and advance both `low` and `mid` (the swapped-in value at `mid` is already known to be `1` or has just been placed correctly).
+4. If it's `1`, it's already in the correct region, so just advance `mid`.
+5. If it's `2`, swap it with `nums[high]` and decrement `high`, but do not advance `mid` yet since the newly swapped-in value still needs to be classified.
+6. The array ends up partitioned into `0`s, then `1`s, then `2`s once `mid` passes `high`.
 
 **Time Complexity:** O(n) — a single pass with the Dutch National Flag three-pointer technique.
 **Space Complexity:** O(1) — sorted in-place with swaps only.

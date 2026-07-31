@@ -68,10 +68,14 @@ Dijkstra variant, or binary search + BFS
 
 ## Approach
 
-1. Identify the core pattern for this category: **9.3 Advanced Graph Algorithms (Shortest Path / MST)**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **Dijkstra's algorithm, minimizing the maximum edge weight along a path instead of the sum**:
+
+1. Treat each cell as a graph node, with an edge to each of its up/down/left/right neighbors weighted by the absolute height difference.
+2. Define a cell's "effort" as the maximum edge weight seen along the best path from `(0, 0)` to that cell, and track it in a 2D `effort` grid initialized to infinity except `effort[0][0] = 0`.
+3. Use a min-heap keyed by effort, popping the cell with the smallest current effort first (standard Dijkstra ordering).
+4. For each neighbor, compute `new_effort = max(cur_effort, abs(height difference))` — the path's effort is bottlenecked by its worst step, not the sum of steps.
+5. If `new_effort` improves the neighbor's recorded effort, update it and push the neighbor onto the heap.
+6. Stop as soon as the bottom-right cell is popped from the heap, since Dijkstra guarantees that's its minimum effort.
 
 **Time Complexity:** O(m \* n \* log(m \* n)) — Dijkstra with a binary heap over all cells.
 **Space Complexity:** O(m \* n) — for the effort grid and the priority queue.

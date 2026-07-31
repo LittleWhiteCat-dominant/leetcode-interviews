@@ -54,10 +54,13 @@ Interval DP; think backward about the last balloon burst
 
 ## Approach
 
-1. Identify the core pattern for this category: **12.2 2D DP**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **interval DP that thinks about which balloon is burst *last* in each range**:
+
+1. Pad `nums` with a virtual `1` on both ends so boundary multiplications never go out of range; call this padded array `balloons`.
+2. Define `dp[left][right]` as the maximum coins obtainable from bursting all balloons strictly between indices `left` and `right` (both boundaries left intact until the very end).
+3. Iterate over increasing interval `length`, and for each `left`/`right = left + length` pair, try every `k` strictly between them as the *last* balloon burst in that interval.
+4. Bursting `k` last means its neighbors at that point are still `balloons[left]` and `balloons[right]`, so the coins gained equal `balloons[left] * balloons[k] * balloons[right]`, added to the two already-solved sub-intervals `dp[left][k]` and `dp[k][right]`.
+5. Take the max over all choices of `k` to fill `dp[left][right]`; the final answer is `dp[0][n - 1]` for the fully padded array.
 
 **Time Complexity:** O(n^3) — three nested loops over the interval length, left boundary, and the last balloon burst in that interval.
 **Space Complexity:** O(n^2) — for the `dp` table over all sub-intervals.

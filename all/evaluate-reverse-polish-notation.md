@@ -85,10 +85,13 @@ Stack holding operands
 
 ## Approach
 
-1. Identify the core pattern for this category: **4.1 Basic Stack Applications**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a stack of operands, evaluating operators as soon as they're seen**:
+
+1. Walk through the tokens left to right, since RPN guarantees every operator appears right after its two operands are ready.
+2. If a token is a number, push it onto the stack.
+3. If a token is an operator, pop the top two values as `b` (rightmost operand) then `a` (leftmost operand), preserving correct order for non-commutative operations like subtraction and division.
+4. Apply the operator to `a` and `b` (using `int(a / b)` for division, which truncates toward zero as required), and push the result back onto the stack.
+5. After processing every token, the single remaining value on the stack is the final answer.
 
 **Time Complexity:** O(n) — each token is processed once with O(1) stack operations.
 **Space Complexity:** O(n) — the stack can hold up to n operands in the worst case.

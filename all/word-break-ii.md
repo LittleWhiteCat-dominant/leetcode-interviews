@@ -69,10 +69,14 @@ String DP; a Trie can speed up lookups
 
 ## Approach
 
-1. Identify the core pattern for this category: **2. String**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **memoized backtracking that builds sentences from each suffix**:
+
+1. Define `backtrack(start)` to return the list of all ways to split `s[start:]` into valid dictionary words (each way represented as a list of words).
+2. Base case: if `start == len(s)`, the empty split `[[]]` is the single valid way to decompose "nothing left".
+3. Otherwise, try every possible next word `s[start:end]` for `end` from `start + 1` to `len(s)`; if it's in the dictionary, recursively solve for the remainder via `backtrack(end)`.
+4. For every decomposition of the remainder, prepend the current word to form a full decomposition of `s[start:]`, and collect all of these.
+5. Memoize results by `start` index so overlapping suffixes (reached via different earlier splits) are only computed once.
+6. Join each word list with spaces to produce the final list of sentences from `backtrack(0)`.
 
 **Time Complexity:** O(n * 2^n) worst case — the memoized DP explores O(n^2) substring states, but the number of valid sentences to build and join can itself be exponential in `n` (bounded here since `s.length <= 20`).
 **Space Complexity:** O(n * 2^n) — the memo table stores every valid decomposition suffix, dominated by the exponentially many stored sentences; recursion depth is O(n).

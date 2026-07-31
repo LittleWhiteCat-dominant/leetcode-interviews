@@ -84,10 +84,13 @@ Fast/slow pointers overwriting in place
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.1 Two Pointers**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **fast/slow pointers overwriting unwanted values in place**:
+
+1. `slow` tracks the next position to write a kept (non-`val`) element; `fast` scans through every element of `nums`.
+2. For each `fast` index, if `nums[fast] != val`, the element should be kept: copy it to `nums[slow]` and advance `slow`.
+3. If `nums[fast] == val`, simply skip it by not advancing `slow` — the element gets overwritten later or ignored.
+4. Since `slow` only ever moves forward at or behind `fast`, writing `nums[fast]` into `nums[slow]` is always safe (never overwrites unprocessed data).
+5. After `fast` finishes scanning the whole array, `slow` equals the count of elements not equal to `val`, and `nums[0..slow)` holds them in their relative order.
 
 **Time Complexity:** O(n) — a single pass with the fast pointer.
 **Space Complexity:** O(1) — overwrites `nums` in place.

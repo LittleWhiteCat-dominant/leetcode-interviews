@@ -73,10 +73,14 @@ BFS for the shortest transformation path length
 
 ## Approach
 
-1. Identify the core pattern for this category: **9.1 DFS / BFS Fundamentals**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **BFS over an implicit graph where edges connect words one letter apart**:
+
+1. Put all words from `wordList` into a set for O(1) membership checks, and immediately return 0 if `endWord` isn't present.
+2. Start a BFS from `beginWord` with a step count of 1, removing `beginWord` from the set so it isn't revisited.
+3. At each step, dequeue a word; if it equals `endWord`, its recorded step count is the answer.
+4. Otherwise, generate every possible one-letter variation of the current word (each position, all 26 letters).
+5. For each variation that exists in the remaining word set, remove it from the set (marking it visited) and enqueue it with `steps + 1`.
+6. Because BFS explores layer by layer, the first time `endWord` is dequeued it is guaranteed to be via the shortest transformation sequence; if the queue empties first, return 0.
 
 **Time Complexity:** O(N * L^2) — for each of the `N` words in the word list, BFS tries `L` positions times 26 letter substitutions, each costing O(L) to build the candidate string.
 **Space Complexity:** O(N * L) — the word set and BFS queue store up to all words of length `L`.

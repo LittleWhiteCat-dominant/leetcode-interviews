@@ -82,10 +82,13 @@ Since s3 can be obtained by interleaving s1 and s2, we return true.
 
 ## Approach
 
-1. Identify the core pattern for this category: **12.2 2D DP**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **2D dynamic programming compressed into a rolling 1D array**:
+
+1. First check the necessary length condition: if `len(s1) + len(s2) != len(s3)`, return `False` immediately.
+2. Define `dp[j]` as whether `s3`'s prefix of the current length can be formed by interleaving `s1`'s prefix up to row `i` with `s2`'s prefix up to column `j`.
+3. Initialize row 0 using only `s2` against `s3`, since no characters from `s1` are used yet.
+4. For each subsequent row `i` (one character of `s1` consumed), update `dp[0]` using only `s1`, then for each `j`, combine two possibilities: `from_s1` (extend using `s1[i-1]` if `dp[j]` was true and it matches `s3[i+j-1]`) or `from_s2` (extend using `s2[j-1]` if `dp[j-1]` was true and it matches `s3[i+j-1]`).
+5. The final answer is `dp[n]` after processing all rows.
 
 **Time Complexity:** O(m * n) — where `m = len(s1)` and `n = len(s2)`; every DP cell is computed once.
 **Space Complexity:** O(n) — using a rolling 1D DP row instead of a full 2D table.

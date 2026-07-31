@@ -79,10 +79,13 @@ Recursive/iterative traversal using BST properties
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.2 Binary Search Tree (BST)**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **BST-guided recursive search followed by successor replacement**:
+
+1. Use the BST property to navigate to the target: recurse left if `key < root.val`, recurse right if `key > root.val`, reassigning `root.left`/`root.right` to the recursive result so the tree gets patched up on the way back.
+2. Once `root.val == key`, handle the easy cases first: if the node has no left child, its right child replaces it; if it has no right child, its left child replaces it.
+3. If the node has both children, find its in-order successor: the leftmost node in its right subtree (the smallest value greater than `root.val`).
+4. Copy the successor's value into `root.val`, then recursively delete that successor value from the right subtree, since a value can't be duplicated in the tree.
+5. Return `root` (unchanged or updated) at every level so the tree stays correctly linked as the recursion unwinds.
 
 **Time Complexity:** O(h) — where h is the tree height, since we descend once to find the node and once more (in the right subtree) to find its successor.
 **Space Complexity:** O(h) — recursion stack depth.

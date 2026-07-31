@@ -49,10 +49,13 @@ Pre-order traversal + null-node placeholders
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.1 Binary Tree Traversal & Recursion**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **pre-order DFS serialization using explicit null markers**:
+
+1. To serialize, run a pre-order DFS: append the current node's value to a list, then recurse into the left child, then the right child.
+2. When a recursive call hits a `None` node, append a sentinel marker (`"N"`) instead, so the shape of the tree is fully encoded, not just its values.
+3. Join the collected tokens into a single comma-separated string.
+4. To deserialize, split the string back into tokens and consume them one at a time via an iterator, rebuilding the tree with the mirror-image recursive procedure: read a token, and if it's the null marker return `None`, otherwise create a node and recursively build its left then right children from the same iterator.
+5. Because both directions use the same pre-order traversal order, the null markers unambiguously delimit where each subtree ends.
 
 **Time Complexity:** O(n) for both `serialize` and `deserialize` — each node is visited exactly once.
 **Space Complexity:** O(n) — the serialized string/list and the recursion stack both scale with the number of nodes.

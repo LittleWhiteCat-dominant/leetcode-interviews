@@ -15,10 +15,12 @@ DFS/stack accumulating depth-weighted sums
 
 ## Approach
 
-1. Identify the core pattern for this category: **4.1 Basic Stack Applications**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **recursive DFS that tracks nesting depth**:
+
+1. Write a helper `dfs(items, depth)` that processes a list of `NestedInteger` elements at a given nesting `depth`, starting at `depth = 1` for the top level.
+2. For each element, if it's a plain integer, add `value * depth` to the running total, since deeper integers are weighted more heavily.
+3. If it's a nested list instead, recurse into it with `depth + 1` and add the returned sum.
+4. Sum the contributions of all elements at the current level and return the total up the recursion, so the top-level call yields the full depth-weighted sum.
 
 **Time Complexity:** O(n) — every integer and every nested list is visited exactly once, where `n` is the total number of elements across all nesting levels.
 **Space Complexity:** O(d) — recursion depth is bounded by the maximum nesting depth `d`.

@@ -50,10 +50,11 @@ Transpose then reverse each row
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.6 Matrix**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **transpose followed by a horizontal flip**:
+
+1. Transpose the matrix in place by swapping `matrix[i][j]` with `matrix[j][i]` for every pair with `j > i`.
+2. After transposing, rows and columns are swapped, so a 90-degree clockwise rotation is completed by reversing each row.
+3. Both steps operate directly on the input matrix, so no auxiliary matrix is ever allocated.
 
 **Time Complexity:** O(n^2) — every cell is visited a constant number of times.
 **Space Complexity:** O(1) — rotation is done in-place.

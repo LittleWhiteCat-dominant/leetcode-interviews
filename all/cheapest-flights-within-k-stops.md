@@ -87,10 +87,13 @@ Bellman-Ford, or a layer-limited BFS
 
 ## Approach
 
-1. Identify the core pattern for this category: **9.3 Advanced Graph Algorithms (Shortest Path / MST)**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a Bellman-Ford relaxation capped at `k + 1` rounds**, since at most `k` stops means at most `k + 1` edges used:
+
+1. Initialize a `costs` array with `costs[src] = 0` and every other city at infinity.
+2. Repeat the relaxation exactly `k + 1` times (one per allowed edge in the path, including the final leg to `dst`).
+3. In each round, compute the update into a fresh `updated_costs` copy (not in place), so a city updated in this round doesn't incorrectly feed into another update within the same round — this enforces the "at most one more edge per round" constraint.
+4. For every edge `(u, v, price)`, if `u` is reachable and going through it improves `v`'s cost, update `updated_costs[v]`.
+5. After all rounds, `costs[dst]` holds the cheapest reachable price, or `-1` if it's still infinity.
 
 **Time Complexity:** O(k * E) — Bellman-Ford relaxes all E edges over at most k + 1 rounds.
 **Space Complexity:** O(n) — for the cost arrays, where n is the number of cities.

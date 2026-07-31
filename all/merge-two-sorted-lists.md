@@ -61,10 +61,12 @@ Two pointers + dummy head node
 
 ## Approach
 
-1. Identify the core pattern for this category: **3. Linked List**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a dummy-head merge using two pointers**:
+
+1. Create a dummy node to serve as an anchor before the merged list, and a `tail` pointer starting at the dummy.
+2. While both `list1` and `list2` still have nodes, compare their current values and splice the smaller node onto `tail.next`, then advance that list's pointer and `tail`.
+3. Once one list is exhausted, attach the remainder of the other list directly to `tail.next`, since it is already sorted.
+4. Return `dummy.next` as the head of the merged list.
 
 **Time Complexity:** O(m + n) — each node from both lists is visited exactly once.
 **Space Complexity:** O(1) extra — nodes are relinked in place; only a dummy head and pointers are allocated.

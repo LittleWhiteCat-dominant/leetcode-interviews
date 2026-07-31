@@ -65,10 +65,14 @@ Trie + backtracking DFS on the matrix
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.3 Trie (Prefix Tree)**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a Trie of all target words combined with DFS backtracking on the board**:
+
+1. Build a Trie from all words in `words`, marking terminal nodes with the complete word they represent.
+2. Start a DFS/backtracking search from every cell on the board, walking the Trie alongside the board traversal so a branch is only explored while it still matches a valid prefix.
+3. At each cell, if the current board character isn't among the Trie node's children, prune this branch immediately (no word can start this way).
+4. If the child node marks the end of a word, record that word in the results and clear its `word` marker to avoid duplicate matches.
+5. Temporarily mark the current cell as visited (e.g. overwrite it with `'#'`), recurse into the four neighboring cells, then restore the cell afterward (standard backtracking).
+6. As an optimization, prune Trie leaves with no remaining children after a word is found, so future DFS calls stop exploring dead-end branches sooner.
 
 **Time Complexity:** O(m * n * 4 * 3^(L-1)) — DFS/backtracking from each of the `m * n` cells, with the Trie pruning branches that share no common prefix (`L` is the max word length).
 **Space Complexity:** O(sum of word lengths) — for the Trie, plus O(L) recursion depth per DFS call.

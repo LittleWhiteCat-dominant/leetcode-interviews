@@ -54,10 +54,13 @@ BFS + queue
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.1 Binary Tree Traversal & Recursion**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **breadth-first search, processing one full level at a time**:
+
+1. Return an empty list immediately if `root` is `None`.
+2. Initialize a queue with just the root node.
+3. While the queue is non-empty, snapshot its current length — that count is exactly the number of nodes in this level.
+4. Pop that many nodes, record their values into a `level` list, and enqueue any of their children.
+5. Append the completed `level` to the result, and repeat until the queue is empty.
 
 **Time Complexity:** O(n) — every node is enqueued and dequeued exactly once.
 **Space Complexity:** O(n) — for the queue and the output, up to O(n) nodes at the widest level.

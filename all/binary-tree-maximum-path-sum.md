@@ -51,10 +51,13 @@ Post-order recursion returning single-side max, global variable tracks the answe
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.1 Binary Tree Traversal & Recursion**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **post-order DFS that returns the best single-side path while a nonlocal variable tracks the best "through-node" path**:
+
+1. Define `single_side_max(node)`, which returns the best path sum extending downward from `node` through at most one child.
+2. Recurse into the left and right children first, clamping each result to `0` with `max(..., 0)` so negative subtree paths are simply excluded rather than dragging the sum down.
+3. At each node, compute the "through this node" path sum as `node.val + left_gain + right_gain` (using both children), and update the global `best` if it's larger.
+4. Return to the caller only `node.val + max(left_gain, right_gain)`, since a path passing up through the parent can only continue on one side.
+5. After the recursion completes, `best` holds the maximum path sum over the whole tree.
 
 **Time Complexity:** O(n) — each node is visited exactly once in the post-order recursion.
 **Space Complexity:** O(h) — recursion stack, where h is the tree height.

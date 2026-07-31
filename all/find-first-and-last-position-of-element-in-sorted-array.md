@@ -61,10 +61,12 @@ Two binary searches for left/right boundaries
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.4 Binary Search**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **two targeted binary searches, one for each boundary**:
+
+1. Run a binary search that keeps narrowing toward the left whenever the middle element equals the target, recording the leftmost matching index found so far.
+2. If no match was found at all, the target is absent, so return `[-1, -1]` immediately.
+3. Otherwise, run a second binary search that instead narrows toward the right on a match, recording the rightmost matching index.
+4. Return `[left, right]` as the final answer.
 
 **Time Complexity:** O(log n) — two independent binary searches over the array.
 **Space Complexity:** O(1) — only a few pointer variables are used.

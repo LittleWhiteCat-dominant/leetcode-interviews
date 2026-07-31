@@ -81,10 +81,12 @@ Prefix sum + binary search to locate the interval
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.3 Prefix Sum**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **prefix sums plus binary search over the cumulative weight ranges**:
+
+1. In the constructor, build a prefix-sum array `prefix_sums` where `prefix_sums[i]` is the cumulative weight of `w[0..i]`; this partitions the range `[1, total]` into contiguous segments, one per index, each of length `w[i]`.
+2. To pick an index proportional to its weight, generate a uniformly random integer `target` in `[1, total]`.
+3. `target` falls inside exactly one index's segment; find that segment's index with `bisect_left` on `prefix_sums`, which locates the first prefix sum `>= target` in O(log n).
+4. Because each index's segment length equals its weight, larger weights occupy proportionally larger ranges of `target`, giving the correct `w[i] / sum(w)` selection probability.
 
 **Time Complexity:** O(n) for construction, O(log n) per `pickIndex` call via binary search.
 **Space Complexity:** O(n) — for the prefix sum array.

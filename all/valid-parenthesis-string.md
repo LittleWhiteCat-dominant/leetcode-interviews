@@ -65,10 +65,14 @@ Greedily maintain the possible range of open-bracket counts
 
 ## Approach
 
-1. Identify the core pattern for this category: **13. Greedy**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a greedy range-tracking scan over possible open-bracket counts**:
+
+1. Instead of trying every interpretation of `'*'`, track the range `[low, high]` of possible counts of unmatched open parentheses after processing each character.
+2. For `'('`, both `low` and `high` increase by 1 (it's always an open bracket).
+3. For `')'`, both `low` and `high` decrease by 1 (it's always a close bracket).
+4. For `'*'`, treat it optimistically as widening the range: `low` decreases by 1 (as if it were `')'`) and `high` increases by 1 (as if it were `'('`).
+5. If `high` ever drops below 0, too many close brackets are forced no matter how `'*'` is interpreted, so return `false` immediately; clamp `low` at 0 since it can't represent a negative count of real open brackets.
+6. After the scan, the string is valid if `low` can reach exactly 0, meaning `0` is a strictly feasible value in the final range.
 
 **Time Complexity:** O(n) — a single pass tracking the feasible range of open-bracket counts.
 **Space Complexity:** O(1) — only two running bounds (`low`, `high`) are kept.

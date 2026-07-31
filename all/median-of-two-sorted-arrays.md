@@ -61,10 +61,14 @@ Binary search for the k-th smallest element
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.4 Binary Search**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **binary search on the partition point of the smaller array, achieving O(log(min(m, n)))**:
+
+1. Ensure `nums1` is the smaller array (swap if needed) so binary search runs over the shorter length, bounding the complexity by `log(min(m, n))`.
+2. Binary search over `i`, the number of elements taken from `nums1` into the "left half"; the corresponding count from `nums2` is `j = total_left - i`, where `total_left = (m + n + 1) // 2`.
+3. For a given `i`, compute the four border values: `left1`/`right1` from `nums1` around index `i`, and `left2`/`right2` from `nums2` around index `j`, using `-inf`/`inf` sentinels when a partition falls at an array boundary.
+4. A valid partition is found when `left1 <= right2` and `left2 <= right1` — every element in the combined left half is `<=` every element in the combined right half.
+5. If `left1 > right2`, `i` is too large, so search the left half (`hi = i - 1`); if `left2 > right1`, `i` is too small, so search the right half (`lo = i + 1`).
+6. Once the valid partition is found, the median is `max(left1, left2)` for odd total length, or the average of `max(left1, left2)` and `min(right1, right2)` for even total length.
 
 **Time Complexity:** O(log(min(m, n))) — binary search is performed only over the smaller array.
 **Space Complexity:** O(1) — only a constant number of index and value variables are used.

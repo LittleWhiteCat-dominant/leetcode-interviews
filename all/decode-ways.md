@@ -86,10 +86,13 @@ String DP; careful with "0" and valid two-digit ranges
 
 ## Approach
 
-1. Identify the core pattern for this category: **12.1 1D DP**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **1D DP where `dp[i]` counts ways to decode the first `i` characters**:
+
+1. Immediately return 0 if the string is empty or starts with `'0'`, since no valid decoding can begin there.
+2. Track only the last two DP values, `prev2 = dp[i - 2]` and `prev1 = dp[i - 1]`, both initialized to 1 for the empty-prefix and single-first-character base cases.
+3. For each position `i`, add `prev1` to `current` if `s[i] != '0'`, since the single character `s[i]` alone forms a valid one-digit decode extending every way of decoding the prefix ending at `i - 1`.
+4. Also add `prev2` to `current` if the two-digit number `s[i-1:i+1]` is between 10 and 26, since that pair forms a valid two-digit decode extending every way of decoding the prefix ending at `i - 2`.
+5. Slide the window forward (`prev2, prev1 = prev1, current`) and return the final `prev1` as `dp[n]`.
 
 **Time Complexity:** O(n) — a single pass through the string with constant work per position.
 **Space Complexity:** O(1) — only the previous two DP states are kept.

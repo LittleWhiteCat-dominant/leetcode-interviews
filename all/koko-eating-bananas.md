@@ -63,10 +63,12 @@ Binary search on the answer + a feasibility check function
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.4 Binary Search**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **binary search on the answer (eating speed), guided by a feasibility check**:
+
+1. Observe that as eating speed `k` increases, the hours needed to finish all piles monotonically decreases, which enables binary search over `k`.
+2. Define a feasibility function `hours_needed(speed)` that sums `ceil(pile / speed)` over all piles, giving the total hours required at that speed.
+3. Binary search `k` over the range `[1, max(piles)]`: if `hours_needed(mid) <= h`, speed `mid` is fast enough, so try to go slower by setting `hi = mid`; otherwise it's too slow, so set `lo = mid + 1`.
+4. When `lo == hi`, that value is the minimum feasible eating speed.
 
 **Time Complexity:** O(n log m) — where `n` is the number of piles and `m` is the max pile size; binary search over the speed range, with an O(n) feasibility check each iteration.
 **Space Complexity:** O(1) — only a few scalar variables are used.

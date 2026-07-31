@@ -69,10 +69,14 @@ Backtracking DFS on the matrix, with pruning + visited marking
 
 ## Approach
 
-1. Identify the core pattern for this category: **9.1 DFS / BFS Fundamentals**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **backtracking DFS from every cell, marking visited cells in place**:
+
+1. Try starting the search from every cell `(r, c)` on the board, since the word can begin anywhere.
+2. Define `dfs(r, c, idx)`: if `idx` reaches `len(word)`, every character has matched, so return `true`.
+3. Return `false` if `(r, c)` is out of bounds or `board[r][c]` doesn't match `word[idx]`.
+4. Otherwise, temporarily overwrite `board[r][c]` (e.g. with `'#'`) to mark it visited for this path, preventing the same cell from being reused.
+5. Recurse into all four neighboring directions looking for `word[idx + 1]`; short-circuit as soon as any direction succeeds.
+6. Restore the original character at `(r, c)` before returning (backtrack), so other starting points can still use this cell.
 
 **Time Complexity:** O(m * n * 4^L) — worst case, DFS/backtracking may explore up to 4 directions at each of the `L` characters of `word`, starting from each of the `m * n` cells.
 **Space Complexity:** O(L) — recursion stack depth equals the length of `word` (the board is mutated in place instead of using a separate visited set).

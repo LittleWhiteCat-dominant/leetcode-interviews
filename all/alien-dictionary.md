@@ -15,10 +15,13 @@ Build a graph, then topologically sort to determine letter order
 
 ## Approach
 
-1. Identify the core pattern for this category: **9.2 Topological Sort**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved by **building a letter-ordering graph and running Kahn's topological sort**:
+
+1. Initialize an adjacency set and in-degree counter for every distinct character that appears in `words`.
+2. Compare each pair of adjacent words: find the first position where their characters differ and add an edge from the earlier letter to the later letter (this is the only ordering constraint that pair provides), then stop comparing that pair.
+3. If no differing character is found but the second word is shorter than the first, the ordering is invalid, so return `""`.
+4. Seed a BFS queue with all letters that have in-degree `0`, then repeatedly pop a letter, append it to the result, and decrement the in-degree of its neighbors, enqueueing any that drop to `0`.
+5. If the resulting order includes every letter, return it joined as a string; otherwise a cycle exists, so return `""`.
 
 **Time Complexity:** O(C) — where C is the total length of all words, to build the graph, plus O(V + E) for the topological sort (V is the alphabet size, at most 26).
 **Space Complexity:** O(V + E) — for the adjacency structure and in-degree map.

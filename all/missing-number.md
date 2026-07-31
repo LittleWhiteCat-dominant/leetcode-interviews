@@ -75,10 +75,12 @@ XOR trick, or the sum formula
 
 ## Approach
 
-1. Identify the core pattern for this category: **14. Bit Manipulation & Math**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **the XOR self-cancellation trick**:
+
+1. XOR-ing a number with itself yields `0`, and XOR is commutative/associative, so if every index `0..n` and every value in `nums` are XOR-ed together, all matched pairs cancel out and only the missing number survives.
+2. Initialize an accumulator `missing = n` (which accounts for the index `n` that has no corresponding array slot).
+3. For each index `i` and value `num` in `nums`, XOR both `i` and `num` into `missing`.
+4. After the loop, whatever remains in `missing` is the one value in `[0, n]` that never got cancelled out — the missing number.
 
 **Time Complexity:** O(n) — a single pass XOR-ing every index and value.
 **Space Complexity:** O(1) — only a running XOR accumulator is used.

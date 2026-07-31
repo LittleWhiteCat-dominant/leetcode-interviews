@@ -62,10 +62,12 @@ dp[i] = dp[i >> 1] + (i & 1)
 
 ## Approach
 
-1. Identify the core pattern for this category: **14. Bit Manipulation & Math**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **dynamic programming reusing previously computed bit counts**:
+
+1. Initialize `ans[0] = 0`, since zero has no set bits.
+2. For each `i` from 1 to `n`, note that `i >> 1` drops the lowest bit of `i`, so `ans[i >> 1]` already gives the popcount of everything above that lowest bit.
+3. Add back `i & 1`, which is 1 if the lowest bit of `i` is set and 0 otherwise, giving the transition `ans[i] = ans[i >> 1] + (i & 1)`.
+4. Fill the array left to right so that `ans[i >> 1]` is always already computed by the time it's needed.
 
 **Time Complexity:** O(n) — one constant-time DP transition per value from 1 to n.
 **Space Complexity:** O(n) — the output array itself (O(1) extra beyond it).

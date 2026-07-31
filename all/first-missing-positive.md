@@ -59,10 +59,13 @@ In-place hashing by placing each value at its target index
 
 ## Approach
 
-1. Identify the core pattern for this category: **6. Hash Table**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **in-place index-hashing (cyclic sort)**:
+
+1. Note that the answer must be in the range `[1, n + 1]`, so any value outside `[1, n]` can be ignored.
+2. Do a pass over the array, and for each position, repeatedly swap `nums[i]` into its "correct" slot at index `nums[i] - 1` whenever that value is within `[1, n]` and not already placed there.
+3. After this pass, every value `v` in `[1, n]` that is present will sit at index `v - 1`.
+4. Scan the array again for the first index `i` where `nums[i] != i + 1`; that `i + 1` is the smallest missing positive.
+5. If no mismatch is found, the answer is `n + 1`.
 
 **Time Complexity:** O(n) — each element is swapped into place at most once, amortized across the single pass.
 **Space Complexity:** O(1) — the input array is rearranged in place, no extra data structures.

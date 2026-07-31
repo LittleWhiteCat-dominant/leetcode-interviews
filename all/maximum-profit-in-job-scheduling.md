@@ -71,10 +71,13 @@ See company-specific high-frequency lists.
 
 ## Approach
 
-1. Identify the core pattern for this category: **Company-Specific High-Frequency Lists**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **DP over jobs sorted by end time, using binary search to find the last compatible job**:
+
+1. Sort jobs by end time so that `dp[i]` can be built from only earlier-ending jobs.
+2. Define `dp[i]` as the maximum profit achievable using only the first `i` jobs (in sorted order); `dp[0] = 0`.
+3. For each job `i`, use `bisect_right` on the array of end times to find `j`, the count of jobs that end at or before this job's start time (jobs compatible with taking it).
+4. `dp[i] = max(dp[i-1], dp[j] + profit)`: either skip job `i` and keep the previous best, or take it and add its profit to the best achievable before it starts.
+5. Return `dp[n]`, the best profit considering all jobs.
 
 **Time Complexity:** O(n log n) — for sorting jobs by end time and performing a binary search per job during the DP.
 **Space Complexity:** O(n) — for the sorted jobs array and the DP array.

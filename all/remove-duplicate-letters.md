@@ -49,10 +49,14 @@ Greedy monotonic stack for the smallest lexicographic result
 
 ## Approach
 
-1. Identify the core pattern for this category: **4.2 Monotonic Stack**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with a **greedy monotonic stack**, popping a larger character off the stack only if it reappears later:
+
+1. Precompute `last_occurrence`, mapping each character to the index of its last appearance in `s` — this tells us whether it's safe to remove a character now because it will show up again later.
+2. Scan `s` left to right, maintaining a stack of the result-in-progress and a set `in_stack` of characters currently on it.
+3. Skip any character already in `in_stack`, since each letter must appear exactly once in the final answer.
+4. Otherwise, while the stack's top character is lexicographically greater than the current character **and** that top character occurs again later (`last_occurrence[stack[-1]] > i`), pop it off (it can be safely removed now and re-added later to produce a smaller result).
+5. Push the current character onto the stack and mark it as `in_stack`.
+6. After processing all of `s`, the stack contains each letter exactly once in the smallest possible lexicographic order; join it into the final string.
 
 **Time Complexity:** O(n) — each character is pushed and popped from the stack at most once.
 **Space Complexity:** O(1) — the stack and helper sets hold at most 26 lowercase letters.

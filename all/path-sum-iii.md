@@ -51,10 +51,14 @@ DFS + prefix sum/hash map
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.1 Binary Tree Traversal & Recursion**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **DFS combined with a running prefix-sum hash map**:
+
+1. Track `current_sum`, the sum of node values along the path from the root to the current node.
+2. A downward path ending at the current node with sum `targetSum` exists for every ancestor prefix sum equal to `current_sum - targetSum`; maintain a hash map `prefix_counts` of how many times each prefix sum has occurred along the current root-to-node path.
+3. Initialize `prefix_counts[0] = 1` to correctly count paths that start at the root itself.
+4. At each node, add `node.val` to `current_sum`, look up `prefix_counts[current_sum - targetSum]` to count how many valid paths end here, then increment `prefix_counts[current_sum]` before recursing into both children.
+5. After returning from both children (backtracking out of this node), decrement `prefix_counts[current_sum]` so sibling subtrees don't see this node's contribution.
+6. Sum the counts returned from the root, left subtree, and right subtree DFS calls.
 
 **Time Complexity:** O(n) — each node is visited once, with O(1) amortized hash map operations.
 **Space Complexity:** O(n) — for the prefix-sum hash map and the recursion stack.

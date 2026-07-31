@@ -74,10 +74,14 @@ Segment tree or Binary Indexed Tree (Fenwick Tree)
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.4 Segment Tree / Binary Indexed Tree**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with a **Binary Indexed Tree (Fenwick Tree)**, since a plain prefix-sum array would need O(n) to rebuild after every update:
+
+1. Store a 1-indexed Fenwick tree array `tree` of size `n + 1`, alongside a shadow copy `nums` of the current values (needed to compute deltas on update).
+2. `_update_tree(index, delta)` propagates a change at `index` upward through the tree by repeatedly jumping to `i += i & (-i)` (adding the lowest set bit), updating every ancestor node that covers this index — O(log n) nodes touched.
+3. `_prefix_sum(index)` computes the sum of `nums[0..index]` by walking downward from `i = index + 1`, repeatedly jumping to `i -= i & (-i)` and accumulating `tree[i]` — again O(log n) steps.
+4. `update(index, val)` computes `delta = val - nums[index]`, updates the shadow array, then calls `_update_tree` to propagate that delta.
+5. `sumRange(left, right)` returns `_prefix_sum(right) - _prefix_sum(left - 1)`, the same prefix-sum-difference trick as the immutable version, but now each prefix sum is O(log n) instead of O(1), trading a bit of query speed for O(log n) updates.
+6. The initial tree is built by calling `update` once per input element in the constructor.
 
 **Time Complexity:** O(log n) per `update` or `sumRange` call using a Binary Indexed Tree; O(n log n) to build.
 **Space Complexity:** O(n) — for the Fenwick tree and the shadow copy of `nums`.

@@ -64,10 +64,13 @@ Fast pointer advances N steps first, then move both in sync
 
 ## Approach
 
-1. Identify the core pattern for this category: **3. Linked List**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with a **two-pointer gap technique in a single pass**:
+
+1. Add a `dummy` node pointing to `head` so that removing the actual head node (when `n` equals the list length) doesn't need special-casing.
+2. Start both `fast` and `slow` at `dummy`, and advance `fast` alone by `n` steps first, creating a fixed gap of `n` nodes between `fast` and `slow`.
+3. Then advance `fast` and `slow` together, one step at a time, until `fast` reaches the last node (`fast.next is None`).
+4. At that point, because of the `n`-node gap, `slow` is sitting exactly one node before the node that needs removal.
+5. Unlink the target node with `slow.next = slow.next.next`, and return `dummy.next` as the new head.
 
 **Time Complexity:** O(n) — a single pass with the two-pointer technique.
 **Space Complexity:** O(1) — only a dummy node and two pointers are used.

@@ -77,10 +77,12 @@ Max-heap (left half) + min-heap (right half)
 
 ## Approach
 
-1. Identify the core pattern for this category: **8. Heap / Priority Queue**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **two heaps that split the stream into a smaller half and a larger half**:
+
+1. Keep a max-heap `small` (values negated) holding the lower half of numbers seen so far, and a min-heap `large` holding the upper half.
+2. On `addNum`, always push the new value into `small` first, then move `small`'s largest element over to `large` to keep everything correctly partitioned.
+3. If `large` ends up bigger than `small`, move its smallest element back to `small` so `small` never has fewer elements than `large`.
+4. On `findMedian`, if `small` has one extra element it alone holds the median; otherwise the median is the average of the two heaps' tops.
 
 **Time Complexity:** O(log n) per `addNum` (heap push/pop), O(1) per `findMedian`.
 **Space Complexity:** O(n) — both heaps together hold all inserted numbers.

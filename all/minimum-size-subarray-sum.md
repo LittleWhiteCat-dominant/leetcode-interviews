@@ -62,10 +62,13 @@ Shrink the left pointer once the window sum exceeds target
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.2 Sliding Window**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a variable-size sliding window**:
+
+1. Expand the window by moving `right` forward, adding `nums[right]` to a running `window_sum`.
+2. Whenever `window_sum >= target`, the current window is a valid candidate, so record its length if it's the smallest seen so far.
+3. Then shrink the window from the left, subtracting `nums[left]` and advancing `left`, as long as the sum still meets or exceeds `target` — this finds the minimal valid window ending at the current `right`.
+4. Since all numbers are positive, both pointers only move forward, giving a linear-time scan.
+5. Return the best length found, or `0` if the window sum never reached `target`.
 
 **Time Complexity:** O(n) — the left and right pointers each traverse the array at most once.
 **Space Complexity:** O(1) — only a running sum and a couple of indices are tracked.

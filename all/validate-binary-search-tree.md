@@ -57,10 +57,14 @@ Recursively pass down lower/upper bounds
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.2 Binary Search Tree (BST)**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **recursive validation using a shrinking valid-value range**:
+
+1. Recurse with each node carrying a `(lower, upper)` bound that its value must strictly fall within, starting with `(-infinity, +infinity)` at the root.
+2. A `None` node is trivially valid (base case) and returns `true`.
+3. If the current node's value doesn't satisfy `lower < node.val < upper`, the BST property is violated, so return `false`.
+4. Recurse into the left subtree with the same `lower` bound but `upper` tightened to `node.val` (everything in the left subtree must stay below this node).
+5. Recurse into the right subtree with the same `upper` bound but `lower` tightened to `node.val`.
+6. The tree is a valid BST only if both recursive calls return `true`.
 
 **Time Complexity:** O(n) — every node is visited exactly once.
 **Space Complexity:** O(h) — recursion stack depth equals the tree height (`h`); O(n) worst case for a skewed tree.

@@ -67,10 +67,12 @@ Recursively check whether left/right subtree contains p/q
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.1 Binary Tree Traversal & Recursion**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **bottom-up recursion that reports whether each subtree contains `p`, `q`, or both**:
+
+1. Base case: if the current node is `None`, or is itself `p` or `q`, return it directly — this signals "found" up the call stack.
+2. Recurse into the left and right subtrees, collecting what each side reports.
+3. If both the left and right recursive calls return a non-null result, `p` and `q` were found in different subtrees, so the current node is their LCA.
+4. Otherwise, propagate whichever side returned a non-null result (or `None` if neither did) up to the parent call.
 
 **Time Complexity:** O(n) — every node may be visited once in the worst case.
 **Space Complexity:** O(H) — for the recursion stack, where H is the tree height.

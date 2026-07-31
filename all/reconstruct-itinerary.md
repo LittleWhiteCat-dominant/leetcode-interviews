@@ -65,10 +65,13 @@ Eulerian path + greedy/backtracking
 
 ## Approach
 
-1. Identify the core pattern for this category: **9.3 Advanced Graph Algorithms (Shortest Path / MST)**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **Hierholzer's algorithm for finding an Eulerian path**, using lexical ordering to pick the smallest valid itinerary:
+
+1. Build an adjacency list mapping each airport to its list of destinations, sorting all tickets in **reverse** lexical order before inserting, so that within each airport's destination list, the lexically smallest destination ends up at the end (making it cheap to pop).
+2. Run a DFS from `"JFK"` that greedily always visits the lexically smallest unused destination first, by repeatedly popping the last (smallest, due to the reverse sort) destination from the current airport's list.
+3. Recurse into that destination before trying any other, consuming tickets as edges are traversed (each ticket/edge is used exactly once since it's removed via `pop()`).
+4. Only append an airport to the `route` list after all of its outgoing tickets have been exhausted (post-order), which is the standard Hierholzer's trick for handling dead ends and cycles correctly — this guarantees every ticket gets used even if a naive greedy DFS would otherwise get stuck.
+5. Since airports are recorded in post-order (last-visited-first), reverse `route` at the end to get the itinerary in the correct forward-visiting order.
 
 **Time Complexity:** O(E log E) — dominated by sorting the tickets, where E is the number of tickets.
 **Space Complexity:** O(E) — for the adjacency list and the recursion/route stack.

@@ -57,10 +57,12 @@ Hash set for O(1) lookup; only expand from sequence starting points
 
 ## Approach
 
-1. Identify the core pattern for this category: **6. Hash Table**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a hash set plus only expanding from true sequence starts to keep the algorithm O(n)**:
+
+1. Put all numbers into a hash set for O(1) membership checks.
+2. For each number, check whether `num - 1` is in the set; if it is, `num` is not the start of a sequence, so skip it.
+3. If `num` is a sequence start (no predecessor in the set), repeatedly check `num + length` in the set, incrementing `length` until the chain breaks.
+4. Track the maximum `length` found across all sequence starts and return it.
 
 **Time Complexity:** O(n) — each number is visited a constant number of times because inner while-loops only run for true sequence starting points.
 **Space Complexity:** O(n) — for the hash set holding all numbers.

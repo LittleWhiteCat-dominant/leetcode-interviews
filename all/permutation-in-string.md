@@ -48,10 +48,14 @@ Fixed-size window + character frequency comparison
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.2 Sliding Window**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with a **fixed-size sliding window and character frequency counters**:
+
+1. A permutation of `s1` existing as a substring of `s2` is equivalent to some window of length `len(s1)` in `s2` having the exact same character counts as `s1`.
+2. Build a frequency counter `need` for `s1`, and a counter `window` for the first `len(s1)` characters of `s2`.
+3. If `window == need` already, return `true` immediately.
+4. Slide the window one character at a time: increment the count of the character entering the window, decrement the count of the character leaving it (removing it from the counter entirely if its count drops to 0, so the comparison stays exact).
+5. After each slide, compare `window == need`; if they match at any point, a permutation was found and we return `true`.
+6. If the window slides through the whole string without a match, return `false`.
 
 **Time Complexity:** O(n) — where n is the length of `s2`; the fixed-size window slides once across it.
 **Space Complexity:** O(1) — the frequency counters are bounded by 26 lowercase letters.

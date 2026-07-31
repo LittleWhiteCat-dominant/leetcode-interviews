@@ -74,10 +74,13 @@ Reverse DFS from both ocean borders, take the intersection
 
 ## Approach
 
-1. Identify the core pattern for this category: **9.1 DFS / BFS Fundamentals**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **reverse multi-source DFS from each ocean's border**:
+
+1. Instead of checking, for every cell, whether water can reach both oceans (expensive), flow the search backward from the ocean borders inward.
+2. Run a DFS/flood-fill starting from every cell on the top and left edges (Pacific border), moving to a neighbor only if its height is `>=` the current cell's height (i.e., water could have flowed downhill into the current cell from the neighbor). Mark all reached cells as "can reach Pacific".
+3. Do the same starting from every cell on the bottom and right edges (Atlantic border), marking cells as "can reach Atlantic".
+4. Use two separate visited sets to avoid re-exploring cells already known to reach a given ocean.
+5. The answer is the intersection of the two visited sets — cells reachable from both borders.
 
 **Time Complexity:** O(m \* n) — each cell is visited at most once per ocean during the reverse DFS.
 **Space Complexity:** O(m \* n) — for the visited sets and recursion stack.

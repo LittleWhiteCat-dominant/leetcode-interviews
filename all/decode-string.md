@@ -66,10 +66,14 @@ Stack holding repeat counts and the string built so far
 
 ## Approach
 
-1. Identify the core pattern for this category: **4.1 Basic Stack Applications**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a stack that saves the enclosing string and repeat count at each `[`**:
+
+1. Track `current_string` (the string built so far at the current nesting level) and `current_num` (the digits accumulated for the next repeat count).
+2. On a digit, accumulate it into `current_num` (`current_num * 10 + digit`), since counts can be multi-digit.
+3. On `[`, push `(current_string, current_num)` onto the stack to save the outer context, then reset both to start fresh for the bracketed segment.
+4. On `]`, pop the saved `(prev_string, num)`, and set `current_string = prev_string + current_string * num`, repeating the just-finished segment and reattaching it to its enclosing string.
+5. On a plain letter, append it directly to `current_string`.
+6. Return `current_string` once the whole input has been consumed.
 
 **Time Complexity:** O(n) — where n is the length of the fully decoded output string (bounded by the problem's 10^5 limit).
 **Space Complexity:** O(n) — the stack of partial strings/counts plus the string being built.

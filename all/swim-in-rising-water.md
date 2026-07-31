@@ -67,10 +67,13 @@ Dijkstra variant / binary search + BFS
 
 ## Approach
 
-1. Identify the core pattern for this category: **9.3 Advanced Graph Algorithms (Shortest Path / MST)**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a Dijkstra-style min-heap that always expands the currently-lowest-elevation reachable cell**:
+
+1. Push the starting cell `(0, 0)` onto a min-heap keyed by elevation, and mark it visited.
+2. Repeatedly pop the cell with the smallest elevation from the heap; the running `result` (the minimum time needed so far) is the maximum elevation encountered along the path taken to reach it.
+3. As soon as the popped cell is the bottom-right target `(n-1, n-1)`, return `result`, since a min-heap guarantees this is reached via the path minimizing the maximum elevation.
+4. Otherwise, push each unvisited 4-directionally adjacent cell onto the heap (marking it visited immediately to avoid duplicate pushes), keyed by its own elevation.
+5. Because the heap always expands the globally lowest-elevation frontier cell next, the first time the target is popped it's guaranteed to be via the optimal (minimax) route.
 
 **Time Complexity:** O(n^2 log n) — each of the n^2 cells is pushed/popped from the min-heap at most once, at O(log n^2) cost each.
 **Space Complexity:** O(n^2) — the visited grid and the heap.

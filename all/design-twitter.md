@@ -75,10 +75,13 @@ Heap sorted by timestamp + hash map for follow relationships
 
 ## Approach
 
-1. Identify the core pattern for this category: **8. Heap / Priority Queue**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a per-user tweet list ordered by a decreasing timestamp, merged with a min-heap**:
+
+1. Store each user's tweets as `(timestamp, tweetId)` pairs in insertion order; use a globally decreasing counter as the timestamp so smaller values always mean more recent.
+2. `postTweet` appends `(timestamp, tweetId)` to that user's list and decrements the global timestamp counter.
+3. `follow`/`unfollow` simply add/remove the followee from a `set` of followees per user (guarding against self-follow).
+4. `getNewsFeed` gathers the user plus all their followees, and seeds a heap with each one's single most recent tweet (since the decreasing timestamp makes a min-heap pop the most recent tweet first).
+5. Repeatedly pop the most recent tweet from the heap, add it to the result, and if that user has an earlier tweet push it back onto the heap, stopping once 10 tweets are collected or the heap empties.
 
 **Time Complexity:** `postTweet` is O(1). `getNewsFeed` is O(F log F) where F is the number of followees, using a heap to merge their most recent tweets. `follow`/`unfollow` are O(1).
 **Space Complexity:** O(T + U) — O(T) to store all tweets across users and O(U) for the follow graph.

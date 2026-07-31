@@ -64,10 +64,12 @@ Sort + fix one number + two pointers with dedup
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.1 Two Pointers**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **sorting plus a fixed-pointer two-pointer sweep**:
+
+1. Sort `nums` so duplicates are adjacent and the array can be scanned with two pointers.
+2. Fix the smallest number of each triplet at index `i`, skipping `i` if it repeats the previous value (avoids duplicate triplets) and breaking early once `nums[i] > 0` (no negative pairing can bring the sum back to zero).
+3. For the remainder of the array, use `left = i + 1` and `right = n - 1` pointers: move `left` right if the sum is too small, move `right` left if the sum is too large.
+4. When `nums[i] + nums[left] + nums[right] == 0`, record the triplet, then advance both pointers past any duplicate values before continuing.
 
 **Time Complexity:** O(n^2) — sorting takes O(n log n), then fixing one number and scanning with two pointers takes O(n) for each of the n numbers.
 **Space Complexity:** O(1) extra space beyond the output (not counting the O(log n) to O(n) space used by the sort itself).

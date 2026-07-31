@@ -62,10 +62,13 @@ Max-heap, repeatedly pop the two largest and push back the difference
 
 ## Approach
 
-1. Identify the core pattern for this category: **8. Heap / Priority Queue**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a max-heap simulation using negated values** (since Python's `heapq` is a min-heap):
+
+1. Negate every stone weight and heapify the list so the largest stone is always at the top.
+2. While more than one stone remains, pop the two largest (negate back to get `y >= x`).
+3. If the two weights differ, push the negated difference `y - x` back onto the heap as the new stone.
+4. If they are equal, both stones are destroyed and nothing is pushed back.
+5. Repeat until at most one stone is left; return its weight negated, or `0` if the heap is empty.
 
 **Time Complexity:** O(n log n) — each of the up to n smashes performs two heap pops and at most one push, each O(log n).
 **Space Complexity:** O(n) — for the heap storing the negated stone weights.

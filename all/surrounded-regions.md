@@ -60,10 +60,12 @@ Reverse DFS starting from the border
 
 ## Approach
 
-1. Identify the core pattern for this category: **9.1 DFS / BFS Fundamentals**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved by **inverting the problem: DFS-mark every `'O'` that's connected to the border, since only those survive**:
+
+1. Any `'O'` connected (directly or transitively) to a border cell can never be fully surrounded, so it must NOT be flipped to `'X'`.
+2. Run DFS from every `'O'` on the border of the grid (both edge rows and edge columns), marking each visited cell with a temporary placeholder (`'#'`) to protect it and to avoid revisiting.
+3. After all border-connected regions are marked, sweep the entire grid: any remaining `'O'` was never reached from the border, meaning it's truly surrounded, so flip it to `'X'`.
+4. Finally, revert every `'#'` placeholder back to `'O'`, restoring the protected border-connected regions.
 
 **Time Complexity:** O(m * n) — each cell is visited a constant number of times across the border DFS and final sweep.
 **Space Complexity:** O(m * n) — worst-case DFS recursion stack when the board is mostly `'O'`.

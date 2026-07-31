@@ -64,10 +64,13 @@ dp[i][j] = LCS of the first i and first j characters
 
 ## Approach
 
-1. Identify the core pattern for this category: **12.2 2D DP**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **2D dynamic programming compressed to two rolling rows**:
+
+1. Define `dp[i][j]` as the LCS length of `text1[:i]` and `text2[:j]`, kept as rolling `prev`/`curr` rows of size `n + 1`.
+2. For each character `text1[i-1]`, build the `curr` row by comparing it against every `text2[j-1]`.
+3. If the characters match, extend the diagonal: `curr[j] = prev[j-1] + 1`.
+4. Otherwise, take the best of dropping a character from either string: `curr[j] = max(prev[j], curr[j-1])`.
+5. After processing all of `text1`, swap `curr` into `prev`; the final answer is `prev[n]`.
 
 **Time Complexity:** O(m * n) — filling the DP table requires one constant-time transition per cell.
 **Space Complexity:** O(n) — only the previous and current DP rows are kept instead of the full 2D table.

@@ -55,10 +55,13 @@ Basic template
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.4 Binary Search**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **the classic binary search template on a sorted array**:
+
+1. Maintain `left` and `right` pointers spanning the whole array, `[0, len(nums) - 1]`.
+2. While `left <= right`, compute `mid = (left + right) // 2` and compare `nums[mid]` to `target`.
+3. If they are equal, `mid` is the answer, so return it immediately.
+4. If `nums[mid] < target`, the target must be to the right, so move `left = mid + 1`; otherwise move `right = mid - 1`.
+5. If the loop ends without finding a match, the target is not present, so return `-1`.
 
 **Time Complexity:** O(log n) — the search space is halved on each iteration.
 **Space Complexity:** O(1) — only a few pointers are used.

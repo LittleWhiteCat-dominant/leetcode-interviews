@@ -49,10 +49,12 @@ Track the farthest reachable position so far
 
 ## Approach
 
-1. Identify the core pattern for this category: **13. Greedy**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a greedy single pass tracking the farthest index reachable so far**:
+
+1. Maintain `farthest`, the maximum index reachable using jumps decided so far, starting at 0.
+2. Iterate through the array by index; if the current index `i` is already beyond `farthest`, the array is unreachable past this point, so return `False`.
+3. Otherwise, update `farthest = max(farthest, i + num)` using the current position's jump length.
+4. If the loop completes without ever getting stuck, the last index is reachable, so return `True`.
 
 **Time Complexity:** O(n) — a single pass through the array.
 **Space Complexity:** O(1) — only the running "farthest reachable" value is tracked.

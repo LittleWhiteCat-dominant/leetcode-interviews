@@ -75,10 +75,13 @@ Multi-source BFS, expanding layer by layer to compute time
 
 ## Approach
 
-1. Identify the core pattern for this category: **9.1 DFS / BFS Fundamentals**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **multi-source BFS, expanding one minute (layer) at a time**:
+
+1. Scan the grid once to seed a queue with the coordinates of every already-rotten orange, and count the total number of fresh oranges.
+2. Run BFS in rounds: each round represents exactly one minute, so process all nodes currently in the queue before moving to the next minute.
+3. For each rotten orange in the current round, rot any 4-directionally adjacent fresh orange, decrementing the fresh count and enqueueing it for the next round.
+4. Stop once the queue is empty or there are no fresh oranges left, incrementing the minute counter after each full round that produced new rot.
+5. If fresh oranges remain unrotted at the end, return `-1`; otherwise return the number of minutes elapsed.
 
 **Time Complexity:** O(m * n) — every cell is enqueued and processed at most once.
 **Space Complexity:** O(m * n) — the BFS queue can hold up to all cells.

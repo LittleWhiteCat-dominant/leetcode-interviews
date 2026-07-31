@@ -49,10 +49,12 @@ Fast/slow pointers, fast pointer moves at 2x speed
 
 ## Approach
 
-1. Identify the core pattern for this category: **3. Linked List**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **the fast/slow pointer (tortoise and hare) technique**:
+
+1. Start both `slow` and `fast` pointers at `head`.
+2. On each step, advance `slow` by one node and `fast` by two nodes.
+3. When `fast` reaches the end of the list (or `fast.next` is `None`), `slow` is exactly at the middle, since it has covered half the distance `fast` has.
+4. Return `slow`; this naturally lands on the second middle node when the list has even length, since `fast` runs out one step sooner.
 
 **Time Complexity:** O(n) — the fast pointer traverses the list once.
 **Space Complexity:** O(1) — only two pointers are used.

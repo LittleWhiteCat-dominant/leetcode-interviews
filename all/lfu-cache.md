@@ -83,10 +83,13 @@ Hash map + frequency-bucketed doubly linked lists
 
 ## Approach
 
-1. Identify the core pattern for this category: **15. Design Problems**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **three hash maps plus per-frequency ordered dictionaries for O(1) LRU tiebreaking**:
+
+1. Track `key_to_val` and `key_to_freq` for O(1) value/frequency lookups, and `freq_to_keys` mapping each frequency to an `OrderedDict` of keys at that frequency (insertion order gives LRU order within a frequency bucket).
+2. Track `min_freq`, the smallest frequency currently in use, so eviction is O(1).
+3. On `get`/`put` of an existing key, call `_touch`: remove the key from its current frequency bucket (bumping `min_freq` if that bucket becomes empty and was the minimum), then reinsert it into the `freq + 1` bucket.
+4. On `put` of a new key when the cache is full, evict the least-recently-used key from `freq_to_keys[min_freq]` via `popitem(last=False)`.
+5. Insert the new key with frequency `1` and reset `min_freq` to `1`.
 
 **Time Complexity:** O(1) average per `get` and `put` — hash map lookups plus `OrderedDict` insert/pop/move operations are all O(1).
 **Space Complexity:** O(capacity) — for the key-to-value map, key-to-frequency map, and the frequency-bucketed ordered dictionaries.

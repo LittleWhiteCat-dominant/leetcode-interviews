@@ -46,10 +46,13 @@ Build a bitwise Trie, greedily walk the opposite bit
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.3 Trie (Prefix Tree)**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a bitwise Trie built incrementally, greedily choosing the opposite bit at each level to maximize XOR**:
+
+1. Determine `highest_bit`, the position of the most significant bit across all numbers, so every number is processed with a fixed bit width.
+2. Build a binary trie where each node has two children (for bit `0` and bit `1`); `insert(num)` walks from the highest bit to the lowest, creating child nodes as needed.
+3. For each number, first `insert` it into the trie, then immediately `query` it: at each bit level, try to go to the child representing the opposite bit (`1 - bit`), since XOR-ing opposite bits maximizes that bit's contribution.
+4. If the opposite-bit child doesn't exist yet, fall back to the same-bit child (no better option exists).
+5. Track the maximum XOR value seen across all `query` calls as numbers are inserted one at a time.
 
 **Time Complexity:** O(n * L) — where L is the bit width (~32); each of the n numbers is inserted into and queried against the trie in O(L).
 **Space Complexity:** O(n * L) — for the trie nodes created while inserting all numbers.

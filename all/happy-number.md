@@ -60,10 +60,12 @@ Hash set to detect cycles
 
 ## Approach
 
-1. Identify the core pattern for this category: **6. Hash Table**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **Floyd's cycle detection over the sequence of digit-square sums**:
+
+1. Define a helper `get_next` that computes the sum of the squares of a number's digits.
+2. Treat repeated application of `get_next` as traversing an implicit linked list; if `n` is not happy, this sequence eventually cycles without ever hitting 1.
+3. Run a slow pointer advancing one `get_next` step at a time and a fast pointer advancing two steps at a time.
+4. If `fast` reaches 1, the number is happy; if `slow` and `fast` meet at some value other than 1, a cycle was detected and the number is not happy.
 
 **Time Complexity:** O(log n) per digit-square-sum step, and the cycle detection terminates in a bounded number of steps for 32-bit integers.
 **Space Complexity:** O(1) — using Floyd's cycle detection avoids the O(k) hash set of visited values.

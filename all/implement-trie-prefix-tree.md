@@ -65,10 +65,12 @@ Each node stores child pointers + an end-of-word marker
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.3 Trie (Prefix Tree)**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a tree of character-indexed nodes, each marking whether a word ends there**:
+
+1. Each `TrieNode` holds a dictionary mapping a character to its child node, plus an `is_end` flag.
+2. `insert(word)` walks from the root, creating a child node for each character not yet present, then marks the final node's `is_end = True`.
+3. A shared `_find(word)` helper walks the trie character by character, returning `None` early if any character is missing, or the final node reached otherwise.
+4. `search(word)` returns true only if `_find` reaches a node with `is_end` set; `startsWith(prefix)` returns true as long as `_find` reaches any node at all.
 
 **Time Complexity:** O(k) for `insert`, `search`, and `startsWith`, where `k` is the length of the word/prefix.
 **Space Complexity:** O(total characters inserted) — each unique character path allocates one trie node.

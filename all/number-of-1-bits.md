@@ -58,10 +58,12 @@ n & (n-1) clears the lowest set bit
 
 ## Approach
 
-1. Identify the core pattern for this category: **14. Bit Manipulation & Math**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **the `n & (n - 1)` lowest-set-bit-clearing trick**:
+
+1. Recall that `n - 1` flips all bits after (and including) the lowest set bit of `n`, so `n & (n - 1)` clears exactly that lowest set bit while leaving all higher bits unchanged.
+2. Initialize a counter to `0`.
+3. Repeatedly apply `n &= n - 1` and increment the counter, each time removing one set bit from `n`.
+4. Stop once `n` becomes `0` — the counter now equals the total number of set bits, and the loop runs exactly as many times as there are set bits rather than iterating over all 32 bit positions.
 
 **Time Complexity:** O(k) — where `k` is the number of set bits (at most 32); each iteration clears exactly one set bit.
 **Space Complexity:** O(1) — only a counter is used.

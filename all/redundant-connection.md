@@ -64,10 +64,13 @@ Detect a cycle while unioning
 
 ## Approach
 
-1. Identify the core pattern for this category: **10. Union Find**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **Union-Find (disjoint set union)** to detect the first edge that closes a cycle:
+
+1. Initialize a `parent` array where each node is its own parent (each node starts in its own component).
+2. Process edges `[u, v]` in the given order, and for each one find the root of `u` and the root of `v` using path-compressed `find`.
+3. If `u` and `v` already share the same root, adding this edge would create a cycle — since a valid tree with `n` nodes has exactly `n - 1` edges, this edge is provably redundant, so return it immediately.
+4. Otherwise, union the two components by attaching one root under the other, and continue to the next edge.
+5. Because edges are processed in input order and the first cycle-closing edge is returned immediately, this naturally finds the redundant edge that "occurs last" among candidates, matching the problem's tie-breaking rule.
 
 **Time Complexity:** O(n \* alpha(n)) — near-linear thanks to Union-Find with path compression.
 **Space Complexity:** O(n) — for the parent array.

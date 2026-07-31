@@ -75,10 +75,13 @@ Binary search on the answer
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.4 Binary Search**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **binary search over the answer (the ship capacity), guided by a greedy feasibility check**:
+
+1. Notice that "days needed" is monotonic in capacity: a larger ship capacity can only ship everything in the same number of days or fewer, so binary search applies.
+2. Set the search bounds to `left = max(weights)` (must fit the heaviest package) and `right = sum(weights)` (one day for everything).
+3. Write a `days_needed(capacity)` helper that greedily loads packages onto the current day until adding the next one would exceed `capacity`, then starts a new day.
+4. Binary search on capacity: if `days_needed(mid) <= days`, `mid` is feasible, so search the lower half (`right = mid`); otherwise search the upper half (`left = mid + 1`).
+5. The loop converges to the smallest feasible capacity, returned as `left`.
 
 **Time Complexity:** O(n log(sum(weights))) — binary search over the capacity range, with an O(n) feasibility check at each step.
 **Space Complexity:** O(1) extra space.

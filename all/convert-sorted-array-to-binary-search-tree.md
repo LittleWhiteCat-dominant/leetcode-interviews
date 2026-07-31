@@ -50,10 +50,13 @@ Recursively pick the midpoint as root
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.2 Binary Search Tree (BST)**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **recursive divide and conquer, always rooting at the midpoint**:
+
+1. Given a subarray range `[lo, hi]`, pick the middle index `mid` as the root of that subtree, which keeps the two halves as balanced as possible.
+2. Create a `TreeNode` with `nums[mid]`.
+3. Recursively build the left subtree from `[lo, mid - 1]` and the right subtree from `[mid + 1, hi]`.
+4. The base case is `lo > hi`, which returns `None` for an empty range.
+5. Return the root produced by building the full range `[0, n - 1]`.
 
 **Time Complexity:** O(n) — every element becomes exactly one tree node, visited once.
 **Space Complexity:** O(log n) — recursion stack depth for a height-balanced tree (excluding the O(n) output tree itself).

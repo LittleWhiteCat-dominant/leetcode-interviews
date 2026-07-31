@@ -93,10 +93,13 @@ DFS/BFS + hash map recording the original→clone mapping
 
 ## Approach
 
-1. Identify the core pattern for this category: **9.1 DFS / BFS Fundamentals**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **DFS plus a hash map from original nodes to their clones, to handle cycles and shared references**:
+
+1. Return `None` immediately if the input `node` is `None`.
+2. Maintain a `visited` dictionary mapping each original node already cloned to its corresponding clone.
+3. In the recursive `dfs(original)`, first check `visited`: if the node was already cloned, return the existing clone immediately (this is what prevents infinite recursion on cycles).
+4. Otherwise, create a new clone with the same value, store it in `visited` *before* recursing into neighbors (so cycles back to this node resolve correctly), then recursively clone each neighbor and append it to the clone's neighbor list.
+5. Kick off the recursion from the given `node` and return its clone.
 
 **Time Complexity:** O(V + E) — every node and edge is visited exactly once.
 **Space Complexity:** O(V) — for the `visited` map and the recursion stack.

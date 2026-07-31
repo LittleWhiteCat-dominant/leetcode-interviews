@@ -64,10 +64,13 @@ State-machine DP
 
 ## Approach
 
-1. Identify the core pattern for this category: **12.2 2D DP**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a greedy sum of every positive day-to-day gain**:
+
+1. Observe that since unlimited buy/sell transactions are allowed, the maximum profit equals the sum of every upward price movement between consecutive days.
+2. Walk through `prices` from day `1` onward, comparing each day to the previous one.
+3. Whenever `prices[i] > prices[i - 1]`, add that difference to a running `profit` total (equivalent to buying the day before and selling on this day).
+4. Ignore any non-positive differences, since no profitable trade is possible there.
+5. Return the accumulated `profit` after the single pass.
 
 **Time Complexity:** O(n) — a single pass through the prices array.
 **Space Complexity:** O(1) — only a running profit total is kept.

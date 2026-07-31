@@ -64,10 +64,13 @@ DFS + memoization
 
 ## Approach
 
-1. Identify the core pattern for this category: **12.2 2D DP**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **DFS with memoization, since the strictly-increasing constraint guarantees no cycles**:
+
+1. Define `dfs(r, c)` as the length of the longest increasing path starting at cell `(r, c)`, memoized with `lru_cache`.
+2. From `(r, c)`, look at all four neighbors; for each neighbor with a strictly greater value, recursively compute `1 + dfs(neighbor)`.
+3. Take the best result among all valid neighbors, defaulting to `1` (the cell itself) if none qualify.
+4. Because values strictly increase along any path, there are no cycles, so memoization safely caches each cell's result after computing it once.
+5. Run `dfs` from every cell and return the overall maximum.
 
 **Time Complexity:** O(m * n) — memoization ensures each cell's longest increasing path is computed exactly once.
 **Space Complexity:** O(m * n) — for the memoization cache and the recursion stack.

@@ -68,10 +68,12 @@ Simulate digit-wise addition with carry on an array
 
 ## Approach
 
-1. Identify the core pattern for this category: **14. Bit Manipulation & Math**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with a **right-to-left digit-wise carry simulation**:
+
+1. Scan the `digits` array from the last (least significant) digit to the first.
+2. If the current digit is less than 9, incrementing it by 1 cannot overflow, so simply add 1 and return `digits` immediately — no further carry propagation needed.
+3. If the current digit is 9, incrementing it produces a carry: set it to 0 and continue to the next digit to the left.
+4. If the loop finishes without returning (every digit was 9, e.g. `999` → `1000`), all digits have been zeroed out and there's a leftover carry, so prepend a `1` to `digits` and return that.
 
 **Time Complexity:** O(n) — at most one pass through the digits.
 **Space Complexity:** O(1) extra — modifies `digits` in place (a new array is only allocated on overflow).

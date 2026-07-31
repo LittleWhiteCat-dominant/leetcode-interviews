@@ -58,10 +58,12 @@ Hash map inside the window tracking last-seen index
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.2 Sliding Window**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a sliding window tracking the last-seen index of each character**:
+
+1. Maintain a hash map `last_seen` mapping each character to the most recent index at which it appeared, and a `left` pointer marking the start of the current window.
+2. As `right` scans through the string, if the current character was seen before at or after `left`, jump `left` to `last_seen[ch] + 1` to exclude the earlier duplicate from the window.
+3. Update `last_seen[ch]` to the current index `right`.
+4. After each step, update the running maximum with the current window length `right - left + 1`.
 
 **Time Complexity:** O(n) — each character is visited once as the right pointer scans the string, with O(1) hash map operations.
 **Space Complexity:** O(min(n, m)) — where m is the size of the character set, for the last-seen-index hash map.

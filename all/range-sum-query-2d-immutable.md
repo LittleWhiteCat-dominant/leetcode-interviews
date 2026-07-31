@@ -73,10 +73,12 @@ numMatrix.sumRegion(1, 2, 2, 4); // return 12 (i.e sum of the blue rectangle)
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.3 Prefix Sum**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with a **2D prefix-sum matrix**:
+
+1. Precompute a `(m+1) x (n+1)` prefix matrix `prefix`, padded with an extra row and column of zeros so boundary lookups don't need special-casing.
+2. Define `prefix[r+1][c+1]` as the sum of all cells `(0..r, 0..c)`, computed with inclusion-exclusion: `matrix[r][c] + prefix[r][c+1] + prefix[r+1][c] - prefix[r][c]` (the overlapping top-left region is subtracted once to avoid double-counting).
+3. To answer `sumRegion(row1, col1, row2, col2)`, use the same inclusion-exclusion idea in reverse: take the sum of the full rectangle up to `(row2, col2)`, subtract the region above row1 and the region left of col1, then add back the top-left corner that was subtracted twice.
+4. Because `prefix` is precomputed once in the constructor, each `sumRegion` query only does O(1) arithmetic on four lookups.
 
 **Time Complexity:** O(m \* n) to build the 2D prefix sum, O(1) per `sumRegion` query.
 **Space Complexity:** O(m \* n) — for the prefix sum matrix.

@@ -71,10 +71,14 @@ Segment tree/sweep line + a max-heap
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.4 Segment Tree / Binary Indexed Tree**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a coordinate sweep line plus a max-heap of active building heights**:
+
+1. Group buildings by their left x-coordinate, and collect the set of all distinct critical x-coordinates (every left and right edge).
+2. Sweep through the critical x-coordinates in increasing order.
+3. At each x, push `(right_edge, height)` for every building that starts there onto a max-heap keyed by height.
+4. Before reading the current height, lazily pop any buildings from the top of the heap whose right edge is at or before the current x (they are no longer active).
+5. The current skyline height is the height at the top of the heap (or 0 if the heap is empty); if it differs from the previous recorded height, emit a new key point `[x, current_height]`.
+6. Continue until all critical x-coordinates are processed, producing the merged list of key points.
 
 **Time Complexity:** O(n log n) — sorting the critical x-coordinates plus O(log n) heap push/pop per building edge.
 **Space Complexity:** O(n) — the max-heap of active buildings and the grouping of buildings by start x-coordinate.

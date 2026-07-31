@@ -60,10 +60,13 @@ Simulate addition with carry, dummy head node
 
 ## Approach
 
-1. Identify the core pattern for this category: **3. Linked List**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved by **simulating grade-school addition digit by digit**:
+
+1. Create a dummy head node so the result list can be built without special-casing the first node.
+2. Walk `l1` and `l2` simultaneously, treating a missing node as digit `0`.
+3. At each step, add the two digits plus the carry-in, then use `divmod(total, 10)` to split off the new carry and the digit to append.
+4. Append a new node with that digit to the result list and advance both input pointers (when available).
+5. Keep looping as long as either list still has nodes or there is a leftover carry, then return `dummy.next`.
 
 **Time Complexity:** O(max(m, n)) — one pass through the longer of the two lists, where m and n are their lengths.
 **Space Complexity:** O(max(m, n)) — for the newly created result list (excluding the inputs).

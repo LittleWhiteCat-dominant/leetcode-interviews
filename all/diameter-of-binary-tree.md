@@ -50,10 +50,13 @@ Post-order recursion; diameter = sum of left/right subtree depths
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.1 Binary Tree Traversal & Recursion**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **post-order DFS that computes depth while tracking the best diameter seen**:
+
+1. Define `depth(node)`, which returns the height of the subtree rooted at `node` (0 for `None`).
+2. Recursively compute `left_depth = depth(node.left)` and `right_depth = depth(node.right)` before combining them, since the diameter through a node depends on both subtree heights.
+3. At each node, the longest path passing through it is `left_depth + right_depth`; update the running `diameter` with `max(diameter, left_depth + right_depth)`.
+4. Return `1 + max(left_depth, right_depth)` as this node's own height, so the parent call can use it correctly.
+5. After the full traversal from `root`, `diameter` holds the answer, since every possible "peak" node was considered.
 
 **Time Complexity:** O(n) — every node is visited exactly once.
 **Space Complexity:** O(h) — recursion stack proportional to the tree height.

@@ -66,10 +66,12 @@ Find the insertion point and merge overlapping intervals
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.5 Intervals**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a single linear pass split into three phases: before, overlapping, and after**:
+
+1. Append every interval that ends strictly before `newInterval` starts unchanged (they can't overlap).
+2. While the current interval starts at or before `newInterval`'s end, merge it into `newInterval` by expanding its bounds: `start = min(start, intervals[i][0])`, `end = max(end, intervals[i][1])`.
+3. Once no more intervals overlap, append the fully merged `[start, end]` to the result.
+4. Append all remaining intervals unchanged (they start after the merged interval ends).
 
 **Time Complexity:** O(n) — a single linear pass through the intervals.
 **Space Complexity:** O(n) — for the result list (excluding the output, O(1) extra space).

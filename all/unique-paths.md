@@ -50,10 +50,12 @@ The test cases are generated so that the answer will be less than or equal to `2
 
 ## Approach
 
-1. Identify the core pattern for this category: **12.2 2D DP**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **space-optimized 2D grid DP collapsed into a single rolling row**:
+
+1. Observe that the number of ways to reach cell `(i, j)` equals the sum of the ways to reach the cell above it and the cell to its left.
+2. Initialize a 1D array `row` of length `n` with all 1s, representing the first row (only one way to reach any cell by moving right along the top edge).
+3. For each subsequent row, update `row[j] += row[j - 1]` for `j` from 1 to `n - 1`; `row[j]` before the update still holds the "came from above" value, and adding `row[j - 1]` (already updated for this row) adds the "came from the left" value.
+4. After processing all `m - 1` remaining rows in place, `row[-1]` holds the total number of unique paths to the bottom-right corner.
 
 **Time Complexity:** O(m * n) — every cell of the grid is visited once.
 **Space Complexity:** O(n) — a single rolling row is reused instead of a full 2D table.

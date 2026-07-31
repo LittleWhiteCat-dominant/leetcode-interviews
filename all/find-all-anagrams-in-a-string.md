@@ -52,10 +52,13 @@ Fixed-size window + character frequency comparison
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.2 Sliding Window**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a fixed-size sliding window compared against a target frequency count**:
+
+1. If `s` is shorter than `p`, no anagram can exist, so return an empty list immediately.
+2. Build a 26-length count array `p_count` for the letters of `p`.
+3. Slide a window of size `len(p)` across `s`, maintaining a running 26-length count array `s_count` for the current window: add the incoming character and remove the outgoing character once the window exceeds size `m`.
+4. Whenever the window has reached full size, compare `s_count` to `p_count`; if they match, the current window start index is an anagram start.
+5. Return all recorded start indices.
 
 **Time Complexity:** O(n + m) — where `n = len(s)` and `m = len(p)`; each of the 26 letter counts is compared in O(1) as the window slides.
 **Space Complexity:** O(1) — fixed-size arrays of 26 counters regardless of input size.

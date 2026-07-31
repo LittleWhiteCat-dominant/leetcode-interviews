@@ -76,10 +76,12 @@ Simulate one structure with the other
 
 ## Approach
 
-1. Identify the core pattern for this category: **5. Queue / Monotonic Queue**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **two stacks: one for incoming pushes, one for outgoing pops, reversing order on transfer**:
+
+1. Maintain an `in_stack` that simply receives every `push(x)` in arrival order.
+2. Maintain an `out_stack` that serves `pop()`/`peek()`; when it's empty, pop everything from `in_stack` and push it onto `out_stack`, which reverses the order so the oldest pushed element ends up on top.
+3. `pop()` and `peek()` first ensure `out_stack` is refilled (if empty), then operate on its top.
+4. `empty()` returns true only when both stacks are empty. Each element is moved from `in_stack` to `out_stack` at most once, giving amortized O(1) operations.
 
 **Time Complexity:** O(1) amortized for `push`, `pop`, `peek`, and `empty` — each element is moved between the two stacks at most once.
 **Space Complexity:** O(n) — both stacks together hold all currently enqueued elements.

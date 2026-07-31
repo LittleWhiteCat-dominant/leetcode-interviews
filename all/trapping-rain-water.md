@@ -49,10 +49,13 @@ Two pointers tracking left/right max height, or monotonic stack
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.1 Two Pointers**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **two pointers converging from both ends while tracking running max heights**:
+
+1. Place `left` at index 0 and `right` at the last index, and track `left_max`/`right_max` as the tallest bar seen so far from each side.
+2. At each step, advance the pointer on the side with the smaller current height, since the water level there is bounded by the smaller of the two maxima.
+3. If `height[left] <= height[right]`, update `left_max` and add `left_max - height[left]` (the trapped water at that column) to the total, then move `left` inward.
+4. Otherwise do the symmetric update on the right side with `right_max` and move `right` inward.
+5. Continue until the pointers meet, at which point every column's trapped water has been accounted for.
 
 **Time Complexity:** O(n) — a single pass with two pointers moving inward.
 **Space Complexity:** O(1) — only a constant number of running max/pointer variables are kept.

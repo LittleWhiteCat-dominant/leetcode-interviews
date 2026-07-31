@@ -54,10 +54,13 @@ Use a `visited` array, or swap in place to generate permutations
 
 ## Approach
 
-1. Identify the core pattern for this category: **11. Backtracking**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **backtracking using a `used` boolean array**:
+
+1. Maintain a `path` list representing the permutation being built, and a `used` array marking which indices of `nums` are already placed in `path`.
+2. At each recursive call, if `path` has the same length as `nums`, a complete permutation has been formed, so append a copy of `path` to the results.
+3. Otherwise, iterate over every index `i` of `nums`; skip it if `used[i]` is already `true`.
+4. Mark `used[i] = true`, append `nums[i]` to `path`, and recurse to place the next element.
+5. After the recursive call returns, backtrack by popping the last element from `path` and resetting `used[i] = false`, so the index can be reused in a different position of another branch.
 
 **Time Complexity:** O(n \* n!) — there are n! permutations, each taking O(n) to build.
 **Space Complexity:** O(n) — recursion depth and the `used` array, excluding the output.

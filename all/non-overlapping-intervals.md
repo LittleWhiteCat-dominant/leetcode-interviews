@@ -62,10 +62,13 @@ Sort by right endpoint, greedy selection
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.5 Intervals**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **greedy interval scheduling, sorting by end time**:
+
+1. Sort all intervals by their end point, so the interval that finishes earliest is always considered first.
+2. Track `prev_end`, the end time of the last interval kept (initialized to negative infinity).
+3. Walk through the sorted intervals: if the current interval's start is at or after `prev_end`, it doesn't overlap with what's kept, so keep it and update `prev_end` to its end.
+4. Otherwise, the current interval overlaps with the previously kept one; since intervals are sorted by end time, the previously kept interval always ends no later, so it's optimal to discard the current interval and increment a `removed` counter.
+5. Return `removed`, the minimum number of intervals that must be removed to eliminate all overlaps.
 
 **Time Complexity:** O(n log n) — dominated by sorting the intervals by end time; the greedy scan afterward is O(n).
 **Space Complexity:** O(1) extra — aside from the space used by the sort.

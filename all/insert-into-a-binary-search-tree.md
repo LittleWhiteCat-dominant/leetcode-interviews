@@ -66,10 +66,13 @@ Recursive/iterative traversal using BST properties
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.2 Binary Search Tree (BST)**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **an iterative descent that follows BST ordering to find the correct empty spot**:
+
+1. If the tree is empty, the new value becomes the root, so return a fresh `TreeNode(val)` immediately.
+2. Otherwise, starting at the root, compare `val` to the current node's value at each step.
+3. If `val` is smaller, move to the left child; if that child is missing, attach the new node there and stop.
+4. Otherwise, move to the right child; if that child is missing, attach the new node there and stop.
+5. Return the (unchanged) `root` reference once the new node has been attached.
 
 **Time Complexity:** O(h) — where `h` is the height of the tree (O(log n) average, O(n) worst case for a skewed tree).
 **Space Complexity:** O(h) — for the iterative approach's implicit call depth is O(1); using recursion would be O(h) for the call stack.

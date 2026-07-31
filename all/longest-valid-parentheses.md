@@ -56,10 +56,13 @@ DP, or a stack tracking unmatched open-bracket positions
 
 ## Approach
 
-1. Identify the core pattern for this category: **12.2 2D DP**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a stack that tracks indices of unmatched characters, seeded with a base index of -1**:
+
+1. Initialize a stack with `-1` as a sentinel base for length calculations.
+2. For each `'('`, push its index onto the stack.
+3. For each `')'`, pop the stack; if the stack becomes empty, this `')'` is unmatched, so push its index as the new base.
+4. If the stack is non-empty after popping, the current valid substring length is `i - stack[-1]`, so update the running maximum.
+5. Repeat through the whole string and return the maximum valid length found.
 
 **Time Complexity:** O(n) — each index is pushed and popped from the stack at most once.
 **Space Complexity:** O(n) — for the stack of unmatched indices.

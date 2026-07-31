@@ -48,10 +48,13 @@ Simulate long multiplication
 
 ## Approach
 
-1. Identify the core pattern for this category: **2. String**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **grade-school long multiplication simulated on a digit array**:
+
+1. Handle the trivial case where either input is `"0"` by returning `"0"` immediately.
+2. Allocate a result buffer of size `m + n` (the maximum possible number of digits in the product), initialized to zeros.
+3. For every pair of digit positions `(i, j)` from the two numbers, multiply the digits and add the product into `result[i + j + 1]` (the low digit position), carrying the overflow into `result[i + j]` (the high digit position) — exactly like doing multiplication by hand.
+4. After processing all digit pairs, skip any leading zeros in the result buffer.
+5. Join the remaining digits into the final product string.
 
 **Time Complexity:** O(m * n) — every pair of digits from `num1` and `num2` is multiplied once.
 **Space Complexity:** O(m + n) — for the intermediate digit-product buffer.

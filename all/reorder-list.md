@@ -61,10 +61,12 @@ Find the midpoint + reverse the second half + interleave merge
 
 ## Approach
 
-1. Identify the core pattern for this category: **3. Linked List**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **slow/fast pointer split + in-place reversal + interleave merge**:
+
+1. Use slow/fast pointers to find the middle of the list, so it can be split into a first half and a second half.
+2. Reverse the second half in place using the standard iterative pointer-reversal pattern.
+3. Merge the two halves by alternating nodes: take one node from the first half, then one from the reversed second half, repeating until the second half is exhausted.
+4. Since the second half is never longer than the first, the loop is driven by the second half's remaining nodes, naturally leaving the interleave correctly terminated.
 
 **Time Complexity:** O(n) — one pass to find the midpoint, one pass to reverse the second half, one pass to merge.
 **Space Complexity:** O(1) — pointers only, no extra data structures.

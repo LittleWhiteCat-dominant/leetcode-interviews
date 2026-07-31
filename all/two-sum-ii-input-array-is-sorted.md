@@ -72,10 +72,14 @@ Left/right pointers instead of a hash map, O(1) space
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.1 Two Pointers**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a two-pointer sweep exploiting the sorted order**:
+
+1. Place `left` at the start and `right` at the end of the array.
+2. Compute `current_sum = numbers[left] + numbers[right]`.
+3. If it equals `target`, return the 1-indexed pair `[left + 1, right + 1]`.
+4. If it's less than `target`, the sum needs to grow, so advance `left` to the next larger value.
+5. If it's greater than `target`, the sum needs to shrink, so move `right` to the previous smaller value.
+6. Repeat until the pointers meet; the problem guarantees exactly one solution will be found along the way.
 
 **Time Complexity:** O(n) — the two pointers together traverse the array at most once.
 **Space Complexity:** O(1) — only the two pointer indices are used, no extra data structures.

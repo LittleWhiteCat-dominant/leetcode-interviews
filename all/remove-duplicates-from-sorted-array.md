@@ -76,10 +76,13 @@ Fast/slow pointers overwriting in place
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.1 Two Pointers**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **fast/slow pointers overwriting duplicates in place**:
+
+1. Since `nums` is sorted, all duplicates of a value are adjacent, so `slow` can track the end of the unique-elements-so-far region.
+2. `slow` starts at index 0 (the first element is trivially unique); `fast` scans ahead from index 1.
+3. Whenever `nums[fast] != nums[slow]`, a new unique value has been found: advance `slow` by one and copy `nums[fast]` into `nums[slow]`.
+4. If `nums[fast] == nums[slow]`, it's a duplicate, so just advance `fast` without touching `slow`.
+5. After `fast` finishes scanning the array, `slow + 1` is the count of unique elements, and `nums[0..slow]` holds them in sorted order.
 
 **Time Complexity:** O(n) — a single pass with the fast pointer.
 **Space Complexity:** O(1) — overwrites `nums` in place.

@@ -69,10 +69,12 @@ Stack tracking indices to delete
 
 ## Approach
 
-1. Identify the core pattern for this category: **2. String**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a stack that records indices of unmatched parentheses**:
+
+1. Scan the string left to right; push the index of each `(` onto a stack.
+2. For each `)`, if the stack is non-empty, pop it (the `)` is matched); otherwise this `)` is unmatched, so add its index to a `to_remove` set.
+3. After the scan, any indices still left on the stack are unmatched `(` characters, so add them to `to_remove` too.
+4. Build the result by keeping only the characters whose index is not in `to_remove`.
 
 **Time Complexity:** O(n) — one pass to find indices to remove, one pass to build the result.
 **Space Complexity:** O(n) — for the stack and the set of indices to remove.

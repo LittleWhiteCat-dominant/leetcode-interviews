@@ -62,10 +62,13 @@ Sort first, skip duplicates at the same level, elements used once each
 
 ## Approach
 
-1. Identify the core pattern for this category: **11. Backtracking**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **backtracking over sorted candidates, skipping duplicate values at the same recursion level**:
+
+1. Sort `candidates` first so equal values become adjacent and the remaining target can be pruned early.
+2. Backtrack with a `start` index and `remaining` target; whenever `remaining == 0`, the current `path` is a valid combination, so record a copy of it.
+3. In the loop over `candidates[start:]`, break immediately once `candidates[i] > remaining`, since all later candidates (sorted ascending) would only be larger.
+4. Skip `candidates[i]` when `i > start and candidates[i] == candidates[i - 1]` — this ensures duplicate values are only used once per position in the tree, preventing duplicate combinations without needing a final dedup step.
+5. Otherwise, add `candidates[i]` to `path`, recurse into `backtrack(i + 1, remaining - candidates[i])` (each candidate used at most once), then pop it before trying the next candidate.
 
 **Time Complexity:** O(2^n) worst case — for exploring subsets of the candidates, though sorting and early pruning (breaking once the remaining target is exceeded, skipping duplicates) cut this down substantially in practice.
 **Space Complexity:** O(n) — for the recursion depth and the current path, excluding the output.

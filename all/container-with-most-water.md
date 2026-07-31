@@ -55,10 +55,12 @@ Move the shorter side inward
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.1 Two Pointers**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a two-pointer sweep inward from both ends**:
+
+1. Start with `left` at index 0 and `right` at the last index, spanning the widest possible container.
+2. At each step, compute the area as `(right - left) * min(height[left], height[right])` and track the best seen so far.
+3. Move whichever pointer points to the shorter line inward, since the shorter side is the bottleneck limiting the area and only a taller line on that side can improve things.
+4. Repeat until `left` and `right` meet, having implicitly considered every pair that could possibly be optimal.
 
 **Time Complexity:** O(n) — each pointer moves inward at most n times total, so the array is scanned once.
 **Space Complexity:** O(1) — only a few pointer/variable references are used.

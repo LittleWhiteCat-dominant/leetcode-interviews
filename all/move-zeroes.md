@@ -49,10 +49,12 @@ Fast/slow pointers overwriting in place
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.1 Two Pointers**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a fast/slow pointer compaction pass**:
+
+1. Maintain an `insert_pos` pointer marking where the next non-zero element should go.
+2. Scan through `nums` with a fast pointer; whenever a non-zero value is found, write it to `nums[insert_pos]` and advance `insert_pos`.
+3. This compacts all non-zero elements to the front, in their original relative order, in a single pass.
+4. Fill the remaining positions from `insert_pos` to the end of the array with zeros.
 
 **Time Complexity:** O(n) — a single pass to compact non-zero elements, plus a final pass to zero the tail.
 **Space Complexity:** O(1) — the array is rearranged in place.

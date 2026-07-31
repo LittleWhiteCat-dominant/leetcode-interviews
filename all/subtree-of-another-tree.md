@@ -53,10 +53,13 @@ Recursive node-by-node comparison
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.1 Binary Tree Traversal & Recursion**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **DFS over `root` combined with a same-tree structural check at every node**:
+
+1. Write a helper `isSameTree(p, q)` that recursively checks whether two trees are structurally identical with matching values (base cases: both `None` → match; only one `None` or differing values → mismatch).
+2. In `isSubtree`, if `root` is `None`, the only way `subRoot` can be matched is if `subRoot` is also `None`.
+3. Otherwise, first check whether `subRoot` matches the tree rooted exactly at the current `root` using `isSameTree`.
+4. If it doesn't match here, recurse into `root.left` and `root.right`, since `subRoot` might match starting at some descendant node instead.
+5. Return `True` as soon as any of these checks succeeds; otherwise the final recursive calls will bottom out to `False`.
 
 **Time Complexity:** O(m * n) — in the worst case, `isSameTree` (O(n)) is invoked at each of the m nodes of `root`.
 **Space Complexity:** O(m + n) — recursion stack depth from `isSubtree` plus `isSameTree`.

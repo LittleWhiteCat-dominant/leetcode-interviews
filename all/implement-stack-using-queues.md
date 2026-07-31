@@ -76,10 +76,12 @@ Simulate one structure with the other
 
 ## Approach
 
-1. Identify the core pattern for this category: **5. Queue / Monotonic Queue**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a single queue, rotated after every push so the newest element sits at the front**:
+
+1. Keep all elements in one `deque` used strictly as a queue.
+2. On `push(x)`, append `x` to the back, then rotate the queue by popping from the front and re-appending, repeated `len(queue) - 1` times, moving `x` all the way to the front.
+3. This makes the front of the queue always hold the most recently pushed element, mimicking a stack's top.
+4. `pop()` and `top()` then simply operate on the front of the queue, and `empty()` checks if the queue is empty.
 
 **Time Complexity:** O(n) for `push` (rotating the queue so the new element is at the front), O(1) for `pop`, `top`, and `empty`.
 **Space Complexity:** O(n) — a single queue holds all currently pushed elements.

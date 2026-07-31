@@ -62,10 +62,14 @@ Max-heap by frequency with greedy scheduling + a cooldown queue
 
 ## Approach
 
-1. Identify the core pattern for this category: **8. Heap / Priority Queue**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a max-heap of task frequencies plus a cooldown queue**:
+
+1. Count the frequency of each task label and push the negated counts onto a max-heap so the most frequent task is always scheduled first.
+2. Simulate time tick by tick: on each tick, pop the most frequent remaining task from the heap and run it.
+3. If that task still has remaining occurrences after running, place it in a cooldown queue tagged with the time (`current time + n`) when it becomes eligible again.
+4. At the front of each tick, check whether the task at the head of the cooldown queue has become eligible; if so, push it back onto the heap.
+5. Continue until both the heap and cooldown queue are empty; idle ticks happen implicitly whenever the heap is empty but the cooldown queue is not.
+6. Return the total elapsed time.
 
 **Time Complexity:** O(m log k) — `m` is the number of tasks and `k` (at most 26) is the number of distinct labels; each task triggers at most one heap push/pop.
 **Space Complexity:** O(k) — the heap and cooldown queue each hold at most one entry per distinct task label.

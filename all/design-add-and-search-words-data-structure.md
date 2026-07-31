@@ -69,10 +69,13 @@ Trie + DFS to handle the `.` wildcard
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.3 Trie (Prefix Tree)**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a trie for storage plus DFS to handle `.` wildcards during search**:
+
+1. `addWord` walks the trie character by character, creating a `TrieNode` for any missing character via `setdefault`, then marks the final node's `is_word = True`.
+2. `search` delegates to a recursive `dfs(node, i)` that tracks the current trie node and the current position in the query word.
+3. If `i` reaches the end of the word, the match succeeds only if the current node is marked `is_word`.
+4. If the current character is a letter, follow the single matching child (failing if it doesn't exist); if it's `.`, try every child of the current node and succeed if any recursive branch succeeds.
+5. Start the DFS at the trie root with `i = 0`.
 
 **Time Complexity:** `addWord` is O(L) for a word of length L. `search` is O(L) without dots, and up to O(26^d * L) in the worst case with d wildcard dots (branching over all children at each dot).
 **Space Complexity:** O(N * L) — total characters across all inserted words, stored in the trie.

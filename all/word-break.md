@@ -68,10 +68,13 @@ String DP; a Trie can speed up lookups
 
 ## Approach
 
-1. Identify the core pattern for this category: **2. String**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **1D DP over prefix lengths, checking every earlier split point**:
+
+1. Put all dictionary words into a hash set for O(1) average lookups.
+2. Define `dp[i]` as whether the prefix `s[:i]` can be fully segmented into dictionary words; set `dp[0] = True` as the empty-prefix base case.
+3. For each end position `i` from 1 to `n`, try every earlier split point `j` from 0 to `i - 1`.
+4. If `dp[j]` is true and the substring `s[j:i]` is a dictionary word, then `s[:i]` is also segmentable, so set `dp[i] = True` and stop checking further split points for this `i`.
+5. Return `dp[n]`, which tells whether the entire string can be segmented.
 
 **Time Complexity:** O(n^2) — for each end position we try every earlier split point, with O(1) average dictionary lookups via a hash set.
 **Space Complexity:** O(n) — the `dp` array plus the hash set of dictionary words.

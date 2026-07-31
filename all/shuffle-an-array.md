@@ -64,10 +64,13 @@ Array + Fisher–Yates shuffle
 
 ## Approach
 
-1. Identify the core pattern for this category: **15. Design Problems**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **the Fisher–Yates shuffle algorithm**:
+
+1. Store a separate copy of the original array so `reset()` can restore it at any time without recomputation.
+2. Keep a working array that `shuffle()` mutates directly.
+3. To shuffle, iterate from the last index down to index 1; at each position `i`, pick a uniformly random index `j` in `[0, i]` and swap `array[i]` with `array[j]`.
+4. This guarantees every permutation is equally likely, since each element has an equal chance of landing in any remaining position as the swap window shrinks.
+5. `reset()` simply copies the stored original array back into the working array and returns it.
 
 **Time Complexity:** O(n) per call to `shuffle` or `reset` — each element is touched once.
 **Space Complexity:** O(n) — storing the original array plus the working copy.

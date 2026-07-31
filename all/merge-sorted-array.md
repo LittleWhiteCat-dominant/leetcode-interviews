@@ -78,10 +78,12 @@ Merge back-to-front with two pointers to avoid overwrites
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.1 Two Pointers**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a reverse two-pointer merge**:
+
+1. Set up three pointers: `i` at the last valid element of `nums1` (index `m - 1`), `j` at the last element of `nums2` (index `n - 1`), and `k` at the last slot of the combined array (index `m + n - 1`).
+2. Repeatedly compare `nums1[i]` and `nums2[j]`, placing the larger of the two at `nums1[k]`, then decrement the pointer of whichever element was placed and decrement `k`.
+3. Continue until all of `nums2` has been placed (`j < 0`); any remaining elements in `nums1` are already in their correct positions and need no further work.
+4. Writing from the back guarantees we never overwrite an unread element of `nums1`.
 
 **Time Complexity:** O(m + n) — each element of both arrays is visited exactly once.
 **Space Complexity:** O(1) — merging is done in place within `nums1`, using only pointer variables.

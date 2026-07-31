@@ -56,10 +56,12 @@ DFS to compute the size of each connected component, take the max
 
 ## Approach
 
-1. Identify the core pattern for this category: **9.1 DFS / BFS Fundamentals**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **DFS flood-fill from each unvisited land cell, computing the area of its connected island**:
+
+1. Iterate over every cell in the grid; when a `1` is found, launch a DFS from it to measure that island's area.
+2. In `dfs(r, c)`, immediately return `0` if the cell is out of bounds or is water (`0`), otherwise mark it visited by setting `grid[r][c] = 0` in place (avoiding a separate visited set).
+3. Return `1` (for the current cell) plus the sum of `dfs` recursing into all four neighboring directions.
+4. Track the maximum area returned across all DFS calls started from land cells, defaulting to `0` if the grid has no land.
 
 **Time Complexity:** O(m * n) — every cell is visited a constant number of times across all DFS calls.
 **Space Complexity:** O(m * n) — for the recursion stack in the worst case of one giant island.

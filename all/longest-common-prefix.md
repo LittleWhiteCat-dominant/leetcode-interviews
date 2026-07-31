@@ -51,10 +51,12 @@ Vertical/horizontal scanning, or a Trie
 
 ## Approach
 
-1. Identify the core pattern for this category: **2. String**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **vertical scanning via `zip(*strs)` to compare characters column by column**:
+
+1. Handle the empty-input edge case up front by returning `""`.
+2. Use `zip(*strs)` to iterate over the strings column by column, where each `chars` tuple holds one character from every string at that position.
+3. As soon as a column contains more than one distinct character (`len(set(chars)) > 1`), the common prefix ends there, so return `strs[0][:i]`.
+4. If every column matches across all strings (loop completes without returning), the shortest string is itself the full common prefix, so return `min(strs, key=len)`.
 
 **Time Complexity:** O(S) — where S is the total number of characters across all strings, since each character is examined at most once.
 **Space Complexity:** O(1) — excluding the output string, only a constant amount of extra space is used.

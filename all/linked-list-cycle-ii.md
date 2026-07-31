@@ -68,10 +68,12 @@ Floyd's fast/slow pointer cycle detection
 
 ## Approach
 
-1. Identify the core pattern for this category: **3. Linked List**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **Floyd's cycle detection followed by a second pointer phase to locate the cycle entrance**:
+
+1. Move `slow` one step and `fast` two steps at a time until they meet inside a cycle (or `fast` hits the end, meaning no cycle).
+2. Once `slow` and `fast` meet, reset a new pointer to `head` while leaving `slow` at the meeting point.
+3. Advance both the new pointer and `slow` one step at a time; by the mathematical property of Floyd's algorithm, they meet exactly at the cycle's starting node.
+4. Return that meeting node as the cycle start, or `None` if no cycle was ever detected.
 
 **Time Complexity:** O(n) — the fast/slow pointers each traverse a bounded number of nodes proportional to the list length.
 **Space Complexity:** O(1) — only a constant number of pointers are used.

@@ -55,10 +55,13 @@ Locate the sub-range head/tail, then reverse locally
 
 ## Approach
 
-1. Identify the core pattern for this category: **3. Linked List**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a dummy head plus repeated head-insertion reversal on the sub-range**:
+
+1. Add a dummy node before `head` so that reversing starting at position 1 doesn't require special-casing the list head.
+2. Advance a `prev` pointer `left - 1` steps so it sits just before the sub-range to reverse.
+3. Let `curr` be `prev.next` (the first node of the sub-range); it will end up as the tail of the reversed portion.
+4. Repeat `right - left` times: detach the node right after `curr`, and re-insert it immediately after `prev`, effectively pushing each subsequent node to the front of the sub-range.
+5. Return `dummy.next` as the new head of the list.
 
 **Time Complexity:** O(n) — a single pass over the list.
 **Space Complexity:** O(1) — in-place pointer manipulation with a dummy head.

@@ -15,10 +15,13 @@ Multi-source BFS expanding from all gates simultaneously
 
 ## Approach
 
-1. Identify the core pattern for this category: **9.1 DFS / BFS Fundamentals**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **multi-source BFS starting simultaneously from every gate**:
+
+1. Scan the grid once and enqueue the coordinates of every gate (cells with value `0`) as initial BFS sources.
+2. Run a standard BFS: repeatedly pop a cell and examine its four neighbors.
+3. If a neighbor is an empty room (still holding the sentinel `INF` value), it hasn't been reached yet, so set its distance to `current cell's distance + 1` and enqueue it.
+4. Because all gates start in the queue at the same "layer", the first time any room is visited it is guaranteed to be via the nearest gate, so no revisiting or distance comparison is needed.
+5. Continue until the queue is empty; every reachable room now holds its shortest distance to a gate.
 
 **Time Complexity:** O(m * n) — every cell is enqueued and processed at most once during the multi-source BFS.
 **Space Complexity:** O(m * n) — the BFS queue can hold up to all cells in the worst case.

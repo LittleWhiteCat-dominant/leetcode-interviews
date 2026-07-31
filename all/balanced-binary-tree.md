@@ -54,10 +54,13 @@ Post-order recursion returning both height and balance status
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.1 Binary Tree Traversal & Recursion**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a single post-order DFS that returns height and detects imbalance in one pass**:
+
+1. Define a recursive `height` function that returns `0` for a `None` node (base case).
+2. Recurse into the left and right subtrees first; if either returns `-1`, propagate `-1` immediately as a signal that an imbalance was already found further down.
+3. Otherwise compare `abs(left_height - right_height)`; if it exceeds `1`, this node is unbalanced, so return `-1`.
+4. If balanced so far, return `max(left_height, right_height) + 1` as this node's true height.
+5. The tree is balanced overall if and only if the top-level call does not return `-1`.
 
 **Time Complexity:** O(n) — each node is visited exactly once.
 **Space Complexity:** O(h) — recursion stack, where h is the tree height (O(n) worst case, O(log n) if balanced).

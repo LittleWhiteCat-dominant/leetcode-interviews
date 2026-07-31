@@ -53,10 +53,13 @@ Build digit by digit with modulo, watch for overflow
 
 ## Approach
 
-1. Identify the core pattern for this category: **14. Bit Manipulation & Math**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **digit-by-digit extraction via modulo/division, with an overflow guard**:
+
+1. Record the sign of `x`, then work with its absolute value so the digit extraction logic stays sign-agnostic.
+2. Repeatedly peel off the last digit with `x % 10` and shrink `x` with `x //= 10`.
+3. Build up the reversed number by doing `result = result * 10 + digit` on each iteration.
+4. After each multiplication, check whether `result` has already exceeded the 32-bit signed max; if so, return `0` immediately instead of continuing.
+5. Once `x` is fully consumed, reapply the sign and do a final range check against `[INT_MIN, INT_MAX]` before returning.
 
 **Time Complexity:** O(log₁₀|x|) — one iteration per digit of `x`.
 **Space Complexity:** O(1) — only a handful of scalar variables.

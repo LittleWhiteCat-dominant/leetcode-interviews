@@ -66,10 +66,13 @@ Determine which half is sorted to decide the shrink direction
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.4 Binary Search**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **modified binary search that identifies which half is sorted**:
+
+1. Maintain `lo`/`hi` pointers and compute `mid` as usual; if `nums[mid] == target`, return `mid` immediately.
+2. Determine which half of `[lo, mid]` / `[mid, hi]` is contiguously sorted by comparing `nums[lo]` to `nums[mid]`.
+3. If the left half (`nums[lo..mid]`) is sorted, check whether `target` falls within that range; if so, search left (`hi = mid - 1`), otherwise search right (`lo = mid + 1`).
+4. Otherwise the right half must be sorted, so check whether `target` falls within `nums[mid..hi]`; if so, search right, otherwise search left.
+5. Repeat until the range is empty, returning `-1` if `target` was never found.
 
 **Time Complexity:** O(log n) — standard binary search with one extra comparison per iteration to determine the sorted half.
 **Space Complexity:** O(1) — only a few index variables.

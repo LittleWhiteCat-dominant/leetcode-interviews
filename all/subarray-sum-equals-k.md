@@ -48,10 +48,13 @@ Prefix sum + hash map counting occurrences
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.3 Prefix Sum**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **running prefix sums combined with a hash map of prefix-sum frequencies**:
+
+1. Maintain a running `prefix_sum` as you scan `nums` left to right, and a hash map `seen` counting how many times each prefix-sum value has occurred so far (initialized with `seen[0] = 1` to account for subarrays starting at index 0).
+2. A subarray ending at the current index sums to `k` exactly when there was an earlier prefix sum equal to `prefix_sum - k`.
+3. At each step, look up `seen[prefix_sum - k]` and add that count to the running total — this counts every valid subarray ending here in O(1).
+4. Then record the current `prefix_sum` in `seen` by incrementing its count, so future indices can match against it.
+5. Return the accumulated total after processing the whole array.
 
 **Time Complexity:** O(n) — one pass while maintaining running prefix sums and a hash map.
 **Space Complexity:** O(n) — the hash map can store up to n distinct prefix sums.

@@ -75,10 +75,12 @@ Hash map for node mapping, or interleave-then-split in place
 
 ## Approach
 
-1. Identify the core pattern for this category: **3. Linked List**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a hash map from original nodes to their copies, built in two passes**:
+
+1. First pass: walk the original list and create a brand-new `Node` for each original node, storing the mapping `old_to_new[original] = copy` (only copying `val` for now).
+2. Second pass: walk the original list again, and for each node set the copy's `next` and `random` pointers by looking up `old_to_new[current.next]` and `old_to_new[current.random]`, defaulting to `None` when the original pointer was `None`.
+3. Because the mapping already contains every node from the first pass, this second pass can wire up all pointers correctly without worrying about forward references.
+4. Return `old_to_new[head]` as the head of the deep copy.
 
 **Time Complexity:** O(n) — two linear passes over the list.
 **Space Complexity:** O(n) — hash map storing an original-to-copy node mapping.

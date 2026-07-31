@@ -56,10 +56,13 @@ Sort + hash-map counting for greedy group formation
 
 ## Approach
 
-1. Identify the core pattern for this category: **13. Greedy**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a greedy pass over sorted card values, always starting a group at the smallest remaining card**:
+
+1. If `len(hand)` isn't divisible by `groupSize`, no valid grouping is possible, so return `False` immediately.
+2. Count the occurrences of each card value with a `Counter`.
+3. Process distinct card values in ascending order; whenever a value still has a positive remaining count, it must be the start of a new group of `groupSize` consecutive cards (since it's the smallest value left).
+4. For that group, consume one occurrence each of `card, card + 1, ..., card + groupSize - 1` from the counts; if any required value is missing or has count 0, return `False`.
+5. If all values are consumed successfully, return `True`.
 
 **Time Complexity:** O(n log n) — dominated by sorting the distinct card values; the greedy pass over counts is O(n).
 **Space Complexity:** O(n) — for the frequency map.

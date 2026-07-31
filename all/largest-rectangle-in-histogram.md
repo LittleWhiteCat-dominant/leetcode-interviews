@@ -47,10 +47,13 @@ Monotonically increasing stack; compute area on pop
 
 ## Approach
 
-1. Identify the core pattern for this category: **4.2 Monotonic Stack**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a monotonically increasing stack of bar indices**:
+
+1. Scan bars left to right, pushing a sentinel height of `0` after the last real bar to force any remaining bars to be resolved.
+2. Keep a stack of indices whose heights are non-decreasing; before pushing the current bar, pop while the top of the stack has a height `>=` the current height.
+3. Each time a bar is popped, it is the shortest bar in a rectangle whose height is `heights[popped]`; its width spans from the new stack top (exclusive) to the current index (exclusive).
+4. Update the running maximum area with `height * width` for every popped bar.
+5. Push the current index onto the stack and continue until all bars (including the sentinel) are processed.
 
 **Time Complexity:** O(n) — each index is pushed onto and popped from the stack at most once.
 **Space Complexity:** O(n) — for the monotonic stack of indices.

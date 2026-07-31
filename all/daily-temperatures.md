@@ -51,10 +51,12 @@ Monotonically decreasing stack to find the next greater element
 
 ## Approach
 
-1. Identify the core pattern for this category: **4.2 Monotonic Stack**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a monotonically decreasing stack of pending indices**:
+
+1. Keep a stack of indices whose "warmer day" hasn't been found yet; the temperatures at these indices are strictly decreasing from bottom to top.
+2. For each new index `i`, while the stack is non-empty and the temperature at the top of the stack is colder than `temperatures[i]`, pop that index and set `answer[popped] = i - popped`, since `i` is its first warmer day.
+3. Push the current index `i` onto the stack, since its warmer day is still unknown.
+4. Any indices left on the stack at the end never found a warmer day, so their `answer` entries correctly stay at the initialized 0.
 
 **Time Complexity:** O(n) — each index is pushed and popped from the stack at most once.
 **Space Complexity:** O(n) — the monotonic stack can hold up to n indices in the worst case.

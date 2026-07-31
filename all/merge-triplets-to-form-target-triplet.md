@@ -79,10 +79,12 @@ Greedily filter triplets that satisfy the condition
 
 ## Approach
 
-1. Identify the core pattern for this category: **13. Greedy**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **greedy filtering of "compatible" triplets**:
+
+1. Note that the `max` operation can only ever raise a coordinate, never lower it, so any triplet with a coordinate exceeding the matching `target` coordinate can never help and must be discarded.
+2. Scan through `triplets`, keeping only those where `a <= x`, `b <= y`, and `c <= z`.
+3. Among the surviving triplets, track for each of the three positions whether some triplet already matches `target` exactly at that position (a `good` flag per coordinate).
+4. If all three flags become true, some combination of `max` operations can assemble `target`, so return `True`; otherwise return `False`.
 
 **Time Complexity:** O(n) — a single pass over the triplets array.
 **Space Complexity:** O(1) — only a fixed-size `good` flag array is used.

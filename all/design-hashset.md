@@ -60,10 +60,13 @@ Array + linked list for collision handling (chaining)
 
 ## Approach
 
-1. Identify the core pattern for this category: **6. Hash Table**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a fixed-size bucket array with chaining for collisions**:
+
+1. Allocate `capacity` buckets, each an empty list that will hold keys that hash to it.
+2. Hash a key with simple modulo: `key % capacity`.
+3. `add` checks whether the key is already in its bucket, and appends it only if not present, avoiding duplicates.
+4. `remove` checks whether the key is in its bucket and removes it if present.
+5. `contains` simply checks membership of the key within its target bucket.
 
 **Time Complexity:** O(1) average per operation — assuming a good hash spread, each bucket holds O(n / capacity) entries.
 **Space Complexity:** O(n + capacity) — one fixed-size bucket array plus the stored keys.

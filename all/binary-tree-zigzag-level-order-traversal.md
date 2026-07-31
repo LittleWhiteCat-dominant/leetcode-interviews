@@ -54,10 +54,13 @@ BFS + queue
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.1 Binary Tree Traversal & Recursion**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **level-order BFS that alternates the append direction each level**:
+
+1. Return an empty list immediately if `root` is `None`.
+2. Run the usual BFS, snapshotting the queue length at the start of each level to know how many nodes belong to it.
+3. Use a `deque` for the current level's values and a `left_to_right` flag; append to the right end when the flag is true, and to the left end (`appendleft`) when it's false.
+4. Still enqueue children left-to-right regardless of the flag, since the zigzag only affects output order, not traversal order.
+5. After finishing a level, add it to the result and flip `left_to_right` before moving to the next level.
 
 **Time Complexity:** O(n) — every node is enqueued and dequeued exactly once.
 **Space Complexity:** O(n) — for the queue and the output, up to O(n) nodes at the widest level.

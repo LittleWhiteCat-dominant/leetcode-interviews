@@ -59,10 +59,13 @@ Monotonic queue / prefix sum optimization
 
 ## Approach
 
-1. Identify the core pattern for this category: **5. Queue / Monotonic Queue**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a sliding window maintained by a monotonic queue (deque)**:
+
+1. Keep a `deque` of all request timestamps that currently fall within the trailing 3000ms window.
+2. On each `ping(t)` call, append `t` to the back of the deque — since calls arrive with strictly increasing `t`, the deque is naturally kept sorted.
+3. Pop timestamps off the front of the deque while they fall outside the valid range (i.e., they are less than `t - 3000`), since they can never be part of any future window either.
+4. Return the current size of the deque, which is exactly the number of requests within `[t - 3000, t]`.
+5. Because each timestamp is pushed once and popped at most once across all calls, the total work is O(1) amortized per `ping`.
 
 **Time Complexity:** O(1) amortized per `ping` call — each request is pushed once and popped at most once across all calls.
 **Space Complexity:** O(w) — where `w` is the number of requests within the 3000ms window currently stored in the queue.

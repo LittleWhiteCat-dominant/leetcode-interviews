@@ -71,10 +71,13 @@ Dijkstra's single-source shortest path
 
 ## Approach
 
-1. Identify the core pattern for this category: **9.3 Advanced Graph Algorithms (Shortest Path / MST)**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **Dijkstra's algorithm using a min-heap**:
+
+1. Build a directed adjacency list from `times`, mapping each source node to its `(destination, weight)` pairs.
+2. Use a min-heap seeded with `(0, k)`, representing the source node `k` at distance `0`, and a `dist` map recording the shortest confirmed distance to each visited node.
+3. Repeatedly pop the smallest-distance entry from the heap; if that node is already finalized in `dist`, skip it (a stale, superseded entry), otherwise record its distance and push all of its unvisited neighbors with their updated tentative distances.
+4. This greedily finalizes nodes in increasing order of distance from `k`, which is the core Dijkstra invariant.
+5. Once the heap is empty, if every node has an entry in `dist`, the signal reaches all `n` nodes, so return the maximum distance (the time for the last node to receive it); otherwise return `-1`.
 
 **Time Complexity:** O(E log V) — Dijkstra's algorithm with a binary heap, where each edge relaxation is a heap push.
 **Space Complexity:** O(V + E) — for the adjacency list, the distance map, and the heap.

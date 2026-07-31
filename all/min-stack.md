@@ -72,10 +72,12 @@ An auxiliary stack tracking the running minimum
 
 ## Approach
 
-1. Identify the core pattern for this category: **4.1 Basic Stack Applications**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a single stack of (value, running-minimum) pairs**:
+
+1. Instead of a separate min-tracking stack, store each pushed value alongside the minimum seen so far, as a tuple.
+2. On `push(val)`, compute the new running minimum as `min(val, current top's minimum)` (or just `val` if the stack is empty), and push `(val, running_min)`.
+3. `pop()` simply removes the top tuple, automatically restoring the previous running minimum since it's baked into the tuple below.
+4. `top()` and `getMin()` just read the value or minimum from the top tuple, both O(1).
 
 **Time Complexity:** O(1) — every operation (`push`, `pop`, `top`, `getMin`) only touches the top of the stack.
 **Space Complexity:** O(n) — each stack entry stores both the value and the running minimum.

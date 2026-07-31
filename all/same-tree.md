@@ -56,10 +56,11 @@ Recursive node-by-node comparison
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.1 Binary Tree Traversal & Recursion**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **simple recursive structural comparison**:
+
+1. Base case: if both nodes are `None`, the trees match at this position, so return `True`.
+2. If exactly one of the two nodes is `None`, or their values differ, the trees diverge here, so return `False`.
+3. Otherwise, recursively compare the left subtrees and the right subtrees, requiring both comparisons to succeed.
 
 **Time Complexity:** O(n) — every node in both trees is visited at most once.
 **Space Complexity:** O(h) — recursion stack depth equal to the tree height.

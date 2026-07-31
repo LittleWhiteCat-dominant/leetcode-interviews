@@ -67,10 +67,12 @@ Use value comparisons to directly decide the search direction
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.2 Binary Search Tree (BST)**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **iterative BST navigation, exploiting the ordering property to avoid searching both subtrees**:
+
+1. Start at the root and compare both `p.val` and `q.val` against the current node's value.
+2. If both are smaller than the current node, the LCA must be in the left subtree, so move `node = node.left`.
+3. If both are larger, the LCA must be in the right subtree, so move `node = node.right`.
+4. Otherwise, `p` and `q` are on different sides (or one equals the current node), meaning the current node is the split point and thus the LCA — return it immediately.
 
 **Time Complexity:** O(H) — where H is the tree height, since we walk a single root-to-node path using BST ordering.
 **Space Complexity:** O(1) — the iterative approach uses no extra space beyond a single pointer.

@@ -74,10 +74,13 @@ Same as 207, but output the topological order
 
 ## Approach
 
-1. Identify the core pattern for this category: **9.2 Topological Sort**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **Kahn's algorithm (BFS topological sort), recording the visit order**:
+
+1. Build an adjacency list `graph[prereq] -> [courses that depend on it]` and an `indegree` array counting prerequisites per course.
+2. Seed a queue with every course whose `indegree` is 0, since those have no unmet prerequisites and can be taken first.
+3. Repeatedly pop a course from the queue, append it to the output `order`, and decrement the indegree of each course it unlocks; enqueue any neighbor whose indegree drops to 0.
+4. This naturally produces one valid topological ordering, since a course is only added once all of its prerequisites have already been placed in `order`.
+5. If `len(order) == numCourses` at the end, return `order`; otherwise a cycle blocked some courses, so return an empty array.
 
 **Time Complexity:** O(V + E) — build the adjacency list once and process every vertex and edge exactly once during Kahn's BFS.
 **Space Complexity:** O(V + E) — adjacency list, in-degree array, and the BFS queue.

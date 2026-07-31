@@ -59,10 +59,12 @@ dp[i] = max(dp[i-1], dp[i-2] + nums[i]); split the circular array into two segme
 
 ## Approach
 
-1. Identify the core pattern for this category: **12.1 1D DP**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved by **reducing the circular problem to two linear House Robber subproblems**:
+
+1. Handle the trivial case first: if there's only one house, return its value directly.
+2. Because the houses form a circle, the first and last house can never both be robbed, so the optimal answer must exclude at least one of them.
+3. Run the standard linear House Robber DP (`prev, curr = curr, max(curr, prev + money)`) once on all houses except the last, and once on all houses except the first.
+4. Return the maximum of the two results.
 
 **Time Complexity:** O(n) — two linear passes over the array (excluding first house, excluding last house).
 **Space Complexity:** O(1) — only a constant number of running variables per pass.

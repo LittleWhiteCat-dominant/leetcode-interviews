@@ -54,10 +54,13 @@ State-machine DP
 
 ## Approach
 
-1. Identify the core pattern for this category: **12.2 2D DP**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **state-machine DP tracking, for each of the `k` allowed transactions, whether we are currently holding a share or holding cash**:
+
+1. Maintain two length-`(k + 1)` arrays: `hold[j]` (max profit after buying for the `j`-th time, currently holding) and `cash[j]` (max profit after selling for the `j`-th time, currently not holding).
+2. Initialize `hold[j] = -inf` for all `j` (can't be holding before any transaction) and `cash[j] = 0`.
+3. For each price, update `hold[j] = max(hold[j], cash[j - 1] - price)` — either keep holding, or buy using the profit from `j - 1` completed transactions.
+4. Then update `cash[j] = max(cash[j], hold[j] + price)` — either keep resting, or sell the share just considered for `hold[j]`.
+5. After processing all prices, `cash[k]` holds the best achievable profit using at most `k` transactions.
 
 **Time Complexity:** O(n * k) — for each of the n prices, we update k transaction states.
 **Space Complexity:** O(k) — two length-(k + 1) arrays track the hold/cash states.

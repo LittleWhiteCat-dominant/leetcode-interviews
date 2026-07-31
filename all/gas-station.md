@@ -70,10 +70,12 @@ If total gas is sufficient, some starting point guarantees completing the loop
 
 ## Approach
 
-1. Identify the core pattern for this category: **13. Greedy**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a single greedy pass tracking a running tank and total surplus**:
+
+1. Walk through the stations once, tracking `total_tank` (the overall gas surplus/deficit across the whole circuit) and `current_tank` (the surplus/deficit since the current candidate start).
+2. At each station, add `gas[i] - cost[i]` to both totals.
+3. If `current_tank` ever drops below zero, the current start (and everything since the last reset) cannot reach this station, so the next station becomes the new candidate start and `current_tank` resets to 0.
+4. After the pass, if `total_tank >= 0` a valid start exists and it's exactly the last candidate recorded; otherwise return `-1`.
 
 **Time Complexity:** O(n) — a single pass through the stations.
 **Space Complexity:** O(1) — only a few running totals are tracked.

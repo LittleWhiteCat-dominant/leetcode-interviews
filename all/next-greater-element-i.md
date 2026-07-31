@@ -68,10 +68,13 @@ Monotonic stack + hash map lookup
 
 ## Approach
 
-1. Identify the core pattern for this category: **4.2 Monotonic Stack**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a monotonic decreasing stack over `nums2`, feeding a hash map lookup for `nums1`**:
+
+1. Iterate through `nums2` while maintaining a stack that stays in decreasing order from bottom to top.
+2. For each new number, pop every stack element smaller than it, since the current number is each popped element's next greater element; record each such pair in a `next_greater` map.
+3. Push the current number onto the stack after popping, so the stack always represents numbers still waiting for their next greater element.
+4. Once `nums2` is fully processed, any numbers left on the stack have no next greater element.
+5. Answer each query in `nums1` by looking up `next_greater.get(num, -1)`.
 
 **Time Complexity:** O(n2 + n1) — the monotonic stack pass over `nums2` is linear, plus a linear lookup pass for `nums1`.
 **Space Complexity:** O(n2) — for the stack and the next-greater hash map.

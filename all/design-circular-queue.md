@@ -81,10 +81,13 @@ Array simulating a circular queue
 
 ## Approach
 
-1. Identify the core pattern for this category: **5. Queue / Monotonic Queue**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a fixed-size array plus a `front` index and `size` counter, wrapped with modular arithmetic**:
+
+1. Store `capacity`, a `data` array of that size, a `front` index, and a `size` count of currently stored elements.
+2. `enQueue` computes the rear slot as `(front + size) % capacity`, writes the value there, and increments `size` (rejecting the call first if `isFull()`).
+3. `deQueue` advances `front` forward by one, wrapping with `(front + 1) % capacity`, and decrements `size` (rejecting the call first if `isEmpty()`).
+4. `Front`/`Rear` read `data[front]` and `data[(front + size - 1) % capacity]` respectively, returning `-1` when empty.
+5. `isEmpty`/`isFull` compare `size` against `0` and `capacity`, so the ring buffer never overwrites live data or reads past the stored elements.
 
 **Time Complexity:** O(1) per operation — index arithmetic only, no shifting of elements.
 **Space Complexity:** O(k) — the fixed-size backing array.

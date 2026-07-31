@@ -15,10 +15,13 @@ Length-prefixed encoding to handle arbitrary characters
 
 ## Approach
 
-1. Identify the core pattern for this category: **2. String**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **length-prefixed encoding, so delimiters can never be confused with real content**:
+
+1. `encode` joins every string as `f"{len(s)}#{s}"`, prefixing each string with its length and a `#` separator before the raw characters.
+2. Because the length is known up front, the decoder never needs to search for a terminating delimiter inside the string content, so arbitrary characters (including `#` itself) are safe.
+3. `decode` scans through the combined string with an index `i`; at each step it finds the next `#` via `s.index('#', i)` to read off the length prefix.
+4. It converts the text before `#` to an integer `length`, then slices exactly that many characters right after the `#` to recover one original string.
+5. Advance `i` past the string just read and repeat until the whole encoded string is consumed, collecting each recovered string into the result list.
 
 **Time Complexity:** O(n) — where n is the total number of characters across all strings; encode and decode each make a single linear pass.
 **Space Complexity:** O(n) — the encoded string (and decoded output) size scales with the total input length.

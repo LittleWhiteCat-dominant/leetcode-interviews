@@ -47,10 +47,12 @@ Bottom-up recursion returning height
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.1 Binary Tree Traversal & Recursion**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **bottom-up recursion returning each subtree's height**:
+
+1. Base case: an empty tree (`root is None`) has depth `0`.
+2. Recursively compute the depth of the left subtree and the depth of the right subtree.
+3. The depth of the current node is `1` plus the larger of the two subtree depths.
+4. This unwinds naturally from the leaves back up to the root, producing the overall maximum depth.
 
 **Time Complexity:** O(n) — every node is visited exactly once.
 **Space Complexity:** O(H) — for the recursion stack, where H is the tree height (O(n) worst case for a skewed tree).

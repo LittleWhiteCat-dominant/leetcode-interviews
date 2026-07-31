@@ -60,10 +60,13 @@ Similar to #70, with weighted DP transitions
 
 ## Approach
 
-1. Identify the core pattern for this category: **12.1 1D DP**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **bottom-up 1D dynamic programming with rolling variables**:
+
+1. Define `dp[i]` as the minimum cost to reach step `i` (where "reaching" step `n` means reaching the top of the floor, past the last step).
+2. Since you can start for free at step `0` or step `1`, the base cases are `dp[0] = dp[1] = 0`.
+3. For each step `i` from `2` to `n`, the cheapest way to arrive is `dp[i] = min(dp[i-1] + cost[i-1], dp[i-2] + cost[i-2])`, since you must pay to leave whichever of the two previous steps you climbed from.
+4. Roll the last two DP values forward instead of storing a full array, since only `dp[i-1]` and `dp[i-2]` are ever needed.
+5. Return `dp[n]`, the minimum cost to reach the top.
 
 **Time Complexity:** O(n) — one pass computing the DP transition for each step.
 **Space Complexity:** O(1) — only the two previous DP values are kept.

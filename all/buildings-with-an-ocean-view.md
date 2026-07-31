@@ -15,10 +15,13 @@ Right-to-left scan tracking the running maximum
 
 ## Approach
 
-1. Identify the core pattern for this category: **6. Hash Table**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a single right-to-left scan tracking the tallest building seen so far**:
+
+1. Observe that a building has an ocean view (to the right) exactly when it is strictly taller than every building to its right.
+2. Scan `heights` from the last index down to the first, keeping a running `max_height_so_far` (initialized to `-inf`).
+3. At each index, if the current height exceeds `max_height_so_far`, this building has a view, so record its index and update `max_height_so_far`.
+4. Because the scan goes right to left, indices are collected in decreasing order.
+5. Reverse the collected list before returning so indices come out in increasing order.
 
 **Time Complexity:** O(n) — a single right-to-left pass through the heights array.
 **Space Complexity:** O(1) extra space, beyond the output list.

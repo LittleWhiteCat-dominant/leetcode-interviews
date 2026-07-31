@@ -83,10 +83,13 @@ Construct bit by bit via shifting
 
 ## Approach
 
-1. Identify the core pattern for this category: **14. Bit Manipulation & Math**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **bit-by-bit extraction and reconstruction**:
+
+1. Initialize a `result` accumulator to 0.
+2. Loop exactly 32 times (one per bit of the input).
+3. On each iteration, shift `result` left by one to make room for the next bit, then OR in the lowest bit of `n` (via `n & 1`).
+4. Shift `n` right by one to move to its next bit.
+5. After 32 iterations, `result` holds `n`'s bits in reverse order.
 
 **Time Complexity:** O(1) — always exactly 32 iterations regardless of input.
 **Space Complexity:** O(1) — a single accumulator integer.

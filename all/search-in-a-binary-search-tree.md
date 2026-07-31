@@ -53,10 +53,11 @@ Recursive/iterative traversal using BST properties
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.2 Binary Search Tree (BST)**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **an iterative descent that exploits the BST ordering property**:
+
+1. Start at `root` and loop while the current node exists and its value doesn't equal `val`.
+2. At each step, use the BST invariant to decide direction: if `val` is smaller than the current node's value, move to the left child; otherwise move to the right child.
+3. The loop naturally terminates either when a node with value `val` is found, or when it falls off the tree (`root` becomes `None`), which is also the correct "not found" result.
 
 **Time Complexity:** O(h) — each step follows the BST invariant down a single path.
 **Space Complexity:** O(1) — iterative traversal with no recursion stack.

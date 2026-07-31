@@ -15,10 +15,12 @@ Sort + sweep line / min-heap
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.5 Intervals**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **sorting intervals by start time and checking each pair of consecutive meetings for overlap**:
+
+1. Sort `intervals` by start time, so any overlap must occur between adjacent meetings in this order.
+2. Iterate through the sorted intervals starting from the second one.
+3. If the current meeting's start time is earlier than the previous meeting's end time, the two overlap, so return `False` immediately.
+4. If no overlaps are found after checking all consecutive pairs, return `True`.
 
 **Time Complexity:** O(n log n) — dominated by sorting the intervals by start time.
 **Space Complexity:** O(1) extra — excluding the space used by the sort itself.

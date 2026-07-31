@@ -66,10 +66,12 @@ Hash map + dynamic array, swap-to-end for deletion
 
 ## Approach
 
-1. Identify the core pattern for this category: **6. Hash Table**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a dynamic array paired with a hash map of value-to-index, using swap-with-last for deletion**:
+
+1. Store all elements in a list `values` (enabling O(1) random access for `getRandom`) and mirror each value's position in a dict `index` (enabling O(1) lookup).
+2. `insert(val)`: if already present return `False`; otherwise record its index and append it to `values`.
+3. `remove(val)`: if absent return `False`; otherwise overwrite the target's slot with the last element in `values`, update that moved element's index, then pop the now-duplicated last slot and delete the removed value's index entry — this avoids an O(n) shift.
+4. `getRandom()` simply returns `random.choice(values)`, which is O(1) since `values` is a plain array.
 
 **Time Complexity:** O(1) average for `insert`, `remove`, and `getRandom`.
 **Space Complexity:** O(n) — the array and the hash map both hold up to `n` elements.

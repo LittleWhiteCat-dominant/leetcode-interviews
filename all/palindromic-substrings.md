@@ -51,10 +51,13 @@ Expand around center, counting palindromes
 
 ## Approach
 
-1. Identify the core pattern for this category: **2. String**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **expand-around-center**:
+
+1. Every palindrome has a center, which is either a single character (odd-length palindrome) or the gap between two characters (even-length palindrome), giving `2n - 1` possible centers.
+2. For each center, expand outward with a `left`/`right` pointer pair as long as `s[left] == s[right]` and both indices stay in bounds.
+3. Each successful expansion step confirms one more palindromic substring, so increment a running counter each time the condition holds.
+4. Call the expansion helper twice per index `i`: once with `(i, i)` for odd-length palindromes centered on a character, and once with `(i, i + 1)` for even-length palindromes centered between characters.
+5. Sum the counts across all centers to get the total number of palindromic substrings.
 
 **Time Complexity:** O(n^2) — expanding around each of the 2n - 1 centers takes up to O(n).
 **Space Complexity:** O(1) — only a running counter and pointers are used.

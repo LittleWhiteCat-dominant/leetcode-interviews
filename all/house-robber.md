@@ -51,10 +51,12 @@ dp[i] = max(dp[i-1], dp[i-2] + nums[i]); split the circular array into two segme
 
 ## Approach
 
-1. Identify the core pattern for this category: **12.1 1D DP**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **1D dynamic programming using two rolling variables**:
+
+1. Define `dp[i]` as the maximum amount robbable using houses `0..i`; the recurrence is `dp[i] = max(dp[i-1], dp[i-2] + nums[i])` (either skip house `i` or rob it and add to the best result two houses back).
+2. Since only the last two states are ever needed, replace the full DP array with two rolling variables `prev` and `curr`.
+3. For each house's `money`, update simultaneously: `prev, curr = curr, max(curr, prev + money)`.
+4. After processing all houses, `curr` holds the final answer.
 
 **Time Complexity:** O(n) — a single linear pass through the houses.
 **Space Complexity:** O(1) — only two running variables are kept instead of a full DP array.

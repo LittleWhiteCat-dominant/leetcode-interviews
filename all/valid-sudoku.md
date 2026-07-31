@@ -84,10 +84,14 @@ Hash sets tracking rows/columns/sub-boxes
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.6 Matrix**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **hash sets tracking seen digits per row, column, and 3x3 box**:
+
+1. Allocate 9 sets each for rows, columns, and sub-boxes to record which digits have already been seen.
+2. Scan every cell of the board; skip empty cells (`'.'`).
+3. Compute the sub-box index as `(r // 3) * 3 + c // 3` to map each cell to one of the nine boxes.
+4. Before recording the digit, check if it already exists in the corresponding row set, column set, or box set — if so, the board is invalid, so return `false`.
+5. Otherwise add the digit to all three sets and continue.
+6. If the entire board is scanned without conflicts, return `true`.
 
 **Time Complexity:** O(1) — the board is always a fixed 9x9 size, so the single pass over its 81 cells is constant time (equivalently O(n^2) for an n x n board).
 **Space Complexity:** O(1) — the row/column/box sets are bounded by the fixed 9x9x9 board size.

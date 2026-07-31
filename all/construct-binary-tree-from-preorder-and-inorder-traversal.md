@@ -60,10 +60,13 @@ Recursively split the array ranges
 
 ## Approach
 
-1. Identify the core pattern for this category: **7.1 Binary Tree Traversal & Recursion**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved by **recursively splitting the inorder range, consuming the preorder array from the front forward**:
+
+1. Precompute a hash map from value to index in `inorder`, so the root's split position can be found in O(1) instead of scanning.
+2. Note that the *first* element of `preorder` is always the root of the (sub)tree being built, since preorder visits a node before its children.
+3. Track a `pre_idx` pointer starting at `0`; each recursive call takes the value at `pre_idx` as the current root, then increments `pre_idx`.
+4. Look up the root's position `mid` in `inorder` to know how many nodes belong to the left subtree (`left..mid-1`) versus the right subtree (`mid+1..right`).
+5. Because `pre_idx` walks forward, build the **left** subtree before the **right** subtree, matching preorder's `root, left, right` visiting order.
 
 **Time Complexity:** O(n) — each node is created once, and the hash map gives O(1) lookups for the root's position in `inorder`.
 **Space Complexity:** O(n) — for the index map and the recursion stack.

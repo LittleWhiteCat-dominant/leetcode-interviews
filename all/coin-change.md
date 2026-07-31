@@ -62,10 +62,13 @@ Unbounded knapsack style 1D DP
 
 ## Approach
 
-1. Identify the core pattern for this category: **12.1 1D DP**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **unbounded-knapsack style bottom-up DP, minimizing coin count for every sub-amount**:
+
+1. Define `dp[i]` as the fewest coins needed to make amount `i`; initialize `dp[0] = 0` and every other entry to infinity (unreachable so far).
+2. Iterate `i` from `1` up to `amount`, and for each `i`, try every coin denomination that is `<= i`.
+3. For each usable coin, `dp[i] = min(dp[i], dp[i - coin] + 1)` — using that coin means we need one more coin than however many were needed to make the remainder `i - coin`.
+4. Because smaller amounts are always solved before larger ones, `dp[i - coin]` is guaranteed to already hold its final value.
+5. After the loop, return `dp[amount]` if it's finite, otherwise `-1` since the amount is unreachable with the given coins.
 
 **Time Complexity:** O(amount * len(coins)) — for each amount from 1 to `amount`, we try every coin.
 **Space Complexity:** O(amount) — for the 1D `dp` array.

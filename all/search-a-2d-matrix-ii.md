@@ -66,10 +66,13 @@ Flatten to 1D binary search or start from a corner with two pointers
 
 ## Approach
 
-1. Identify the core pattern for this category: **1.4 Binary Search**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **a staircase search starting from the top-right corner**:
+
+1. Start at the top-right corner of the matrix, where moving left decreases the value and moving down increases it.
+2. Compare the current cell to `target`: if it matches, return `True` immediately.
+3. If the current value is greater than `target`, the entire column below is too big, so move one column left.
+4. If the current value is less than `target`, the entire row to the left is too small, so move one row down.
+5. If the pointer walks off the matrix (row out of bounds or column negative) without a match, `target` is not present, so return `False`.
 
 **Time Complexity:** O(m + n) — the search pointer moves at most `m` times down and `n` times left.
 **Space Complexity:** O(1) — only two index pointers are used.

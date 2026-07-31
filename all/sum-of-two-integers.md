@@ -40,10 +40,13 @@ Simulate addition with bit operations (XOR + carry)
 
 ## Approach
 
-1. Identify the core pattern for this category: **14. Bit Manipulation & Math**.
-2. Use the key idea above as the primary strategy.
-3. Confirm edge cases and state time/space complexity before coding.
-4. Implement and verify against the examples above / on LeetCode.
+This is solved with **bitwise addition simulation using XOR for sum and AND-shift for carry**:
+
+1. Mask both `a` and `b` to 32 bits so Python's arbitrary-precision integers behave like fixed-width signed integers throughout the computation.
+2. Loop while there is a nonzero carry: XOR gives the sum of `a` and `b` ignoring carries, while `(a & b) << 1` gives the carry bits that need to be added in next.
+3. Set `a` to the XOR result and `b` to the masked carry, then repeat until `b` becomes `0`.
+4. Once the loop ends, `a` holds the raw 32-bit unsigned result.
+5. If that value's highest bit indicates it should be interpreted as negative (i.e., it exceeds the max positive 32-bit signed value), convert it back to a proper negative Python integer via two's-complement inversion before returning.
 
 **Time Complexity:** O(1) — bounded by the fixed 32-bit width, so the carry loop runs at most 32 times.
 **Space Complexity:** O(1) — only a fixed number of integer variables.
