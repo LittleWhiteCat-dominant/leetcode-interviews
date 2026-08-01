@@ -1,0 +1,5 @@
+# 1707. Maximum XOR With an Element From Array
+# https://leetcode.com/problems/maximum-xor-with-an-element-from-array/
+
+def maximizeXor(nums: list[int], queries: list[list[int]]) -> list[int]:
+    pass
