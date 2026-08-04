@@ -42,15 +42,12 @@ Notice that the answer must be a substring, "pwke" is a subsequence and not a su
 
 ```
 
- 
-
 **Constraints:**
 
-	
 - `0 <= s.length <= 105`
-
-	
 - `s` consists of English letters, digits, symbols and spaces.
+
+
 
 ## Key Idea
 
@@ -85,6 +82,9 @@ def lengthOfLongestSubstring(s: str) -> int:
     return longest
 ```
 
+
+
 ## Reference
 
-- LeetCode: https://leetcode.com/problems/longest-substring-without-repeating-characters/
+- LeetCode: [https://leetcode.com/problems/longest-substring-without-repeating-characters/](https://leetcode.com/problems/longest-substring-without-repeating-characters/)
+
