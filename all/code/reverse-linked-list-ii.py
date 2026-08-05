@@ -14,12 +14,12 @@ def reverseBetween(head: ListNode | None, left: int, right: int) -> ListNode | N
     for _ in range(left - 1):
         prev = prev.next
     
-    cur = pre.next
+    cur = prev.next
 
     for i in range(right - left):
         nxt = cur.next
         cur.next = nxt.next
-        nxt.next = pre.next
+        nxt.next = prev.next
         prev.next = nxt
     
     return dummy.next

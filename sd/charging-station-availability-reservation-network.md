@@ -166,52 +166,115 @@ This mirrors a pattern worth narrating explicitly: *"`Connector` is the small, f
 6. **Reconciliation Worker** — runs when a station/region reconnects after an outage, diffing the station's local event log against backend state and resolving conflicts (detailed in §6.3).
 7. **Charging Session Service** — receives plug-in/unplug events, opens/closes `ChargingSession` records, and hands off to the (out-of-scope) billing/metering system.
 
-### High-level data flow (whiteboard sketch, described in ASCII)
+### High-level data flow — simplified view
 
-```
-  ┌──────────────────┐        ┌───────────────────────┐
-  │ Rivian-owned      │        │ Partner Networks       │
-  │ Stations (MQTT)   │        │ (Electrify America,etc)│
-  └────────┬──────────┘        └───────────┬────────────┘
-           │ heartbeats/events              │ poll / webhook
-           ▼                                 ▼
-  ┌──────────────────┐        ┌───────────────────────┐
-  │ Station Telemetry │        │ Partner Integration    │
-  │ Gateway           │        │ Adapter (normalize)    │
-  └────────┬──────────┘        └───────────┬────────────┘
-           └───────────────┬────────────────┘
-                            ▼
-                 ┌────────────────────────┐
-                 │ State Aggregation       │
-                 │ Service (write path,    │
-                 │ freshness/decay logic)  │
-                 └───────────┬────────────┘
-                    ┌─────────┴─────────┐
-                    ▼                    ▼
-         ┌────────────────────┐  ┌────────────────────┐
-         │ Connector store     │  │ Geo-Index / Search  │
-         │ (source of truth)   │─►│ Service (in-memory) │
-         └──────────┬──────────┘  └──────────┬──────────┘
-                    │                          │ nearby + filter query
-                    │ CAS on reserve            ▼
-                    │                 ┌────────────────────┐
-                    ▼                 │ Driver App / Nav    │
-         ┌────────────────────┐      └────────────────────┘
-         │ Reservation Service │
-         │ (hold + TTL lease)  │
-         └──────────┬──────────┘
-                    │ plug-in confirmed
-                    ▼
-         ┌────────────────────┐      ┌────────────────────┐
-         │ Charging Session    │─────►│ Billing/Metering    │
-         │ Service             │      │ (out of scope)      │
-         └────────────────────┘      └────────────────────┘
+Start with this whiteboard-friendly version to establish the shape of the system in ~30 seconds before drilling into detail:
 
-         ┌────────────────────┐
-         │ Reconciliation      │◄── triggered on station/region reconnect,
-         │ Worker              │    diffs local event log vs. backend state
-         └────────────────────┘
+```mermaid
+flowchart LR
+    SOURCES["Stations +\nPartner Networks"] --> INGEST["Ingest &\nAggregation"]
+    INGEST --> STORE[("Connector Store\n(source of truth)")]
+    STORE --> SEARCH["Geo-Search\n(read path)"]
+    STORE --> RESERVE["Reservations\n(write path, CAS + TTL)"]
+    SEARCH --> DRIVER["Driver App"]
+    RESERVE --> DRIVER
+    RESERVE --> SESSION["Charging Session\n→ Billing (out of scope)"]
+
+    classDef store fill:#1f6feb,stroke:#0b3d91,color:#fff;
+    class STORE store;
 ```
+
+**The one sentence version:** *stations and partners feed a shared connector-state store; a fast eventually-consistent path serves search, while a strongly consistent CAS+TTL path serves reservations — both read from the same source of truth, but at very different consistency/latency trade-offs.*
+
+### High-level data flow — full detail
+
+```mermaid
+flowchart TB
+    subgraph EDGE["Edge / Data Sources"]
+        direction LR
+        OWNED["Rivian-owned Stations\n(MQTT heartbeats/events)"]
+        PARTNER["Partner Networks\n(Electrify America, ChargePoint, ...)"]
+    end
+
+    OWNED -->|heartbeats/events| GATEWAY["Station Telemetry Gateway"]
+    PARTNER -->|poll / webhook| ADAPTER["Partner Integration Adapter\n(normalize + data_source_tier tag)"]
+
+    GATEWAY --> AGG
+    ADAPTER --> AGG["State Aggregation Service\n(write path, freshness/decay logic)"]
+
+    AGG --> STORE[("Connector Store\n(source of truth)")]
+    STORE -->|async, bounded lag| GEO["Geo-Index / Search Service\n(in-memory, geo-partitioned)"]
+
+    GEO -->|nearby + filter query, p99 < 300ms| APP["Driver App / Nav"]
+    APP -->|POST /v1/reservations| RES
+
+    STORE <-->|conditional write / CAS| RES["Reservation Service\n(hold + TTL lease)"]
+
+    RES -->|plug-in confirmed| SESSION["Charging Session Service"]
+    SESSION --> BILLING["Billing / Metering\n(out of scope)"]
+
+    GATEWAY -.->|reconnect: replay buffered events| RECON["Reconciliation Worker"]
+    RECON <-.->|diff local log vs. backend state| STORE
+
+    classDef store fill:#1f6feb,stroke:#0b3d91,color:#fff;
+    classDef outscope fill:#8b949e,stroke:#57606a,color:#fff;
+    class STORE store;
+    class BILLING outscope;
+```
+
+### High-level data flow — classic infra-component view (Client / LB / Server / Cache / Queue / DB)
+
+The two diagrams above name components by their **domain role** (Geo-Index, Reservation Service, ...). If you're more used to mock interviews that talk in terms of generic infra building blocks, here's the exact same design redrawn that way — every domain-named box above maps onto one of these standard pieces:
+
+```mermaid
+flowchart TB
+    subgraph CLIENTS["Clients"]
+        direction LR
+        DRIVER["Driver App / Nav"]
+        STATIONS["Station Hardware\n(owned + partner)"]
+    end
+
+    STATIONS -->|heartbeats, poll/webhook| LB1["Load Balancer\n(ingest edge)"]
+    LB1 --> MQ["Message Queue\n(Kafka/MQTT-style broker)\n= Telemetry Gateway + Partner Adapter"]
+
+    MQ --> WORKER["Stateless Worker Pool\n(consumers)\n= State Aggregation Service"]
+    WORKER --> DB[("Primary Database\n(strongly consistent, per-key CAS)\n= Connector Store")]
+    WORKER --> CACHE["In-Memory Cache\n(geo-indexed)\n= Geo-Index / Search Service"]
+
+    DRIVER --> LB2["Load Balancer\n(API edge)"]
+    LB2 --> APISRV["Stateless API Servers\n(horizontally scaled)\n= Search API + Reservation API"]
+
+    APISRV -->|read: nearby + filter query| CACHE
+    APISRV -->|write: reservation hold, CAS + TTL| DB
+    DB -.->|invalidate / refresh, async| CACHE
+
+    APISRV --> QUEUE2["Message Queue\n(session events)\n= Charging Session Service"]
+    QUEUE2 --> BILLING["Downstream Service\n(Billing/Metering, out of scope)"]
+
+    classDef store fill:#1f6feb,stroke:#0b3d91,color:#fff;
+    classDef outscope fill:#8b949e,stroke:#57606a,color:#fff;
+    class DB store;
+    class BILLING outscope;
+```
+
+**Mapping cheat sheet (domain name → generic infra role):**
+
+| Domain-named component (earlier diagrams) | Generic infra role here |
+|---|---|
+| Station Telemetry Gateway / Partner Integration Adapter | Load balancer + message queue at the ingest edge |
+| State Aggregation Service | Stateless worker pool consuming off the queue |
+| Connector Store | Primary database (the strongly consistent source of truth) |
+| Geo-Index / Search Service | In-memory cache, kept warm by async invalidation from the DB |
+| Reservation Service + Geo-Search API | Stateless API server fleet behind a load balancer — read path hits the cache, write path (reservation) hits the DB directly with a conditional write |
+| Charging Session Service | A queue/topic that downstream (out-of-scope) billing consumes from |
+
+**Why this system doesn't fit the plain "LB → server → cache → DB" template cleanly:** most mock-interview systems (URL shortener, Twitter feed) have one dominant read/write pattern. This one deliberately has **two different consistency zones behind the same DB** — a cache-backed eventually-consistent read path for search, and a direct, lock-based (CAS) write path for reservations that intentionally bypasses the cache. That split *is* the interesting part of the design, so don't flatten it away just to match a generic template — but it's still built from the same primitives (LB, stateless servers, cache, queue, DB) you'd use anywhere else.
+
+**How to read it:**
+- Solid arrows = the main request/data path (telemetry ingest → aggregation → source of truth → search / reservation).
+- The `Connector Store` (dark blue) is the single strongly-consistent source of truth; everything else either writes into it (aggregation, reservation CAS) or reads an eventually-consistent copy of it (the geo-index).
+- Dashed arrows = the reconnect/reconciliation path, which only fires when a station or region comes back online after an outage.
+- `Billing / Metering` (gray) is explicitly out of scope — shown only as the handoff boundary.
 
 Narrate the key architectural decision: *"Search reads never go against the strongly consistent `Connector` store directly — they hit an eventually-consistent, in-memory geo-index that trades a few hundred milliseconds of staleness for massive read throughput and low latency. Only the much lower-volume reservation *write* goes through the compare-and-swap path against the source of truth. This split is what lets us serve thousands of geo-searches per second without contending on the same hot rows that reservations need to lock."*
 
