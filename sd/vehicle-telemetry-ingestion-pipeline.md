@@ -168,63 +168,73 @@ This is a good trade-off to narrate explicitly: *"`TelemetryFrame` is high-volum
 
 ## 5. High-Level Design
 
-### Major components
+This is an **infrastructure/topology view** — what pieces of infrastructure exist, what type each one is (log, cache, blob store, stateless service...), and how they're wired together — not a step-by-step trace of one message's journey. Sequencing and per-hop logic belong in the Deep Dives (§6); this section should stand on its own as "here's what we'd provision."
 
-1. **Edge Telemetry Agent (on-vehicle)** — samples/reads from the vehicle's internal sensor/ECU bus, applies pre-aggregation and adaptive sampling to reduce bandwidth, buffers locally (store-and-forward) during connectivity loss, and uplinks batched, compressed, schema-tagged payloads.
-2. **Ingestion Gateway** — the internet-facing edge (e.g., an MQTT broker cluster or an HTTPS ingestion service behind a load balancer) that authenticates vehicles, performs lightweight structural validation, and hands off accepted messages to the streaming tier. Designed for millions of long-lived, low-throughput, intermittent connections.
-3. **Schema Registry** — a versioned, centrally-managed catalog of message schemas; producers (vehicle firmware) and consumers (stream jobs) both check compatibility against it, enabling independent evolution.
-4. **Streaming Ingestion Tier (Kafka-style log)** — the durable, partitioned, replayable backbone. Telemetry is partitioned by `vehicle_id` hash to guarantee per-vehicle ordering while allowing many partitions/consumers for horizontal scale.
-5. **Validation / Data-Quality Layer** — a stream-processing job (e.g., Flink/Kafka Streams-style) that consumes raw topics, validates against the registered schema and sane value ranges, deduplicates using `sequence_number`, and routes bad records to a dead-letter topic instead of silently passing them on.
-6. **Hot Path: Real-Time Alerting** — a dedicated, low-latency consumer group subscribed to the `DTCEvent`/critical-signal stream, running rules/threshold checks and pushing to an alerting/dispatch system, isolated from the much larger bulk telemetry volume.
-7. **Cold Path: Data Lake Sink** — a stream-to-lake connector (e.g., Kafka Connect-style sink or a Flink job) that writes validated, enriched telemetry into partitioned, columnar object storage for analytics and ML training.
-8. **Vehicle Metadata Service** — serves the slow-changing dimension data (VIN, hardware revision, region, firmware version) used to enrich streaming records without a per-message database hit on the hot path (cached/broadcast join).
-9. **Monitoring / Consumer-Lag Tracking** — tracks per-partition lag, dead-letter rate, and per-region ingestion health to detect backpressure or data-quality regressions early.
+### Infrastructure tiers
 
-### High-level data flow (whiteboard sketch, described in ASCII)
+**Edge tier (runs on the vehicle, outside our infrastructure footprint but part of the design)**
+- **Edge Telemetry Agent** — an on-vehicle process, not a backend service. Reads the internal sensor/ECU bus, pre-aggregates/adaptively samples to control bandwidth, and owns a small local durable queue (store-and-forward) so connectivity loss never blocks or drops data at the source.
+
+**Ingestion tier (the internet-facing boundary — where the fleet meets our infrastructure)**
+- **Ingestion Gateway** — a horizontally-scaled, stateless fleet of connection terminators (e.g., an MQTT broker cluster or an HTTPS ingestion service behind a load balancer), built to hold millions of concurrent long-lived, low-throughput, intermittent connections. Its only jobs are auth and lightweight structural checks — no business logic.
+- **Schema Registry** — a small, low-write/high-read control-plane service (its own lightweight datastore), consulted by both the edge agent and every downstream consumer to resolve `schema_version`. It sits *beside* the data path, not on it.
+
+**Messaging backbone (the one piece of shared infrastructure everything else is built around)**
+- **Streaming Ingestion Tier** — a durable, partitioned, replayable log (Kafka-style), partitioned by `hash(vehicle_id)`. This is the system's central nervous system: every tier downstream is just an independent reader of this log, at its own pace. This single design choice is what makes hot/cold isolation (below) possible without any direct coupling between them.
+
+**Processing tier (two independently-provisioned consumer groups reading the same backbone)**
+- **Hot-path processing** — a small, deliberately over-provisioned stream-processing cluster (validation + dedup + rules/threshold engine) sized for the DTC/critical-signal volume only, not fleet-wide volume.
+- **Cold-path processing** — a much larger, throughput-oriented stream-processing cluster (validation + dedup + enrichment) sized for bulk telemetry volume, and allowed to lag under load without violating any SLA.
+
+**Storage / serving tier**
+- **Alerting / Dispatch system** — the hot path's downstream sink; an existing on-call/paging system, treated as an external dependency we push into.
+- **Data Lake** — columnar object storage (Parquet/Iceberg), partitioned by date and clustered by `vehicle_id`; the cold path's sink, read by ML training jobs and BI/dashboarding tools.
+
+**Supporting infrastructure (cross-cutting, attached to multiple tiers rather than sitting in the data path)**
+- **Vehicle Metadata Service** — a small, cacheable lookup service for slow-changing dimension data (VIN, region, firmware version), used by the processing tier for enrichment via broadcast/cached joins — never a per-message synchronous call on the hot path.
+- **Monitoring / Consumer-Lag Tracking** — an observability layer spanning the gateway, the backbone, and both processing clusters; not a functional component of the data path, but load-bearing for detecting backpressure and data-quality regressions.
+
+### Topology diagram (infrastructure view, described in ASCII)
 
 ```
-                ┌───────────────────────┐
-                │   Vehicle (edge)      │
-                │ ┌───────────────────┐ │
-                │ │ Edge Telemetry    │ │   pre-aggregate, sample,
-                │ │ Agent             │ │   buffer (store-and-forward)
-                │ └─────────┬─────────┘ │
-                └───────────┼───────────┘
-                            │ batched, compressed, schema-tagged payload
-                            ▼
-                ┌───────────────────────┐        ┌────────────────────┐
-                │ Ingestion Gateway      │◄──────►│ Schema Registry    │
-                │ (MQTT/HTTPS, auth)     │        │ (version contracts)│
-                └───────────┬───────────┘        └────────────────────┘
-                            │ accepted messages
-                            ▼
-        ┌────────────────────────────────────────────────┐
-        │   Streaming Ingestion Tier (partitioned by      │
-        │   vehicle_id — Kafka-style, replayable log)     │
-        └───────────────────┬──────────────┬─────────────┘
-                             │              │
-             ┌───────────────┘              └───────────────┐
-             ▼                                               ▼
-   ┌─────────────────────┐                        ┌─────────────────────┐
-   │ Validation /         │                        │ Validation /         │
-   │ Data-Quality Layer   │                        │ Data-Quality Layer   │
-   │ (dedup, dead-letter) │                        │ (dedup, dead-letter) │
-   └──────────┬───────────┘                        └──────────┬───────────┘
-              │  critical DTC / safety signals                 │  bulk telemetry
-              ▼                                                 ▼
-   ┌─────────────────────┐                        ┌─────────────────────┐
-   │ HOT PATH:             │                        │ COLD PATH:            │
-   │ Real-Time Alerting    │                        │ Stream-to-Lake Sink   │
-   │ (sub-5s to dispatch)  │                        │ (minutes to lake)     │
-   └──────────┬───────────┘                        └──────────┬───────────┘
-              ▼                                                 ▼
-   ┌─────────────────────┐                        ┌─────────────────────┐
-   │ On-call / Dispatch /  │                        │ Data Lake (Parquet/  │
-   │ Safety Ops Alerting   │                        │ Iceberg) + ML/BI     │
-   └─────────────────────┘                        └─────────────────────┘
+   EDGE TIER              INGESTION TIER                  MESSAGING BACKBONE
+ ┌───────────────┐      ┌────────────────────┐          ┌──────────────────────────┐
+ │ Edge Telemetry │      │ Ingestion Gateway   │          │  Streaming Ingestion      │
+ │ Agent          │─────►│ (stateless, auth,   │─────────►│  Tier — durable,          │
+ │ (store-and-    │      │ conn. termination)   │          │  partitioned, replayable  │
+ │  forward)      │      └──────────┬──────────┘          │  log, keyed by vehicle_id │
+ └───────────────┘                  │                      │                          │
+                                     ▼                      │  (the shared source of   │
+                          ┌────────────────────┐            │   truth — every tier      │
+                          │ Schema Registry     │◄──────────►│   below reads it          │
+                          │ (control plane;      │            │   independently)          │
+                          │  side-car, not on     │            └────────────┬─────────────┘
+                          │  the data path)       │                         │
+                          └────────────────────┘                         │
+                                                                          │
+                        PROCESSING TIER          (two independently-provisioned consumer groups)
+                        ┌─────────────────────────────────────┴──────────────────────────────────┐
+                        ▼                                                                          ▼
+             ┌───────────────────────┐                                                 ┌───────────────────────┐
+             │ HOT-PATH CLUSTER       │                                                 │ COLD-PATH CLUSTER      │
+             │ validate + dedup +     │                                                 │ validate + dedup +     │
+             │ rules engine           │                                                 │ enrichment             │
+             │ (small, over-          │                                                 │ (large, throughput-    │
+             │  provisioned)          │                                                 │  oriented, lag-        │
+             └───────────┬───────────┘                                                 │  tolerant)             │
+                         │                                                              └───────────┬───────────┘
+     STORAGE / SERVING   ▼                                                                           ▼
+     TIER      ┌───────────────────────┐                                                 ┌───────────────────────┐
+               │ Alerting / Dispatch    │                                                 │ Data Lake (Parquet/    │
+               │ (external system)      │                                                 │ Iceberg) → ML / BI     │
+               └───────────────────────┘                                                 └───────────────────────┘
+
+ SUPPORTING (cross-cutting, attached to processing tier — not shown per-arrow above):
+   • Vehicle Metadata Service   — cached enrichment lookup, consulted by both clusters
+   • Monitoring / Consumer-Lag  — observes gateway health + lag on both consumer groups
 ```
 
-Narrate the key architectural decision: *"Notice that the hot and cold paths fork immediately after validation, both reading from the same durable, replayable log but as independent consumer groups. This means a slow ML batch job or a data lake outage can never delay a safety-critical DTC alert, and conversely, a burst of alert traffic never competes for the same processing capacity as bulk analytics. The Kafka-style log is what makes this decoupling possible — it's a shared source of truth that multiple, independently-scaling consumers can read at their own pace."*
+Narrate the key architectural decision: *"The one piece of infrastructure everything else hangs off is the durable, replayable log. Hot and cold are not two steps in a pipeline — they're two independently-provisioned consumer groups that happen to read the same backbone at completely different rates. That's the whole trick: a slow ML batch job or a data lake outage can never delay a safety-critical DTC alert, because they're not sharing any compute, only a shared, replayable source of truth. Everything else on this diagram — the gateway, the schema registry, the metadata service — is either a stateless edge terminator or a small side-car control-plane service; the real capacity-planning conversation is entirely about the backbone and the two processing clusters."*
 
 ---
 

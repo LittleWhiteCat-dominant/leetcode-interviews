@@ -150,56 +150,70 @@ Narrate this trade-off explicitly: *"CAN's simplicity and its physics-based, zer
 
 ## 5. High-Level Design
 
-### Major components
+This is an **infrastructure/topology view** of the in-vehicle network — what physical/logical pieces of infrastructure exist, what type each one is (a shared deterministic bus, a protocol-translating gateway, a TSN-scheduled backbone...), and how they're wired together — not a step-by-step trace of one signal's journey from producer to consumer. Sequencing, arbitration mechanics, and per-hop logic belong in the Deep Dives (§6); this section should stand on its own as "here's what topology we'd wire into the vehicle."
 
-1. **Domain/Zonal ECUs** — clusters of ECUs grouped by function and physical location (e.g., front-left zone, powertrain domain, chassis/safety domain), each with a local CAN or CAN-FD bus for the sensors/actuators/controllers within that domain.
-2. **Domain Gateway / Zonal Controller** — sits at the boundary of each domain's local bus and the central Ethernet backbone; selectively relays only the signals that legitimately need to cross domain boundaries (based on a static, pre-certified signal-routing table), performing protocol translation (CAN frame ↔ Ethernet-tunneled or service-oriented payload) as needed.
-3. **Central Ethernet Backbone (with TSN)** — the high-bandwidth spine connecting zonal controllers and domain gateways, carrying both bridged/routed CAN-domain signals and native high-bandwidth traffic (ADAS sensor fusion, high-res displays) with TSN-based scheduling for the traffic classes that need bounded latency.
-4. **Safety/Chassis Domain (highest criticality)** — the bus/domain carrying braking, steering, and stability-control signals; typically the most conservatively engineered, sometimes with redundant/dual-path physical wiring for the very highest ASIL signals, and the domain most protected from cross-domain interference.
-5. **ADAS / Perception Domain Controller** — aggregates high-bandwidth sensor data (cameras, radar, lidar) over dedicated Ethernet links, running sensor fusion locally before publishing much lower-bandwidth derived signals (e.g., "object detected, distance X") onto the shared backbone for consumption by chassis/safety domains.
-6. **Body/Comfort Domain** — lower-criticality, higher-ECU-count domain (doors, seats, HVAC, lighting) on classic CAN or CAN-FD, prioritized lowest on shared resources without risk to safety.
-7. **Diagnostic/Service Access Point** — a standardized connector (e.g., OBD-II successor / Ethernet-based diagnostic access) allowing factory/service tools to read live signals and error counters, arbitrated at the lowest priority to never contend with real-time safety traffic.
-8. **Connectivity Gateway ECU** — the single, deliberately narrow bridge point to the vehicle-to-cloud connectivity layer (from the companion design); consumes a curated, rate-limited, sampled subset of signals from the backbone for telemetry/OTA purposes and is architecturally incapable of injecting arbitrary traffic back onto the safety-critical buses.
+### Infrastructure tiers
 
-### High-level data flow (whiteboard sketch, described in ASCII)
+**Producing/consuming ECU tier (physically distinct per domain, not a cloud-style service)**
+- **Chassis/Safety Domain ECUs** — Brake ECU, Steering ECU, ESC/ABS; the highest-priority, hardest-real-time producers and consumers on the network.
+- **Powertrain Domain ECUs** — Motor Controller, BMS.
+- **Body/Comfort Domain ECUs** — Door, Seat, HVAC controllers; lowest-criticality, highest ECU count.
+- **ADAS / Perception Domain Controller** — a special case in this tier: aggregates high-bandwidth camera/radar/lidar data over dedicated Ethernet links, fuses it locally, and only publishes much lower-bandwidth *derived* signals (e.g., "object at bearing X, distance Y") onto the shared backbone.
+
+**In-vehicle network/bus tier (the physical medium itself — deterministic, not a general-purpose network)**
+- **Per-domain CAN/CAN-FD buses** — a shared, bandwidth-constrained, hardware-arbitrated medium local to each domain (Safety/Chassis, Powertrain, Body/Comfort each get their own).
+- **Domain Gateway / Zonal Controller** — sits at each domain's boundary; the *only* path a signal can take to leave its domain, enforced by a static, pre-certified signal-routing table (a control-plane artifact that's part of the vehicle's safety case, not just wiring); performs CAN ↔ Ethernet protocol translation.
+- **Central Automotive Ethernet Backbone (TSN)** — the shared, higher-bandwidth spine joining every domain gateway and the ADAS controller; uses VLAN priority tagging and time-aware shaping (802.1Qbv) in place of CAN's bitwise arbitration to give bounded-latency guarantees to specific traffic classes.
+
+**Diagnostic/logging tap (side-car, non-critical, off the main data path)**
+- **Diagnostic/Service Access Point** — standardized diagnostic access (UDS) for factory/service tools; arbitrated at the lowest priority so it can never contend with real-time safety traffic. It taps signals for read access; it is not a participant in the main producer→consumer signal flow.
+
+**Bridge to external systems**
+- **Connectivity Gateway ECU** — the single, deliberately narrow, rate-limited, mostly-read-only bridge point to the vehicle-to-cloud connectivity layer (an external system — see the companion design); architecturally incapable of injecting arbitrary traffic back onto the safety-critical domains.
+
+### Topology diagram (infrastructure view, described in ASCII)
 
 ```
-   ┌───────────────────────┐        ┌───────────────────────┐        ┌───────────────────────┐
-   │ Chassis/Safety Domain  │        │ Powertrain Domain      │        │ Body/Comfort Domain    │
-   │ (CAN/CAN-FD, highest   │        │ (CAN/CAN-FD)           │        │ (CAN/CAN-FD, lowest    │
-   │  priority IDs)         │        │                        │        │  priority IDs)         │
-   │  Brake ECU, Steering   │        │  Motor Ctrl, BMS       │        │  Door, Seat, HVAC ECUs │
-   │  ECU, ESC/ABS          │        │                        │        │                        │
-   └───────────┬───────────┘        └───────────┬───────────┘        └───────────┬───────────┘
-               │ selective relay                │ selective relay                │ selective relay
-               ▼                                ▼                                ▼
-   ┌───────────────────┐            ┌───────────────────┐            ┌───────────────────┐
-   │ Domain Gateway A   │            │ Domain Gateway B   │            │ Domain Gateway C   │
-   │ (CAN <-> Ethernet) │            │ (CAN <-> Ethernet) │            │ (CAN <-> Ethernet) │
-   └─────────┬──────────┘            └─────────┬──────────┘            └─────────┬──────────┘
-             │                                  │                                  │
-             └──────────────┬───────────────────┴───────────────┬──────────────────┘
-                             ▼                                   ▼
-                 ┌─────────────────────────────────────────────────────┐
-                 │      Central Automotive Ethernet Backbone (TSN)       │
-                 │  VLAN/priority-tagged, time-aware shaped traffic      │
-                 └───────────┬─────────────────────────┬───────────────┘
-                              │                         │
-                              ▼                         ▼
-                 ┌────────────────────────┐  ┌───────────────────────────┐
-                 │ ADAS / Perception       │  │ Connectivity Gateway ECU   │
-                 │ Domain Controller       │  │ (curated, rate-limited     │
-                 │ (cameras/radar/lidar →  │  │  bridge to vehicle-to-cloud│
-                 │  fused derived signals) │  │  layer — one-way narrow    │
-                 └────────────────────────┘  │  window, not a raw tap)    │
-                                              └─────────────┬──────────────┘
-                                                             ▼
-                                              (out of scope: vehicle-to-cloud
-                                               connectivity layer — see companion
-                                               design document)
+ PRODUCING/CONSUMING ECU TIER (per domain, physically separate)
+ ┌───────────────────────┐   ┌───────────────────────┐   ┌───────────────────────┐
+ │ Chassis/Safety Domain  │   │ Powertrain Domain      │   │ Body/Comfort Domain    │
+ │ Brake, Steering,       │   │ Motor Ctrl, BMS        │   │ Door, Seat, HVAC ECUs  │
+ │ ESC/ABS                │   │                        │   │                        │
+ └───────────┬────────────┘   └───────────┬────────────┘   └───────────┬────────────┘
+             │ per-domain CAN/CAN-FD bus   │ per-domain CAN/CAN-FD bus  │ per-domain CAN/CAN-FD bus
+             ▼                             ▼                            ▼
+ IN-VEHICLE NETWORK/BUS TIER
+ ┌────────────────────┐        ┌────────────────────┐        ┌────────────────────┐
+ │ Domain Gateway A     │        │ Domain Gateway B     │        │ Domain Gateway C     │
+ │ (CAN ↔ Ethernet,      │        │ (CAN ↔ Ethernet,      │        │ (CAN ↔ Ethernet,      │
+ │  static routing table)│        │  static routing table)│        │  static routing table)│
+ └──────────┬────────────┘        └──────────┬────────────┘        └──────────┬────────────┘
+            │                                  │                               │
+            └──────────────────┬───────────────┴───────────────┬───────────────┘
+                                ▼                                ▼
+                  ┌─────────────────────────────────────────────────────┐
+                  │      Central Automotive Ethernet Backbone (TSN)        │
+                  │  the shared spine every domain gateway attaches to —   │
+                  │  VLAN/priority-tagged, time-aware shaped traffic       │
+                  └───────┬─────────────────────────────────┬───────────────┘
+                          │                                   │
+                          ▼                                   ▼
+             ┌────────────────────────┐          ┌──────────────────────────┐
+             │ ADAS / Perception       │          │ Connectivity Gateway ECU  │
+             │ Domain Controller        │          │ — BRIDGE TIER             │
+             │ (cameras/radar/lidar →   │          │ (narrow, rate-limited,     │
+             │  fused derived signals)  │          │  mostly-read-only)         │
+             └────────────────────────┘          └─────────────┬─────────────┘
+                                                                 ▼
+                                                  (out of scope: vehicle-to-cloud
+                                                   connectivity layer — external
+                                                   system, see companion doc)
+
+ DIAGNOSTIC/LOGGING TAP (side-car, off the main path, attaches to any domain bus):
+   • Diagnostic/Service Access Point — lowest-priority UDS read access for factory/service tools
 ```
 
-Narrate the key architectural decision: *"Notice each domain keeps its own local bus with its own priority space and its own fault domain — a babbling body-control ECU can bus-off itself and take down, at worst, the body domain, never the chassis/safety domain, because they're physically separate buses joined only by a gateway that relays a pre-certified, static set of signals rather than forwarding everything indiscriminately. And critically, the vehicle-to-cloud connectivity layer sits behind its own dedicated, narrow gateway off the Ethernet backbone — it consumes curated, rate-limited signals, and has no path to inject traffic onto the safety-critical CAN domains. That separation is what lets us reason about the safety-critical internal network's worst-case latency completely independently of anything happening on the (much less predictable) cloud-facing side."*
+Narrate the key architectural decision: *"There's no single shared bus for the whole vehicle — that's the point. Each domain keeps its own local CAN bus with its own priority space and its own fault domain, so a babbling body-control ECU can bus-off itself and take down, at worst, the body domain, never chassis/safety. The one piece of shared infrastructure everything hangs off is the Central Ethernet Backbone, and it's reached only through domain gateways enforcing a static, pre-certified routing table — never a raw, unfiltered relay. The diagnostic tap and the Connectivity Gateway ECU are both deliberately drawn off to the side rather than in the main producer-to-consumer path: one is a lowest-priority read-only tool interface, the other is a narrow, mostly-read-only bridge to an entirely separate external system with its own, much looser latency and consistency constraints."*
 
 ---
 

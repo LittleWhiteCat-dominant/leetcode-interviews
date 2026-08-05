@@ -162,54 +162,83 @@ This is a good trade-off to narrate explicitly, echoing the same principle from 
 
 ## 5. High-Level Design
 
-### Major components
+This is an **infrastructure/topology view** — what pieces of infrastructure exist, what type each one is (immutable versioned store, live key-value store, stateless query service, external dependency...), and how they're wired together — not a step-by-step trace of one trip's journey through the system. Sequencing and per-hop algorithmic detail belong in the Deep Dives (§6); this section should stand on its own as "here's what we'd provision."
 
-1. **Map/Graph Ingestion & Precompute Pipeline** — periodically ingests the licensed map provider's road-graph update, builds the simplified routing graph, and computes the shortest-path acceleration structure (contraction hierarchies / hub labeling), publishing a new immutable `RoadGraphVersion`.
-2. **Traffic Fusion Service** — ingests fleet-sourced GPS/speed telemetry and the third-party traffic feed, fuses them per edge (weighted by source confidence/recency) into the live `TrafficWeight` store.
-3. **Routing Engine** — the query-time service: given origin/destination/vehicle state and a `graph_version_id`, runs shortest-path search over the precomputed structure, applying the live `TrafficWeight` overlay as edge-cost adjustments.
-4. **EV Range & Charging-Stop Planner** — computes the reachability polygon from current state of charge and vehicle efficiency profile, determines whether the direct route is feasible, and if not, queries the charging-network system (external dependency — see referenced document) for candidate stations along the corridor and inserts optimal stops.
-5. **Incremental Re-Route Service** — subscribes to traffic-weight changes relevant to a trip's remaining `RouteSegmentPlan`s and decides whether a patch-level update suffices or a fuller recompute is warranted, pushing lightweight updates to the in-vehicle client.
-6. **On-Vehicle Navigation Client** — holds a cached regional map + routing sub-structure + the current route's segments, renders turn-by-turn guidance, and can continue operating (with staling traffic) fully offline.
-7. **Charging-Network Client** (integration, not owned by this system) — the interface into the availability/reservation network described in [`./charging-station-availability-reservation-network.md`](./charging-station-availability-reservation-network.md); the routing engine treats it as an external data source with its own latency and staleness characteristics.
+### Infrastructure tiers
 
-### High-level data flow (whiteboard sketch, described in ASCII)
+**External data-source tier (outside our infrastructure footprint)**
+- **Licensed Map Provider** — a third-party vendor supplying periodic (days-to-weeks cadence) road-graph releases; we consume, we don't operate this.
+- **Fleet GPS/Speed Telemetry** — a continuous stream produced by vehicles already on the road, not something this system owns the collection of.
+- **Third-Party Traffic Feed** — a licensed, externally-operated traffic data provider with its own latency/coverage characteristics.
+- **Charging-Network System** — an external dependency (see [`./charging-station-availability-reservation-network.md`](./charging-station-availability-reservation-network.md)), consulted only when a trip's range is a binding constraint.
+
+**Control-plane / precompute tier (batch, off the live query path)**
+- **Graph Ingestion & Precompute Pipeline** — a periodic batch job that ingests map-provider updates and rebuilds the shortest-path acceleration structure (contraction hierarchies / hub labeling), publishing a new immutable `RoadGraphVersion`. It never runs inline with a routing query; it's a build system, not a request-serving service.
+
+**Processing tier (streaming fusion)**
+- **Traffic Fusion Service** — a stateless stream processor that merges fleet telemetry and the third-party feed per road edge (weighted by source confidence/recency) and continuously writes the fused result into the live traffic store below.
+
+**Storage / serving tier**
+- **`RoadGraphVersion` store** — an immutable, versioned, memory-mapped structure holding the static graph plus its precomputed shortcut/label data; read-heavy, write-rarely, rebuilt wholesale rather than mutated in place.
+- **`TrafficWeight` store** — a fast, region-sharded key-value store; the highest-write-volume piece of state in the system, joined against the static graph at query time rather than baked into it.
+
+**Query-time serving tier (stateless services, horizontally scaled)**
+- **Routing Engine** — the fast path: given origin/destination/vehicle state and a pinned `graph_version_id`, runs shortest-path search over the precomputed structure with the live `TrafficWeight` overlay applied as a cost adjustment.
+- **EV Range & Charging-Stop Planner** — a heavier, conditionally-invoked service, called only when the direct route is infeasible; it's the one component in this tier that reaches out to the external Charging-Network system.
+- **Incremental Re-Route Service** — subscribes to traffic-weight changes relevant to an in-progress trip's remaining segments and decides whether a cheap, localized patch suffices or a fuller recompute is warranted.
+
+**Edge/client tier (runs on the vehicle, outside our infrastructure footprint)**
+- **On-Vehicle Navigation Client** — holds a cached regional map + routing sub-structure + the current route's segments, renders turn-by-turn guidance, and can keep operating (with staling traffic) fully offline.
+
+### Topology diagram (infrastructure view, described in ASCII)
 
 ```
- ┌────────────────────┐         ┌───────────────────────┐
- │ Licensed Map        │         │ Fleet GPS/Speed        │   ┌───────────────────┐
- │ Provider (periodic) │         │ Telemetry (streaming)  │   │ Third-Party Traffic│
- └──────────┬──────────┘         └───────────┬────────────┘   │ Feed                │
-            │                                  │                └─────────┬──────────┘
-            ▼                                  └──────────────┬───────────┘
- ┌────────────────────┐                                        ▼
- │ Graph Ingestion &   │                             ┌────────────────────┐
- │ Precompute Pipeline │                             │ Traffic Fusion      │
- │ (CH / hub labeling) │                             │ Service (weighted   │
- └──────────┬──────────┘                             │ merge by confidence)│
-            │ publish immutable                       └──────────┬──────────┘
-            │ RoadGraphVersion                                    │ writes
-            ▼                                                     ▼
- ┌─────────────────────────────────────────────────┐   ┌────────────────────┐
- │            Routing Engine (query time)            │◄──│ TrafficWeight Store │
- │  base graph cost + live traffic overlay + query   │   │ (region-sharded,    │
- └───────────────┬───────────────────────┬──────────┘   │ fast KV)            │
-                 │                        │               └────────────────────┘
-                 │ feasible?              │ route computed
-                 ▼                        ▼
-      ┌────────────────────┐   ┌────────────────────┐
-      │ EV Range & Charging │   │ Incremental Re-Route│
-      │ Stop Planner        │──►│ Service              │
-      └──────────┬──────────┘   └──────────┬──────────┘
-                 │ queries availability                 │ segment-level patch
-                 ▼                                        ▼
-      ┌────────────────────┐                   ┌────────────────────┐
-      │ Charging-Network    │                   │ On-Vehicle Nav      │
-      │ Client (external    │                   │ Client (cached map, │
-      │ system, see doc A)  │                   │ offline-capable)    │
-      └────────────────────┘                   └────────────────────┘
+ EXTERNAL SOURCES (outside our infra)
+ ┌────────────────────┐   ┌───────────────────────┐   ┌─────────────────────┐
+ │ Licensed Map        │   │ Fleet GPS/Speed        │   │ Third-Party Traffic │
+ │ Provider (periodic) │   │ Telemetry (streaming)  │   │ Feed                │
+ └──────────┬───────────┘   └───────────┬────────────┘   └──────────┬──────────┘
+            │                             └───────────────┬──────────┘
+            ▼                                              ▼
+ CONTROL PLANE / BATCH                          PROCESSING TIER
+ ┌─────────────────────┐                    ┌───────────────────────────┐
+ │ Graph Ingestion &     │                   │ Traffic Fusion Service      │
+ │ Precompute Pipeline   │                   │ (confidence-weighted merge) │
+ │ (CH / hub labeling)   │                   └──────────────┬──────────────┘
+ └──────────┬─────────────┘                                  │ writes
+            │ publishes                                       ▼
+            ▼                                    STORAGE / SERVING TIER
+ STORAGE / SERVING TIER                 ┌────────────────────────┐
+ ┌─────────────────────┐                │ TrafficWeight Store      │
+ │ RoadGraphVersion      │◄── read ──────┤ (region-sharded, fast KV,│
+ │ (immutable, versioned,│               │  continuously updated)   │
+ │  memory-mapped)       │               └────────────────────────┘
+ └──────────┬─────────────┘                            ▲
+            │ read (base cost)                          │ overlay read
+            ▼                                            │
+ QUERY-TIME SERVING TIER (stateless, horizontally scaled)
+ ┌──────────────────────────────────────────────────────┴─────────┐
+ │                        Routing Engine                            │
+ │           base graph cost + live traffic overlay                 │
+ └───────────────┬─────────────────────────────┬────────────────────┘
+                 │ feasible                     │ infeasible → forks off
+                 ▼                              ▼
+      ┌────────────────────┐       ┌─────────────────────────────┐
+      │ Incremental          │       │ EV Range & Charging-Stop    │
+      │ Re-Route Service      │◄─────┤ Planner (conditional,        │
+      │ (segment-level patch) │      │  heavier compute)             │
+      └──────────┬─────────────┘     └───────────────┬───────────────┘
+                 │ pushes update                       │ queries availability
+                 ▼                                       ▼
+      ┌────────────────────┐                ┌──────────────────────────┐
+      │ On-Vehicle Nav      │                │ Charging-Network System   │
+      │ Client — EDGE TIER  │                │ (external dependency,     │
+      │ (cached, offline-   │                │  see companion doc)        │
+      │  capable)           │                └──────────────────────────┘
+      └────────────────────┘
 ```
 
-Narrate the key architectural decision: *"The Routing Engine never recomputes a shortest path from raw graph traversal on every query — it queries the precomputed contraction-hierarchy/hub-label structure (millisecond-scale) and applies the live traffic overlay as a cost adjustment layered on top. The EV range/charging-stop logic is deliberately a separate, heavier-weight stage invoked conditionally — only when the direct route isn't feasible — rather than folded into every routing query, because it's the one part of this pipeline that's genuinely expensive and depends on an external system's availability data."*
+Narrate the key architectural decision: *"There isn't one shared backbone here the way a telemetry pipeline has a durable log — instead, the topology insight is a deliberate split between two storage tiers with completely different write patterns: an immutable, versioned graph store rebuilt on a weeks-long cadence, and a continuously-written, region-sharded traffic store, joined together only at query time by a stateless Routing Engine. The EV range/charging-stop logic is drawn as a genuine fork off that engine, not a downstream pipeline stage — it's invoked conditionally, only when a route is infeasible, and it's the only query-time component that reaches out to an external system. Everything in the query-time tier is stateless and horizontally scalable precisely because all the state it needs lives in those two storage tiers, not in the service instances themselves."*
 
 ---
 

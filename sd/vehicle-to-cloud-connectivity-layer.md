@@ -145,59 +145,85 @@ Narrate this trade-off explicitly: *"If this layer understood OTA chunks or tele
 
 ## 5. High-Level Design
 
-### Major components
+This is an **infrastructure/topology view** — what pieces of infrastructure exist, what type each one is (durable client-side queue, stateful session terminator, shared registry, pub/sub backbone...), and how they're wired together — not a step-by-step trace of one message's journey. Sequencing and per-hop logic belong in the Deep Dives (§6); this section should stand on its own as "here's what we'd provision."
 
-1. **Vehicle Connectivity Client** (on-vehicle) — owns the local durable priority queues, the connection state machine, backoff/jitter logic, and network-quality detection (bearer type, signal strength, metered vs. unmetered).
-2. **Connection Gateway Tier** — a horizontally scalable fleet of stateful gateway nodes terminating persistent pub/sub sessions (e.g., MQTT-style) from vehicles; owns session state and routes messages to/from the backend message bus.
-3. **Session Registry** — a fast, shared lookup (e.g., a distributed cache) mapping `vehicle_id → gateway_node_id` so that any backend service wanting to push a message to a specific vehicle knows which gateway node currently owns its session.
-4. **Backend Message Bus** — an internal pub/sub/streaming backbone (e.g., Kafka-style) that decouples the gateway tier from the many downstream consumers (OTA orchestrator, telemetry pipeline, diagnostics, command services) — the gateway publishes inbound vehicle messages here and subscribes to outbound messages destined for connected vehicles.
-5. **Identity & Session Auth Service** — issues and validates device certificates and short-lived resumption tokens; decoupled from any specific gateway node so a vehicle reconnecting to a *different* gateway node (after a node failure, or a network change) re-authenticates against a stable, shared identity source, not node-local state.
-6. **Connection Health / Load-Shedding Controller** — tracks aggregate reconnection rate and per-region load; can instruct clients (via a lightweight, cheap-to-deliver signal) to widen their backoff window during a detected reconnection storm.
-7. **De-duplication / Delivery Tracking Store** — the short-TTL store backing `DeliveryReceipt`, used by consumers to collapse retried messages.
+### Infrastructure tiers
 
-### High-level data flow (whiteboard sketch, described in ASCII)
+**Edge/client tier (runs on the vehicle, outside our infrastructure footprint)**
+- **On-vehicle producers** (OTA agent, telemetry sampler, diagnostics) — generate messages tagged with a priority class; not part of the connectivity substrate itself, just its callers.
+- **Local Priority Queues** — four bounded, independently-capacitied durable queues (SAFETY_CRITICAL / CONTROL / TELEMETRY / BULK), each with its own eviction policy, so a full bulk queue can never physically evict a safety-critical message.
+- **Vehicle Connectivity Client** — owns the connection state machine, backoff/jitter logic, and network-quality (bearer) detection; the only piece of edge software that actually speaks the wire protocol to the gateway tier.
+
+**Ingestion/gateway tier (the boundary where the fleet meets our infrastructure)**
+- **Connection Gateway Tier** — a horizontally-scalable fleet of stateful nodes terminating persistent pub/sub sessions (e.g., MQTT-style) from vehicles. Its job is connection/session termination and store-and-forward relay — no OTA/telemetry/diagnostics business logic lives here.
+
+**Control-plane / registry services (side-car, consulted by the gateway tier but not on the main data path)**
+- **Session Registry** — a fast, shared lookup mapping `vehicle_id → gateway_node_id`, so any backend service wanting to push to a specific vehicle knows which gateway node currently owns its session.
+- **Identity & Session Auth Service** — issues and validates device certificates and short-lived resumption tokens, decoupled from any specific gateway node, so a vehicle reconnecting to a *different* node re-authenticates against a stable, shared identity source rather than node-local state.
+- **Connection Health / Load-Shedding Controller** — tracks aggregate reconnection rate and per-region load; can instruct clients to widen their backoff window during a detected reconnection storm. This is a control signal, never a data-path component.
+
+**Messaging backbone (the shared piece of infrastructure everything downstream reads from independently)**
+- **Backend Message Bus** — an internal pub/sub/streaming backbone (e.g., Kafka-style), topic-partitioned by priority class, that decouples the stateful gateway tier from every downstream consumer. The gateway publishes inbound vehicle messages here and subscribes to outbound messages destined for connected vehicles.
+
+**Processing / consuming tier (independent consumers of the shared backbone, each owned by a different downstream system)**
+- **OTA Orchestrator**, **Telemetry Pipeline**, **Diagnostics** — each an independently-scaled consumer of the backend message bus, built and owned by a different team; this layer is deliberately payload-agnostic so these consumers can evolve without changing the connectivity substrate.
+
+**Storage / serving tier**
+- **De-duplication / Delivery Tracking Store** — the short-TTL, fast-lookup store backing `DeliveryReceipt`, consulted by consumers to collapse retried at-least-once deliveries.
+
+### Topology diagram (infrastructure view, described in ASCII)
 
 ```
-        ┌───────────────────────────────────────────────────────────┐
-        │                        Vehicle (edge)                      │
-        │  ┌───────────────┐   ┌───────────────────────────────┐    │
-        │  │ Producers      │──►│ Local Priority Queues           │   │
-        │  │ (OTA agent,    │   │ SAFETY | CONTROL | TELEMETRY | │   │
-        │  │  telemetry,    │   │ BULK  (bounded, own eviction)  │   │
-        │  │  diagnostics)  │   └───────────────┬─────────────────┘  │
-        │  └───────────────┘                    │                    │
-        │                       ┌────────────────▼────────────────┐  │
-        │                       │ Connectivity Client              │  │
-        │                       │ - connection state machine        │  │
-        │                       │ - backoff + jitter                │  │
-        │                       │ - network-quality detection       │  │
-        │                       └────────────────┬────────────────┘  │
-        └────────────────────────────────────────┼────────────────────┘
-                          cellular / Wi-Fi (bearer changes freely)    │
-                                                   ▼
-                       ┌───────────────────────────────────────┐
-                       │        Connection Gateway Tier          │
-                       │  (persistent pub/sub, e.g. MQTT-style)  │
-                       │  many stateless-scalable nodes          │
-                       └──────────────┬──────────────┬───────────┘
-                                      │              │
-                   session lookup     │              │ publish/subscribe
-                                      ▼              ▼
-                      ┌────────────────────┐   ┌───────────────────────┐
-                      │ Session Registry    │   │ Backend Message Bus    │
-                      │ (vehicle→gateway)   │   │ (Kafka-like, topics per│
-                      └────────────────────┘   │  priority/consumer)    │
-                                                └──────────┬─────────────┘
-                                                            │
-                          ┌─────────────────┬───────────────┼───────────────┐
-                          ▼                 ▼               ▼               ▼
-                 ┌────────────────┐ ┌───────────────┐ ┌───────────┐ ┌───────────────┐
-                 │ OTA Orchestrator│ │ Telemetry     │ │ Diagnostics│ │ Identity/Auth │
-                 │ (consumer)      │ │ Pipeline       │ │ (consumer)│ │ Service        │
-                 └────────────────┘ └───────────────┘ └───────────┘ └───────────────┘
+ EDGE TIER (on the vehicle)
+ ┌──────────────────────────────────────────────────────────────┐
+ │ ┌──────────────┐   ┌──────────────────────────┐               │
+ │ │ Producers     │──►│ Local Priority Queues      │             │
+ │ │ (OTA agent,   │   │ SAFETY | CONTROL |          │             │
+ │ │  telemetry,   │   │ TELEMETRY | BULK             │            │
+ │ │  diagnostics) │   │ (bounded, own eviction)      │            │
+ │ └──────────────┘   └──────────────┬────────────────┘           │
+ │                     ┌──────────────▼───────────────┐            │
+ │                     │ Vehicle Connectivity Client    │           │
+ │                     │ (state machine, backoff/jitter,│           │
+ │                     │  network-quality detection)    │           │
+ │                     └──────────────┬────────────────┘            │
+ └────────────────────────────────────┼─────────────────────────────┘
+                    cellular / Wi-Fi (bearer changes freely)
+                                       ▼
+ INGESTION / GATEWAY TIER   ┌───────────────────────────────────┐
+                             │      Connection Gateway Tier        │
+                             │ (stateful, persistent pub/sub,      │
+                             │  horizontally scalable nodes)       │
+                             └───────┬───────────────────┬─────────┘
+                                     │                    │ publishes/
+                    session lookup   │                    │ subscribes
+                                     ▼                    ▼
+ CONTROL PLANE (side-car,   ┌────────────────┐   MESSAGING BACKBONE
+ off the main data path)     │ Session Registry│   ┌───────────────────────┐
+                             │ (vehicle→gateway│   │  Backend Message Bus    │
+                             └────────────────┘   │  (Kafka-like, topics    │
+                             ┌────────────────┐   │   per priority class —  │
+                             │ Identity/Session│◄──┤   the shared source of  │
+                             │ Auth Service     │   │   truth every consumer │
+                             └────────────────┘   │   below reads           │
+                             ┌────────────────┐   │   independently)        │
+                             │ Connection      │◄──┤                          │
+                             │ Health/Load-    │   └────────────┬─────────────┘
+                             │ Shedding Ctrl   │                │
+                             └────────────────┘                │
+                                                                │
+ PROCESSING / CONSUMING TIER   (independently-scaled consumers of the same bus)
+                     ┌──────────────────┬───────────────────────┼───────────────┐
+                     ▼                  ▼                                       ▼
+          ┌────────────────┐  ┌──────────────────┐                  ┌────────────────┐
+          │ OTA Orchestrator │  │ Telemetry Pipeline │                  │ Diagnostics     │
+          └────────────────┘  └──────────────────┘                  └────────────────┘
+
+ STORAGE / SERVING (consulted by consumers, not shown per-arrow above):
+   • De-duplication / Delivery Tracking Store — short-TTL lookup collapsing retried deliveries
 ```
 
-Narrate the key architectural decision: *"The Connection Gateway Tier terminates the physical, stateful session — but it's deliberately thin and forwards everything into a backend message bus rather than embedding business logic. This means the gateway tier can be scaled, restarted, or fail over independently of OTA, telemetry, or diagnostics logic, and a vehicle reconnecting after a dead zone doesn't need to reconnect to the *same* gateway node — it re-authenticates via the shared Identity service, and the Session Registry is updated so any backend consumer can still find and message it."*
+Narrate the key architectural decision: *"The one piece of infrastructure everything downstream hangs off is the Backend Message Bus — OTA, telemetry, and diagnostics are not three steps in a pipeline, they're three independently-scaled consumers reading the same backbone at their own pace, which is exactly why a slow telemetry consumer can never delay an OTA rollout or vice versa. The Connection Gateway Tier is the only genuinely stateful thing in this diagram — it terminates millions of long-lived sessions — but it's deliberately thin and forwards everything into the bus rather than embedding business logic, so it can scale, restart, or fail over independently of every consumer. Everything else — Session Registry, Identity/Auth, the Load-Shedding Controller — is a small side-car control-plane service the gateway consults, never something sitting in the main message path."*
 
 ---
 

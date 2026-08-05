@@ -161,59 +161,69 @@ This is a good trade-off to narrate explicitly: *"`VehicleUpdateState` is small,
 
 ## 5. High-Level Design
 
-### Major components
+This is an **infrastructure/topology view** — what pieces of infrastructure exist, what type each one is (blob store, durable log, control-plane service, database...), and how they're wired together — not a step-by-step trace of one campaign's rollout. Sequencing and per-hop logic belong in the Deep Dives (§6); this section should stand on its own as "here's what we'd provision."
 
-1. **Package/Artifact Store** — durable blob storage (e.g., S3-style object store) holding signed full images and delta packages, fronted by a **CDN** for fleet-scale download egress.
-2. **Campaign Orchestrator** (control plane) — where release engineers create campaigns, define cohorts and rollout strategy, and monitor/pause/halt.
-3. **Rollout Scheduler / Notifier** — walks `VehicleUpdateState` for vehicles matching an active campaign's cohort and rollout velocity, and enqueues "you have an update available" notifications, paced to avoid thundering-herd load.
-4. **Vehicle Communication Gateway** — the backend-facing edge that vehicles connect to (over MQTT/HTTPS) to receive notifications, report status, and fetch manifests. Designed for millions of long-lived, low-throughput, intermittent connections.
-5. **Vehicle OTA Agent** (on-vehicle) — a state machine that downloads, verifies, stages, applies, and reports. This is the offline-first component: it must make correct local decisions even with zero connectivity for hours or days.
-6. **Status Aggregation / Telemetry Pipeline** — ingests `UpdateEvent`s from millions of vehicles into a stream (e.g., Kafka-style), which fans out to (a) the hot `VehicleUpdateState` store, (b) the append-only audit log, and (c) real-time dashboards/alerting.
-7. **Rollback/Recovery subsystem** — both a vehicle-local mechanism (dual-partition boot) and a backend policy layer that auto-halts a campaign when the aggregated failure rate crosses a threshold.
+### Infrastructure tiers
 
-### High-level data flow (whiteboard sketch, described in ASCII)
+**Edge tier (runs on the vehicle, outside our infrastructure footprint)**
+- **Vehicle OTA Agent** — an on-vehicle state machine, not a backend service. Downloads, verifies, stages, applies, and reports status. Owns a small local durable queue (store-and-forward) so it keeps making correct decisions with zero connectivity for hours or days.
+- **Dual A/B Partitions (flash + boot)** — the vehicle-local half of rollback/recovery: the update flashes to the inactive partition while the active one keeps running, giving fail-secure rollback at the bootloader level, independent of any backend availability.
+
+**Ingestion/gateway tier (the boundary where the fleet meets our infrastructure)**
+- **Vehicle Communication Gateway** — a horizontally-scaled, stateless fleet of connection terminators (MQTT/HTTPS), built to hold millions of long-lived, low-throughput, intermittent connections. Its jobs are auth, notification delivery, and manifest/status relay — no rollout logic lives here.
+
+**Control-plane services (consulted for orchestration, not on the byte-delivery path)**
+- **Campaign Orchestrator** — where release engineers create campaigns, define cohorts and rollout strategy, and monitor/pause/halt. A low-throughput, human-facing control surface.
+- **Rollout Scheduler / Notifier** — walks `VehicleUpdateState` for vehicles matching an active campaign's cohort, and enqueues paced "update available" notifications through the gateway to avoid a thundering herd. Logically part of the control plane even though it emits into the gateway's data path.
+- **Rollback/Recovery policy layer** — a backend service that watches aggregated failure rate per campaign and auto-halts it when a threshold is crossed; the backend-side counterpart to the vehicle-local A/B rollback mechanism above.
+
+**Distribution / data-plane tier (a separate, much higher-throughput pipe than the control plane)**
+- **Package/Artifact Store** — durable blob storage (e.g., S3-style object store) holding signed full images and delta packages.
+- **CDN** — fronts the artifact store for fleet-scale download egress; vehicles fetch bytes here via a short-lived signed URL, never from the control plane directly.
+
+**Messaging backbone (the shared piece of infrastructure the status side fans out from)**
+- **Status Ingestion Stream** — a durable, partitioned log (Kafka-style) that every vehicle's `UpdateEvent`s are written into; every downstream store below is just an independent reader of this one stream.
+
+**Storage / serving tier (two different types for two very different access patterns)**
+- **`VehicleUpdateState` store** — a low-latency, frequently-written/read key-value or document store (the "device shadow"), sharded by `vehicle_id`.
+- **Audit/Event Store** — an append-only, time-series/columnar store for `UpdateEvent` history, optimized for time-range scans, not point lookups.
+
+**Supporting infrastructure (cross-cutting, attached beside the data path)**
+- **Dashboards + Alerts (anomaly detection)** — observes rollout funnels and failure-rate thresholds across campaigns; not a functional hop in the data path, but load-bearing for detecting a bad rollout early.
+
+### Topology diagram (infrastructure view, described in ASCII)
 
 ```
-                     ┌────────────────────┐
-                     │  Release Engineer   │
-                     │  (Campaign Console) │
-                     └──────────┬──────────┘
-                                │ create/pause/halt campaign
-                                ▼
-                     ┌────────────────────┐        ┌───────────────────┐
-                     │ Campaign            │◄──────►│ Package/Delta      │
-                     │ Orchestrator        │        │ Store + CDN        │
-                     └──────────┬──────────┘        └─────────┬─────────┘
-                                │ paced notifications                   │ signed manifest + delta bytes
-                                ▼                                        │
-                     ┌────────────────────┐                            │
-                     │ Vehicle Comm        │                            │
-                     │ Gateway (MQTT/HTTPS)│                            │
-                     └──────────┬──────────┘                            │
-                                │ push "update available"                │
-                                ▼                                        ▼
-                     ┌─────────────────────────────────────────────────────┐
-                     │                    Vehicle (edge)                   │
-                     │  ┌───────────┐   ┌────────────┐   ┌──────────────┐  │
-                     │  │ OTA Agent │──►│ Local Queue │──►│ A/B Partition│  │
-                     │  │(state mach)│  │(store+fwd)  │  │  Flash + Boot│  │
-                     │  └─────┬─────┘   └────────────┘   └──────────────┘  │
-                     └────────┼──────────────────────────────────────────┘
-                              │ status events (buffered when offline)
-                              ▼
-                     ┌────────────────────┐      ┌────────────────────┐
-                     │ Status Ingestion    │─────►│ VehicleUpdateState │
-                     │ Stream (Kafka-like) │      │ (hot device shadow)│
-                     └──────────┬──────────┘      └────────────────────┘
-                                │
-                                ▼
-                     ┌────────────────────┐      ┌────────────────────┐
-                     │ Audit/Event Store   │      │ Dashboards + Alerts│
-                     │ (append-only)       │      │ (anomaly detection)│
-                     └────────────────────┘      └────────────────────┘
+   EDGE TIER                 INGESTION TIER              CONTROL PLANE (side-car)
+ ┌──────────────────┐      ┌────────────────────┐      ┌───────────────────────────┐
+ │ Vehicle OTA Agent  │      │ Vehicle Comm        │      │ Campaign Orchestrator      │
+ │ (state machine) +  │◄────►│ Gateway             │◄────►│  + Rollout Scheduler       │
+ │ local queue +      │      │ (stateless, MQTT/   │      │  + Rollback/Recovery       │
+ │ A/B partitions      │      │  HTTPS boundary)    │      │  policy layer (auto-halt)  │
+ └─────────┬──────────┘      └──────────┬──────────┘      └───────────────────────────┘
+           │                            │ status events (buffered when offline)
+           │ fetch bytes via                           ▼
+           │ short-lived signed URL          MESSAGING BACKBONE
+           │                       ┌───────────────────────────────┐
+           │                       │ Status Ingestion Stream         │
+           │                       │ (durable, partitioned log) —    │
+           │                       │ every store below reads it      │
+           │                       │ independently                   │
+           │                       └───────────┬─────────┬───────────┘
+           ▼                                   ▼         ▼
+ DISTRIBUTION / DATA PLANE          STORAGE / SERVING TIER
+ ┌───────────────────────┐     ┌───────────────────────┐   ┌───────────────────────┐
+ │ CDN → Package/Artifact  │     │ VehicleUpdateState      │   │ Audit/Event Store       │
+ │ Store (blob storage,    │     │ (hot device shadow, KV) │   │ (append-only, time-     │
+ │ signed full + delta      │     └───────────────────────┘   │  series)                │
+ │ images)                  │                                  └───────────────────────┘
+ └───────────────────────┘
+
+ SUPPORTING (cross-cutting, attached to the messaging backbone — not shown per-arrow above):
+   • Dashboards + Alerts — observes campaign rollout funnels and failure-rate thresholds
 ```
 
-Narrate the key architectural decision: *"Notice the vehicle never talks directly to the origin package store for the actual bytes — it downloads from the CDN using a short-lived signed URL obtained from the gateway. This keeps the control plane (which is comparatively low-throughput) decoupled from the data plane (which must serve petabytes of egress)."*
+Narrate the key architectural decision: *"The vehicle never talks to the control plane for the actual update bytes — it fetches them from the CDN using a short-lived signed URL, so the low-throughput orchestration path (campaigns, cohorts, pacing) is entirely decoupled from the high-throughput data-plane path (petabytes of egress). The other piece of shared infrastructure is the status stream: it's the one backbone that both the hot device-shadow store and the append-only audit log read independently, so a slow audit-log writer can never delay a device's current-state lookup. Everything else — the gateway, the orchestrator, the rollback policy layer — is either a stateless edge terminator or a small side-car control-plane service; the real capacity-planning conversation is about the CDN/artifact store and the status stream."*
 
 ---
 

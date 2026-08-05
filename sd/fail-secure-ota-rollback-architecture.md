@@ -131,70 +131,79 @@ This is worth narrating explicitly: *"If the boot-attempt counter lived inside p
 
 ## 5. High-Level Design
 
-### Major components
+This is an **infrastructure/topology view** — what pieces of infrastructure exist on the vehicle, what type each one is (immutable root-of-trust code, power-loss-safe persistent store, continuously-running monitor, structurally-isolated last-resort partition...), and how they're wired together — not a step-by-step trace of one boot attempt. Sequencing and per-hop logic belong in the Deep Dives (§6); this section should stand on its own as "here's what we'd provision on every ECU."
 
-1. **First-stage (immutable) bootloader** — a small, rarely-changed piece of code (ideally masked ROM or write-protected after manufacturing) that reads `BootAttemptRecord`, decides which partition to boot, increments the attempt counter, and hands off control. This is the root of trust for the entire mechanism.
-2. **Second-stage bootloader / boot manager** — verifies the signature/hash of the target partition before jumping to it (re-verification at every boot, not just at flash time), and enforces the boot-loop threshold.
-3. **Boot-time health-check / watchdog service** — runs immediately after the application layer signals "up," executes the self-test suite, and reports pass/fail back to the boot manager within the timing budget from section 3.
-4. **Runtime soak monitor** — runs continuously (not just at boot) after a candidate version has passed its initial health check, watching for critical DTCs and tracking drive-cycle completion toward permanent commit.
-5. **Partition manager** — owns the actual A/B slots, exposes "stage an update to the inactive slot," "mark a slot bootable," and "reclaim a slot for reuse" operations; the only component allowed to write to flash outside of active application updates.
-6. **Recovery/bootstrap partition** — a minimal, essentially-never-touched third image, separate from A/B, that can restore a known-safe baseline if both A and B are ever simultaneously unusable.
-7. **Degraded-mode controller** (safety-critical ECUs only) — decides, on persistent fallback failure, whether the vehicle can safely operate in a restricted mode (e.g., mechanical backup engaged, speed-limited) versus requiring the vehicle to remain immobilized until serviced.
+### Infrastructure tiers
 
-### High-level boot/rollback flow (ASCII)
+**Root-of-trust tier (immutable, the lowest layer — trusted independent of any software above it)**
+- **First-stage (immutable) bootloader** — a small, rarely-changed piece of code (ideally masked ROM or write-protected after manufacturing) that reads the boot-attempt counter, decides which partition to boot, increments the counter, and hands off control. This is the root of trust for the entire mechanism.
+- **Boot-attempt counter store (`BootAttemptRecord`)** — a small, power-loss-safe region of non-volatile storage, physically separate from both A/B partitions and touched only by the bootloader; this separation is deliberate infrastructure, not an implementation detail — a corrupted partition can never corrupt the counter meant to detect its own repeated failures.
+
+**Boot control tier**
+- **Second-stage bootloader / boot manager** — re-verifies the signature/hash of the target partition at every boot (not just at flash time) and enforces the boot-loop threshold.
+- **Boot-time health-check / watchdog service** — runs immediately after the application layer signals "up," executes the self-test suite, and reports pass/fail within the timing budget from section 3.
+
+**Runtime supervision tier**
+- **Runtime soak monitor** — runs continuously, not just at boot, after a candidate version has passed its initial health check; watches for critical DTCs and tracks drive-cycle completion toward permanent commit.
+
+**Storage / partition tier**
+- **Partition manager** — owns the actual A/B slots; exposes "stage an update to the inactive slot," "mark a slot bootable," and "reclaim a slot for reuse"; the only component allowed to write to flash outside of active application updates.
+- **Recovery/bootstrap partition** — a minimal, essentially-never-touched third image, structurally isolated from the routine A/B write path, that can restore a known-safe baseline if both A and B are ever simultaneously unusable.
+
+**Safety-response tier (safety-critical ECUs only)**
+- **Degraded-mode controller** — on persistent fallback failure, decides whether the vehicle can safely operate in a restricted mode (e.g., mechanical backup engaged, speed-limited) versus requiring the vehicle to remain immobilized until serviced.
+
+**Supporting / cross-cutting infrastructure (off-vehicle, beside this per-vehicle mechanism, not a dependency of it)**
+- Document #1's fleet-side campaign-halt / canary anomaly-detection reacts to the aggregate of many vehicles' rollback events reported by this mechanism (section 10), forming a population-level safety net on top of it — but this per-vehicle mechanism must function correctly with zero connectivity to that backend, ever.
+
+### Topology diagram (infrastructure view, described in ASCII)
 
 ```
-                    ┌─────────────────────────┐
-                    │ First-Stage Bootloader   │  (immutable, root of trust)
-                    │ read BootAttemptRecord   │
-                    └───────────┬─────────────┘
-                                │ increment attempt_count (persist BEFORE boot attempt)
-                                ▼
-                    ┌─────────────────────────┐
-        attempt_count│ Second-Stage Boot Mgr   │
-        >= 3? ───────┤ verify signature/hash   │
-             │        │ of candidate_slot       │
-             │        └───────────┬─────────────┘
-             │                    │ verified OK
-             │                    ▼
-             │        ┌─────────────────────────┐
-             │        │  Boot candidate_slot     │
-             │        │  (application layer up)  │
-             │        └───────────┬─────────────┘
-             │                    │
-             │                    ▼
-             │        ┌─────────────────────────┐
-             │        │ Boot-Time Health Check   │──FAIL/TIMEOUT──┐
-             │        │ (heartbeats, CAN probes, │                │
-             │        │  self-test suite)        │                │
-             │        └───────────┬─────────────┘                │
-             │                    │ PASS                          │
-             │                    ▼                                │
-             │        ┌─────────────────────────┐                │
-             │        │ Runtime Soak Monitor      │──critical DTC──┤
-             │        │ (drive cycle, DTC watch)  │                │
-             │        └───────────┬─────────────┘                │
-             │                    │ soak PASSED                    │
-             │                    ▼                                │
-             │        ┌─────────────────────────┐                │
-             │        │ Commit: reclaim old slot  │                │
-             │        │ reset attempt_count = 0   │                │
-             │        └─────────────────────────┘                │
-             │                                                     │
-             ▼◄────────────────────────────────────────────────────┘
-   ┌─────────────────────────┐
-   │ Fallback: mark other slot│
-   │ active, reboot           │
-   └───────────┬─────────────┘
-               │ if other slot ALSO fails / both slots unusable
-               ▼
-   ┌─────────────────────────┐        ┌───────────────────────────┐
-   │ Recovery/Bootstrap       │───────►│ Degraded-Mode Controller    │
-   │ Partition (last resort)  │        │ (safety-critical ECUs only) │
-   └─────────────────────────┘        └───────────────────────────┘
+                          ROOT-OF-TRUST TIER
+              ┌─────────────────────────┐        ┌──────────────────────────┐
+              │ First-Stage Bootloader   │◄──────►│ Boot-Attempt Counter      │
+              │ (immutable, masked ROM)   │        │ Store (separate NV mem,   │
+              └────────────┬─────────────┘        │  power-loss-safe)         │
+                            │ hand off, counter incremented first  └──────────────────────────┘
+                            ▼
+                   BOOT CONTROL TIER
+              ┌─────────────────────────┐
+              │ Second-Stage Boot Mgr     │  verify sig/hash, enforce boot-loop threshold
+              └────────────┬─────────────┘
+             under threshold│                  over threshold
+                            ▼                          \
+              ┌─────────────────────────┐                \
+              │ Boot-Time Health-Check    │──FAIL/TIMEOUT──► FALLBACK: flip active_slot,
+              │ / Watchdog Service         │                  reboot into other partition
+              └────────────┬─────────────┘                 /
+                       PASS │                              /
+                            ▼                             /
+                 RUNTIME SUPERVISION TIER                /
+              ┌─────────────────────────┐               /
+              │ Runtime Soak Monitor       │──critical DTC──┘
+              │ (drive cycle, DTC watch)   │
+              └────────────┬─────────────┘
+                  soak PASSED
+                            ▼
+                 STORAGE / PARTITION TIER
+              ┌─────────────────────────┐
+              │ Partition Manager          │  commit: reclaim old slot, reset counter
+              │ (owns A/B slots)           │
+              └─────────────────────────┘
+
+    WORST CASE — both A and B unusable ─────────────────────────────────►
+              ┌─────────────────────────┐        ┌────────────────────────────┐
+              │ Recovery/Bootstrap         │───────►│ Degraded-Mode Controller     │
+              │ Partition (last resort,     │        │ (safety-critical ECUs only)  │
+              │  structurally isolated)     │        └────────────────────────────┘
+              └─────────────────────────┘
+
+ SUPPORTING (off-vehicle, beside this mechanism, never a dependency of it):
+   • Document #1 campaign-halt / canary anomaly-detection — reacts to the fleet-wide
+     aggregate of rollback events this mechanism reports; not something this mechanism reads from.
 ```
 
-Narrate the key architectural decision: *"Notice the entire left-hand decision path — increment counter, verify signature, check the threshold — happens before the application layer ever runs, in the boot manager. This is deliberate: the component deciding whether to trust the new software cannot itself be part of that new software. If the decision logic lived in the application layer, a sufficiently broken update could corrupt or bypass the very mechanism meant to catch it."*
+Narrate the key architectural decision: *"The whole mechanism is organized as a chain of increasingly-trusted layers, with the trust boundary drawn explicitly: the root-of-trust tier (bootloader + counter store) is the only infrastructure the design assumes cannot itself be broken by a bad update, because it sits below and physically separate from every partition it's judging. Everything above it — the boot manager, the watchdog, the soak monitor, the partition manager — is composed around that root rather than the other way around. The recovery partition is structurally isolated infrastructure, not just a policy that says 'don't touch it' — it's unreachable by the routine A/B write path by construction. And the fleet-side backend that reacts to rollback telemetry is drawn off to the side deliberately: it's a population-level side-car this per-vehicle mechanism reports to, never something it depends on to function."*
 
 ---
 

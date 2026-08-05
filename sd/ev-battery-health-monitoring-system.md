@@ -160,67 +160,84 @@ This mirrors the hot/cold split in Document A, and is worth narrating explicitly
 
 ## 5. High-Level Design
 
-### Major components
+This is an **infrastructure/topology view** — what pieces of infrastructure exist, what type each one is (durable log, stream processor, batch job, database...), and how they're wired together — not a step-by-step trace of one summary message's journey. Sequencing and per-hop logic belong in the Deep Dives (§6). Note which tiers are genuinely new here versus reused wholesale from Document A.
 
-1. **Edge Battery Feature Extractor (on-vehicle, part of the BMS/edge agent)** — computes the module-level summary statistics from raw cell-group readings, applies the adaptive driving/charging/parked cadence, and hands the resulting `BatteryHealthSummary` to the shared edge telemetry agent from Document A for uplink.
-2. **Shared Ingestion Pipeline (reused from Document A)** — the ingestion gateway, schema registry, and partitioned streaming log. Battery data gets its own topic (`battery.health.raw`), partitioned by `vehicle_id` for the same per-vehicle-ordering reasons as general telemetry, but is otherwise the same physical infrastructure — no need to re-architect this.
-3. **Thermal Early-Warning Engine (hot path)** — a dedicated, low-latency consumer group on the battery topic, running a combination of rule-based thresholds (fast, cheap, catches known failure signatures) and a lightweight anomaly-detection model (catches novel patterns), feeding directly into `ThermalAlert` creation and a safety-response/dispatch integration, and optionally a command channel back to the vehicle for conservative mitigation (e.g., "reduce max charge rate until inspected").
-4. **SOC/SOH Estimation Service (cold path, near-real-time)** — a stream-processing job maintaining a per-vehicle "battery state" model, incrementally updating SOH using coulomb-counting-based capacity tracking cross-checked with a fleet-trained degradation model, reconciling against the vehicle-reported SOC/SOH and flagging significant divergence.
-5. **Degradation Trend / Snapshot Job (batch, periodic)** — a scheduled job (e.g., weekly) that rolls up per-vehicle history into `DegradationSnapshot` records, computing smoothed degradation rates and confidence intervals.
-6. **Fleet Aggregation / Warranty Analysis Service (batch, periodic)** — computes `FleetBatteryCohort` rollups, powering engineering and warranty-team dashboards/queries.
-7. **Battery State Store** — a low-latency key-value/document store holding the current best estimate of SOC/SOH/health status per vehicle (the "digital twin" for battery health), read by customer-facing apps and service-technician tools.
-8. **On-Demand Diagnostics Service** — handles the exception-path request for full-resolution, per-cell raw data pulls from a specific vehicle (service visit / warranty investigation), distinct from the routine streaming path.
+### Infrastructure tiers
 
-### High-level data flow (whiteboard sketch, described in ASCII)
+**Edge tier (on-vehicle, shared transport with Document A)**
+- **BMS raw sampling** — internal cell-group voltage/temperature sampling at ~1 Hz; never leaves the vehicle in raw form.
+- **Edge Battery Feature Extractor** — computes module-level summary statistics and applies the adaptive driving/charging/parked cadence, then hands the resulting `BatteryHealthSummary` to Document A's shared edge telemetry agent for uplink. This is the only battery-specific piece of the edge tier.
+
+**Ingestion tier (fully reused from Document A — no battery-specific infrastructure here)**
+- **Ingestion Gateway** and **Schema Registry** — the same physical infrastructure as the general telemetry pipeline. Battery data adds no new gateway logic, only a new schema.
+
+**Messaging backbone (reused backbone, dedicated topic)**
+- **Streaming Ingestion Tier, topic `battery.health.raw`** — the same durable, partitioned log as Document A, partitioned by `vehicle_id`, but battery data lives on its own topic so it can be scaled and retained independently. This is the one component both processing paths below fork off of.
+
+**Processing tier (two independently-provisioned, battery-specific consumer groups)**
+- **Thermal Early-Warning Engine (hot path)** — a small, low-latency consumer group running rule-based thresholds plus a lightweight anomaly-detection model, sized for a <10s latency budget, independent of the much larger cold path.
+- **SOC/SOH Estimation Service (cold path, near-real-time)** — a stream-processing job maintaining a per-vehicle battery-state model, reconciling cloud-computed SOH against the vehicle-reported figure.
+
+**Batch aggregation tier (further downstream of the cold path, progressively coarser-grained)**
+- **Degradation Trend / Snapshot Job** — a periodic (weekly) batch job rolling up per-vehicle history into `DegradationSnapshot` records.
+- **Fleet Aggregation / Warranty Analysis Service** — a periodic batch job computing `FleetBatteryCohort` rollups, one aggregation level above individual-vehicle snapshots.
+
+**Storage / serving tier**
+- **`ThermalAlert` store** — a small, indexed, low-latency store for hot-path alerts (mirrors `DTCEvent` in Document A).
+- **Battery State Store** — a low-latency key-value/document store holding the current best SOC/SOH estimate per vehicle (the "digital twin"), read by customer apps and service tools.
+- **Safety Response / Dispatch** — the hot path's sink: an external on-call/dispatch system, plus a command channel back to the vehicle for conservative mitigation (e.g., limit charge rate).
+
+**Supporting / control-plane infrastructure (sits beside the routine data path)**
+- **On-Demand Diagnostics Service** — handles rare, exception-path requests for full-resolution per-cell raw data from a specific vehicle (service visit / warranty investigation). It never participates in routine streaming; it's a side-channel triggered on demand.
+
+### Topology diagram (infrastructure view, described in ASCII)
 
 ```
-     ┌─────────────────────────────────────────────┐
-     │  Vehicle (edge)                              │
-     │  ┌─────────────────┐   ┌──────────────────┐ │
-     │  │ BMS: raw cell-   │──►│ Edge Battery      │ │
-     │  │ group voltage/   │   │ Feature Extractor │ │
-     │  │ temp @ ~1 Hz     │   │ (module rollups)  │ │
-     │  └─────────────────┘   └─────────┬──────────┘ │
-     │                                   │ BatteryHealthSummary
-     │                                   ▼            │
-     │                    (hands off to shared edge   │
-     │                     telemetry agent — Doc A)   │
-     └───────────────────────────┬───────────────────┘
-                                  ▼
-     ┌───────────────────────────────────────────────────────┐
-     │      Shared Ingestion Pipeline (Document A)            │
-     │  Ingestion Gateway → Streaming Log (topic:              │
-     │  battery.health.raw, partitioned by vehicle_id)          │
-     └───────────────────┬───────────────────┬─────────────────┘
-                          │                   │
-             ┌────────────┘                   └────────────┐
-             ▼                                              ▼
-  ┌───────────────────────┐                     ┌─────────────────────────┐
-  │ HOT PATH:               │                     │ COLD PATH:                │
-  │ Thermal Early-Warning    │                     │ SOC/SOH Estimation Service │
-  │ Engine (rules + anomaly  │                     │ (per-vehicle battery state) │
-  │ model, <10s budget)      │                     └────────────┬─────────────┘
-  └───────────┬─────────────┘                                   │
-              │ ThermalAlert                                    ▼
-              ▼                                       ┌─────────────────────────┐
-  ┌───────────────────────┐                          │ Battery State Store       │
-  │ Safety Response /       │                          │ (per-vehicle digital twin)│
-  │ Dispatch + Vehicle       │                          └────────────┬─────────────┘
-  │ Mitigation Command       │                                       │
-  └───────────────────────┘                                         ▼
-                                                        ┌─────────────────────────┐
-                                                        │ Degradation Trend Job     │
-                                                        │ (weekly DegradationSnapshot)│
-                                                        └────────────┬─────────────┘
-                                                                     ▼
-                                                        ┌─────────────────────────┐
-                                                        │ Fleet Aggregation /        │
-                                                        │ Warranty Analysis           │
-                                                        │ (FleetBatteryCohort)        │
-                                                        └─────────────────────────┘
+  EDGE TIER (shared          INGESTION TIER            MESSAGING BACKBONE
+  transport w/ Doc A)        (reused from Doc A)        (reused, dedicated topic)
+┌───────────────────┐      ┌─────────────────────┐    ┌──────────────────────────┐
+│ BMS (raw @1Hz)      │      │ Ingestion Gateway     │    │ Streaming Ingestion Tier   │
+│      │              │─────►│ + Schema Registry     │───►│ topic: battery.health.raw │
+│      ▼              │      │ (no battery-specific   │    │ (durable, partitioned by  │
+│ Edge Battery         │      │  logic added)          │    │  vehicle_id — the shared  │
+│ Feature Extractor    │      └─────────────────────┘    │  fork point below)         │
+└───────────────────┘                                    └────────────┬─────┬─────────┘
+                                                                        │     │
+                     PROCESSING TIER (two independently-provisioned consumer groups)
+                     ┌──────────────────────────────────┴─┐   ┌─┴──────────────────────────┐
+                     ▼                                      │   ▼
+          ┌───────────────────────┐                         │  ┌───────────────────────┐
+          │ HOT PATH:               │                         │  │ COLD PATH:               │
+          │ Thermal Early-Warning    │                         │  │ SOC/SOH Estimation        │
+          │ Engine (rules + anomaly, │                         │  │ Service (near-real-time)  │
+          │ <10s budget)             │                         │  └───────────┬───────────────┘
+          └───────────┬─────────────┘                                        │
+                       │ ThermalAlert                                        ▼
+     STORAGE /         ▼                                          ┌───────────────────────┐
+     SERVING TIER  ┌───────────────────────┐                     │ Battery State Store      │
+                   │ ThermalAlert Store  +   │                     │ (per-vehicle digital     │
+                   │ Safety Response/         │                     │  twin, KV)               │
+                   │ Dispatch + mitigation     │                     └───────────┬───────────────┘
+                   │ command → vehicle         │                                 │
+                   └───────────────────────┘               BATCH AGGREGATION    ▼
+                                                             TIER (downstream, ┌───────────────────────┐
+                                                             coarser-grained)  │ Degradation Trend Job    │
+                                                                               │ (weekly Snapshot)        │
+                                                                               └───────────┬───────────────┘
+                                                                                            ▼
+                                                                               ┌───────────────────────┐
+                                                                               │ Fleet Aggregation /      │
+                                                                               │ Warranty Analysis         │
+                                                                               │ (FleetBatteryCohort)      │
+                                                                               └───────────────────────┘
+
+SUPPORTING (control-plane, side channel — not on the routine data path):
+  • On-Demand Diagnostics Service — pulls full-resolution per-cell data from a specific
+    vehicle on request (service visit / investigation), triggered rarely, independent of
+    the streaming topology above
 ```
 
-Narrate the key architectural decision: *"The thermal early-warning engine forks off the shared streaming log exactly like Document A's DTC hot path — same pattern, same reasoning: a safety-critical, low-latency consumer must never queue behind SOH modeling or nightly warranty aggregation jobs. The genuinely new piece here, versus the generic telemetry pipeline, is the layered cold-path pipeline itself — raw summaries feed a near-real-time SOH estimator, which feeds a periodic degradation-trend job, which feeds a fleet-wide warranty aggregation — each stage trading immediacy for a longer time horizon and a higher level of aggregation."*
+Narrate the key architectural decision: *"Almost the entire edge, ingestion, and backbone layer is Document A, unmodified — the only new infrastructure at that level is a dedicated topic. The thermal early-warning engine forks off that shared backbone exactly like Document A's DTC hot path, for the same reason: a safety-critical, low-latency consumer must never sit behind SOH modeling or nightly warranty jobs. What's genuinely new here is the layered batch-aggregation tier downstream of the cold path — near-real-time SOH estimation feeds a weekly degradation snapshot, which feeds a fleet-wide warranty cohort — each hop trading immediacy for a longer time horizon and a coarser level of aggregation, and each one a separately-provisioned piece of infrastructure rather than a single monolithic job."*
 
 ---
 

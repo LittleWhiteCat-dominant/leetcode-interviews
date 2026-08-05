@@ -170,64 +170,66 @@ Notice the chain `Commit → Build → HilRun → SigningEvent → Release → P
 
 ## 5. High-Level Design
 
-### Major components
+This is an **infrastructure/topology view** — what pieces of infrastructure exist, what type each one is (stateless CI runner, HSM-backed side-car, hash-linked audit log, external fleet system...), and how they're wired together — not a step-by-step trace of one commit's journey. Sequencing and per-hop logic belong in the Deep Dives (§6); this section should stand on its own as "here's what we'd provision."
 
-1. **Source Control + CI Orchestrator** — triggers builds on commit/PR, runs cross-compilation per ECU toolchain, static analysis (e.g., SAST for memory-safety issues in C/C++ firmware), and unit tests. Produces an unsigned candidate artifact + generates its SBOM.
-2. **HIL Test Farm** — a pool of rigs (real ECUs or high-fidelity hardware emulators) that flash and exercise a candidate artifact against a regression/safety test suite; reports pass/fail back to the orchestrator.
-3. **Signing Service (HSM-backed)** — the *only* component with any path to a private key. Exposes a narrow API: "given this artifact checksum and a valid promotion-approval token, produce a signature." Keys live in an HSM (cloud KMS-backed HSM, or an on-prem HSM for the highest-sensitivity keys) and are never exported.
-4. **Environment Promotion Controller** — the state machine that walks a `Release` through `DEV → STAGING → CANARY → PRODUCTION`, consulting automated gates (test results, HIL results, and — at the canary stage — live telemetry pulled from Document #1's rollout/telemetry pipeline) at each transition.
-5. **Secrets & Credential Broker** — issues short-lived, scoped credentials to CI jobs (e.g., "this build job may read this artifact bucket for 15 minutes") and to factory provisioning stations (e.g., "this station may request device-identity issuance for the next shift"), backed by different underlying stores for cloud vs. factory-floor secrets.
-6. **Factory Provisioning Service** — runs (at least partially) on factory-local infrastructure; issues `DeviceIdentity` records at manufacturing time, designed to tolerate the factory's uplink to the cloud secrets/PKI root being degraded or temporarily unavailable.
-7. **Provenance/Audit Store** — the immutable, hash-linked `Commit → Build → HilRun → SigningEvent → Release → PromotionEvent` chain, queryable for both real-time incident response and long-horizon compliance audits.
-8. **Auto-Revert Controller** — subscribes to the same rollout-health telemetry as Document #1's anomaly detector; upon a release-gate failure at the canary or production stage, flips the `Release.current_stage` to `REVERTED`, and re-targets the *previous* known-good `Release` as the active promotion target for the fleet-side rollout mechanism to pick up.
+### Infrastructure tiers
 
-### High-level data flow (whiteboard sketch, described in ASCII)
+**Client / dev tier**
+- **Developer** — external; a commit or PR is the only thing this tier contributes. Not part of our infra footprint.
+
+**CI/build tier**
+- **Source Control + CI Orchestrator** — triggers builds on commit/PR, runs cross-compilation per ECU toolchain, static analysis, and unit tests; produces an unsigned candidate artifact plus its SBOM.
+- **HIL Test Farm** — a pool of rigs (real ECUs or high-fidelity emulators) that flash and exercise a candidate against a regression/safety test suite; reports pass/fail to the orchestration tier.
+
+**Control-plane / side-car services (consulted by pipeline stages, never on the main promotion path)**
+- **Signing Service (HSM-backed)** — the *only* component with any path to a private key; a narrow request/response API in front of an HSM, never invoked directly by CI.
+- **Secrets & Credential Broker** — issues short-lived, scoped credentials to CI jobs and to factory provisioning stations, fronting two distinct underlying stores:
+  - **Cloud Secrets Store** — CI/CD credentials (source-repo tokens, artifact-bucket access).
+  - **Factory-Local Secrets Store** — device-provisioning keys, built to tolerate intermittent or air-gapped factory connectivity.
+
+**Orchestration tier**
+- **Environment Promotion Controller** — the state machine walking a `Release` through `DEV → STAGING → CANARY → PRODUCTION`, consulting the CI/HIL/Signing side-cars and — at the canary gate — Document #1's rollout telemetry.
+- **Auto-Revert Controller** — subscribes to the same rollout-health telemetry as Document #1's anomaly detector; on a release-gate failure, flips a `Release` to `REVERTED` and re-targets the previous known-good `Release`.
+
+**Factory-floor tier**
+- **Factory Provisioning Service** — runs on factory-local infrastructure; issues `DeviceIdentity` records at manufacturing time, designed to tolerate the factory's cloud uplink being degraded or temporarily unavailable.
+
+**Storage / serving tier**
+- **Provenance/Audit Store** — the immutable, hash-linked `Commit → Build → HilRun → SigningEvent → Release → PromotionEvent` chain; queryable for both real-time incident response and long-horizon compliance audits.
+
+**External dependency**
+- **Rollout/Telemetry Pipeline (Document #1)** — the fleet-side rollout mechanism the Promotion Controller's canary gate reads telemetry from, and that the Auto-Revert Controller's re-targeted release feeds back into.
+
+### Topology diagram (infrastructure view, described in ASCII)
 
 ```
- ┌────────────┐   push/PR    ┌───────────────────┐   candidate    ┌────────────────┐
- │  Developer │─────────────►│  CI Orchestrator   │───artifact────►│  HIL Test Farm │
- └────────────┘               │ (build+SAST+tests)│               │  (rig pool)    │
-                               └─────────┬─────────┘               └───────┬────────┘
-                                         │ SBOM + checksum                  │ pass/fail
-                                         ▼                                  ▼
-                               ┌────────────────────────────────────────────────┐
-                               │        Environment Promotion Controller         │
-                               │   DEV ──► STAGING ──► CANARY ──► PRODUCTION      │
-                               └───────┬───────────────────┬─────────────┬───────┘
-                                       │ sign request        │ canary telemetry
-                                       ▼                     ▼             │
-                            ┌────────────────────┐   ┌───────────────────┐│
-                            │  Signing Service    │   │ Rollout/Telemetry  ││ (from Doc #1)
-                            │  (HSM-backed)       │   │ Pipeline (Doc #1)  ││
-                            └─────────┬───────────┘   └─────────┬─────────┘│
-                                      │ SigningEvent              │ anomaly│
-                                      ▼                           ▼        │
-                            ┌────────────────────────────────────────────┐│
-                            │     Provenance / Audit Store (append-only) │◄┘
-                            └────────────────────────────────────────────┘
-                                                                    │ failure crosses
-                                                                    ▼ threshold
-                                                          ┌────────────────────┐
-                                                          │ Auto-Revert         │
-                                                          │ Controller          │
-                                                          └──────────┬─────────┘
-                                                                     │ re-target previous Release
-                                                                     ▼
-                                                    (feeds back into Document #1's Campaign Orchestrator)
+  CLIENT/DEV TIER      CI/BUILD TIER                                        ORCHESTRATION TIER
+ ┌────────────┐  push  ┌────────────────────┐  candidate  ┌────────────────┐  gates  ┌────────────────────────────────────┐
+ │  Developer  │───────►│  CI Orchestrator    │──artifact──►│  HIL Test Farm │─pass/──►│ Environment Promotion Controller    │
+ └────────────┘        │ (build+SAST+tests)  │             │  (rig pool)    │  fail   │  DEV ─► STAGING ─► CANARY ─► PROD    │
+                        └────────────────────┘             └────────────────┘         └──────┬──────────────────┬────────────┘
+                                                                                                │ sign request      │ canary telemetry
+                                                                                                ▼                   ▼
+                     CONTROL-PLANE / SIDE-CAR          ┌────────────────────┐        ┌───────────────────────────┐
+                     (consulted, not on main path) ───►│  Signing Service    │        │ Rollout/Telemetry Pipeline │ (external, Doc #1)
+                                                        │  (HSM-backed)       │        └─────────────┬───────────┘
+                                                        └─────────┬───────────┘                       │ anomaly signal
+                                                                  │ SigningEvent                        ▼
+                                                                  ▼                            ┌────────────────────┐
+                                                        ┌────────────────────────┐              │ Auto-Revert         │
+                                                        │ Provenance/Audit Store   │◄─────────────┤ Controller          │
+                                                        │ (hash-linked, append-only)│              └────────────────────┘
+                                                        └────────────────────────┘
 
- ┌───────────────────┐        ┌─────────────────────┐        ┌───────────────────────┐
- │ Cloud Secrets Store │◄─────►│ Secrets & Credential │◄─────►│ Factory-Local Secrets  │
- │ (CI/CD credentials) │       │ Broker (short-lived)  │       │ Store (device keys,    │
- └───────────────────┘        └───────────┬───────────┘       │ intermittent-connectivity│
-                                           │                    │ tolerant)               │
-                                           ▼                    └───────────┬───────────┘
-                                ┌────────────────────┐                      │
-                                │ Factory Provisioning │◄─────────────────────┘
-                                │ Service (per factory) │  issues DeviceIdentity
-                                └────────────────────┘
+  CONTROL-PLANE / SIDE-CAR (secrets, a separate concern from signing)              FACTORY-FLOOR TIER
+ ┌───────────────────┐        ┌───────────────────────┐        ┌───────────────────────┐        ┌───────────────────────┐
+ │ Cloud Secrets Store │◄─────►│ Secrets & Credential   │◄─────►│ Factory-Local Secrets  │───────►│ Factory Provisioning    │
+ │ (CI/CD credentials) │       │ Broker (short-lived)    │       │ Store (device keys,     │ shift- │ Service (per factory,   │
+ └───────────────────┘        └───────────────────────┘        │ intermittent-tolerant)  │ scoped │  issues DeviceIdentity) │
+                                                                  └───────────────────────┘  cred.  └───────────────────────┘
 ```
 
-Narrate the key architectural decision: *"Notice that the Signing Service sits at a choke point — every path to a trusted artifact goes through it, and it's the only component that touches key material. Everything upstream (CI, HIL) can be compromised or buggy without directly enabling a malicious release, because a compromised CI job still can't produce a valid signature; it can only produce an artifact that a human-approved promotion gate would have to explicitly push toward signing. That's the core security property this whole pipeline is built around."*
+Narrate the key architectural decision: *"The one component every path to a trusted artifact must pass through is the Signing Service — it sits off to the side as a control-plane side-car, not inline in the CI/HIL build tier, and it's the only thing that ever touches key material. That placement is the whole security property: a compromised CI runner or a buggy HIL rig can produce a bad candidate, but it has no network path to a signature, so it can't produce a trusted one. The Secrets Broker is a second, independent side-car solving a different problem — short-lived credential issuance across a cloud/factory trust boundary — and the Provenance Store and Auto-Revert Controller are downstream consumers of the orchestration tier's decisions, not additional pipeline stages. Nothing here is a linear pipeline; it's a small orchestration tier surrounded by narrowly-scoped side-cars it calls out to."*
 
 ---
 

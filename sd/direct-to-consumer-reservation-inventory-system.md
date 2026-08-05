@@ -191,69 +191,80 @@ The interesting split here is not hot-state-vs-audit-log (though `OrderStateEven
 
 ## 5. High-Level Design
 
-### Major components
+This is an **infrastructure/topology view** — what pieces of infrastructure exist, what type each one is (stateless service, atomic-counter cache, relational system of record, external dependency...), and how they're wired together — not a step-by-step trace of one reservation's journey. Sequencing and per-hop logic belong in the Deep Dives (§6); this section should stand on its own as "here's what we'd provision."
 
-1. **Configurator Service** — read-heavy, serves buildable configurations and estimated delivery windows; backed by caches/read replicas since it can tolerate a few minutes of staleness on allocation data.
-2. **Reservation/Checkout Service** — the strongly-consistent hot path; owns hold creation, allocation decrement, and orchestrates deposit authorization with the payment processor.
-3. **Allocation Ledger Service** — the system of record for `FactoryAllocation` counters; fronted by a fast atomic-counter layer (e.g., Redis) for the launch-event hot path, reconciled asynchronously into the durable database (section 6.1).
-4. **Payment Gateway** (external, PCI boundary) — tokenized deposit authorization/capture/refund; we only ever store opaque references, never card data.
-5. **Order Management / Workflow Engine** — drives the order state machine from `CONFIRMED` through `DELIVERED`, enforcing the per-state mutable-field whitelist and emitting an event on every transition.
-6. **Production Scheduling / MES Integration** — an external factory system; our system requests and receives slot commitments and build/QA status updates, but does not control the line itself.
-7. **VIN Binding / Finished-Goods Inventory Service** — binds a completed, QA-passed `VehicleUnit` to the correct `Order`, and manages the pool of unsold built units available for the buy-from-inventory path.
-8. **Waitlist / Rationing Service** — manages the fair-ordering queue and time-boxed offers when a bucket is oversubscribed.
-9. **Notification Service** — pushes order-status and delivery-ETA updates to the customer app/email/SMS.
-10. **Event Bus / Audit Pipeline** — every state transition and allocation decision flows through here, feeding the append-only audit log, dashboards, and notifications.
-11. **Ops Console** — factory-allocation-vs-demand dashboards, waitlist depth, manual override tools for support agents handling disputes/exceptions.
+### Infrastructure tiers
 
-### High-level data flow (whiteboard sketch, described in ASCII)
+**Client tier**
+- **Customer (web/app)** — external; the origin of both traffic paths below. Not part of our infra footprint.
+
+**Storefront tier (split by consistency requirement — two independently-scaled services, not two steps of one pipeline)**
+- **Configurator Service** — the AP read path: stateless, backed by caches/read replicas, serves buildable configurations and estimated delivery windows, tolerant of a few minutes of staleness.
+- **Reservation/Checkout Service** — the CP hot path: a narrow, strongly-consistent service that owns hold creation and orchestrates deposit authorization. Deliberately a separate service from the Configurator, not a heavier mode of it, so a launch-event burst on checkout never contends with routine browsing traffic.
+
+**Processing / orchestration tier (business-logic services downstream of the storefront)**
+- **Waitlist/Rationing Service** — the fair-ordering queue and time-boxed-offer orchestrator invoked when a bucket's allocation is oversubscribed.
+- **Order Management / Workflow Engine** — drives the order state machine from `CONFIRMED` through `DELIVERED`, enforcing the per-state mutable-field whitelist and emitting an event on every transition.
+- **VIN Binding / Finished-Goods Inventory Service** — binds a completed, QA-passed `VehicleUnit` to the correct `Order`, and manages the pool of unsold built units available for the buy-from-inventory path.
+
+**Storage / serving tier (the one shared resource both storefront paths ultimately hang off)**
+- **Allocation Ledger Service** — the system of record for the scarce resource at the heart of this design: a fast in-memory atomic-counter layer (e.g., Redis, TTL-scoped tokens) fronting a durable relational store (`FactoryAllocation`), reconciled asynchronously. This pairing — not a plain database — is what lets the strongly-consistent checkout path absorb a launch-event burst without forcing every attempt through a relational row lock (section 6.1).
+
+**External dependencies (systems we integrate with, not systems we operate)**
+- **Payment Gateway** — the PCI boundary; tokenized deposit authorization/capture/refund. We only ever store opaque references, never card data.
+- **Production Scheduling / MES Integration** — the factory's own system; we request and receive slot commitments and build/QA status updates, but never control the line itself.
+
+**Supporting / cross-cutting infrastructure (beside the data path, not in it)**
+- **Event Bus / Audit Pipeline** — every state transition and allocation decision flows through here, feeding the append-only audit log; consumed independently by the two components below, not chained in series with them.
+- **Notification Service** — a consumer of the event bus that pushes order-status and delivery-ETA updates to the customer app/email/SMS.
+- **Ops Console** — factory-allocation-vs-demand dashboards, waitlist depth, and manual override tools for support agents; reads the durable stores and the event bus, but is not part of the transactional path.
+
+### Topology diagram (infrastructure view, described in ASCII)
 
 ```
-                ┌────────────────────┐
-                │  Customer (web/app) │
-                └──────────┬──────────┘
-                            │ browse/configure           │ reserve / confirm / cancel
-                            ▼                             ▼
-                 ┌────────────────────┐        ┌────────────────────────┐
-                 │ Configurator Svc    │        │ Reservation/Checkout    │
-                 │ (AP, cache/replica) │        │ Svc (CP, hot path)      │
-                 └──────────┬──────────┘        └───────────┬─────────────┘
-                            │ read allocation                │ atomic hold + capture
-                            ▼                                 ▼
-                 ┌──────────────────────────────────────────────────┐
-                 │            Allocation Ledger Service              │
-                 │  ┌───────────────┐        ┌────────────────────┐  │
-                 │  │ Fast counter   │──────► │ Durable allocation │  │
-                 │  │ (Redis + TTL   │  async  │ system of record   │  │
-                 │  │  tokens)       │  recon. │ (FactoryAllocation)│  │
-                 │  └───────────────┘        └────────────────────┘  │
-                 └───────────┬───────────────────────────┬────────────┘
-                             │ oversubscribed?             │ confirmed
-                             ▼                             ▼
-                 ┌────────────────────┐        ┌────────────────────────┐
-                 │ Waitlist/Rationing  │        │ Payment Gateway         │
-                 │ Service (fair FIFO) │        │ (external, PCI-scoped)  │
-                 └────────────────────┘        └───────────┬─────────────┘
-                                                              │ captured
-                                                              ▼
-                 ┌────────────────────────────────────────────────────┐
-                 │              Order Management / Workflow Engine     │
-                 │   CONFIRMED → CONFIG_LOCKED → IN_PRODUCTION → ...    │
-                 └───────────┬───────────────────────────────┬──────────┘
-                              │ slot commitments/build events │ state events
-                              ▼                                 ▼
-                 ┌────────────────────┐        ┌────────────────────────┐
-                 │ Production/MES      │        │ Event Bus / Audit Log   │
-                 │ Integration (ext.)  │        │ + Notifications + Dash. │
-                 └──────────┬──────────┘        └────────────────────────┘
-                             │ build complete + QA pass
-                             ▼
-                 ┌────────────────────────────┐
-                 │ VIN Binding / Finished-Goods │
-                 │ Inventory Service            │
-                 └────────────────────────────┘
+   CLIENT TIER            STOREFRONT TIER (split by consistency requirement)
+ ┌───────────────┐      ┌───────────────────────┐        ┌──────────────────────────┐
+ │ Customer        │─────►│ Configurator Svc        │        │ Reservation/Checkout Svc  │
+ │ (web/app)       │──┐  │ (AP: stateless,          │        │ (CP: strongly-consistent,  │
+ └───────────────┘  │  │  cache/read-replica)       │        │  narrow hot path)          │
+                      │  └────────────┬─────────────┘        └──────────────┬─────────────┘
+                      │                │ read allocation                      │ atomic hold + capture
+                      └────────────────┼──────────────────────────────────────┘
+                                        ▼
+                       STORAGE/SERVING TIER (the shared resource everything above hangs off)
+                       ┌───────────────────────────────────────────────────────┐
+                       │                Allocation Ledger Service                │
+                       │   ┌────────────────┐        ┌───────────────────────┐  │
+                       │   │ Fast counter    │──────►│ Durable allocation      │  │
+                       │   │ (Redis + TTL    │ async  │ system of record        │  │
+                       │   │  tokens)        │ recon. │ (FactoryAllocation)     │  │
+                       │   └────────────────┘        └───────────────────────┘  │
+                       └───────────┬─────────────────────────────┬───────────────┘
+                                    │ oversubscribed                │ confirmed
+              PROCESSING TIER      ▼                EXTERNAL DEP.  ▼
+                       ┌────────────────────┐        ┌────────────────────────┐
+                       │ Waitlist/Rationing  │        │ Payment Gateway         │
+                       │ Svc (fair FIFO)     │        │ (external, PCI-scoped)  │
+                       └────────────────────┘        └───────────┬─────────────┘
+                                                                    │ captured
+                                                                    ▼
+                       ┌────────────────────────────────────────────────────────┐
+                       │       Order Management / Workflow Engine (processing)    │
+                       └───────────┬────────────────────────────────┬─────────────┘
+                                    │ slot commitments/build events    │ build + QA complete
+                                    ▼                                    ▼
+                       ┌────────────────────┐            ┌─────────────────────────────┐
+                       │ Production/MES      │            │ VIN Binding/Finished-Goods    │
+                       │ Integration (ext.)  │            │ Inventory Svc (processing)    │
+                       └────────────────────┘            └─────────────────────────────┘
+
+ SUPPORTING (cross-cutting, attached beside the flow above, not inline in it):
+   • Event Bus / Audit Pipeline — every transition/allocation decision flows here
+   • Notification Service        — subscribes to the event bus, pushes customer updates
+   • Ops Console                  — dashboards + admin overrides, reads stores + event bus
 ```
 
-Narrate the key architectural decision: *"The system is split down the middle by consistency requirement, not by business function: everything left of the Allocation Ledger (browsing, estimation, waitlist status) is optimized for availability and can read from caches or replicas; everything from the checkout hold through payment capture is a narrow, strongly-consistent path that intentionally trades some availability and raw throughput for correctness, because the cost of being wrong — double-selling a build slot or a physical VIN — is far higher than the cost of a customer occasionally seeing a 'please try again' during a launch-event spike."*
+Narrate the key architectural decision: *"The one piece of shared infrastructure everything else hangs off is the Allocation Ledger — a fast atomic-counter cache fronting a durable relational system of record. The storefront isn't one pipeline, it's two independently-scaled services split by consistency requirement, both of which ultimately read or write that same ledger; a slow browsing surge and a launch-event checkout burst can never contend with each other because they're not sharing compute, only a shared resource. Everything downstream of a confirmed hold — order management, VIN binding, the production/MES integration — is ordinary processing-tier orchestration, and the payment gateway and MES system are external dependencies we integrate with, not infrastructure we operate. The event bus, notifications, and ops console are all side-cars hanging off that same shared ledger and the order-management tier, not additional steps in a pipeline."*
 
 ---
 
