@@ -34,7 +34,13 @@ Assume the interviewer answers:
 
 ## 1. Functional Requirements
 
-State these explicitly on the whiteboard before designing anything.
+**Core function** — the 1-3 things this system must fundamentally do; everything else below is elaboration on how:
+
+1. Continuously ingest a heterogeneous stream of telemetry from up to a million vehicles despite each vehicle's connectivity being intermittent.
+2. Get a small set of safety-critical signals to an alerting system within seconds, independent of the health of the much larger bulk-analytics path.
+3. Make ingested telemetry durable and replayable so downstream consumers can be added or fixed without re-instrumenting the fleet.
+
+State the fuller requirement list explicitly on the whiteboard before designing anything.
 
 1. **Ingest telemetry from up to 1M vehicles** — a heterogeneous mix of signal types (GPS/location, speed, battery %, DTCs, and a rotating catalog of sensor readings) at varying frequencies.
 2. **Edge buffering and store-and-forward** — the vehicle must locally buffer telemetry during connectivity loss and flush it once reconnected, without unbounded local storage growth.

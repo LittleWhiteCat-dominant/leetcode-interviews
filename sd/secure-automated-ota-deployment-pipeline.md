@@ -34,6 +34,14 @@ Assume the interviewer answers:
 
 ## 1. Functional Requirements
 
+**Core function** — the 1-3 things this system must fundamentally do; everything else below is elaboration on how:
+
+1. Automatically take a firmware commit from source through build, test, and signing to a trusted, distributable artifact.
+2. Guarantee that only artifacts signed by the authorized pipeline itself — never a human or an unscoped credential — can ever reach a vehicle.
+3. Detect a bad release from canary telemetry and automatically halt or revert its promotion without waiting on a human.
+
+The fuller requirement list:
+
 1. **Source-to-artifact CI/CD** — every commit to a component's firmware repo triggers cross-compilation, static analysis/security scanning, and unit tests; only artifacts that pass all gates become candidates for further promotion.
 2. **Hardware-in-the-loop (HIL) validation** — candidate artifacts are automatically flashed to a rig of real (or high-fidelity emulated) ECUs and run through a regression/safety test suite before promotion to staging.
 3. **Code-signing service** — a centralized, HSM-backed service signs approved artifacts; no human or CI job ever has direct access to a private signing key.

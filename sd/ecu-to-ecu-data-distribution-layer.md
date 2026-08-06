@@ -34,6 +34,14 @@ Assume the interviewer answers:
 
 ## 1. Functional Requirements
 
+**Core function** — the 1-3 things this system must fundamentally do; everything else below is elaboration on how:
+
+1. Deliver a signal from its producing ECU to every consuming ECU within a bounded, provable worst-case latency.
+2. Prevent a single faulty or misbehaving ECU from degrading or halting communication for the rest of the vehicle.
+3. Arbitrate access to a shared, bandwidth-constrained medium so higher-criticality traffic always wins over lower-criticality traffic.
+
+The fuller requirement list:
+
 1. **Deterministic, low-latency signal delivery** — safety-critical signals (e.g., brake pedal position, wheel speed, steering angle) must be delivered from producing ECU to consuming ECU(s) within a bounded, predictable worst-case latency (typically single-digit milliseconds), not just "usually fast."
 2. **Message prioritization / arbitration** — when multiple ECUs want to transmit simultaneously on a shared bus, higher-priority (more safety/time-critical) messages must always win access to the bus over lower-priority ones, without a central arbiter introducing its own latency or failure point.
 3. **Broadcast and multicast signal distribution** — a single signal (e.g., vehicle speed) is often needed by many consuming ECUs (instrument cluster, ADAS, transmission control, infotainment) — the network must support efficient one-to-many delivery rather than point-to-point duplication.

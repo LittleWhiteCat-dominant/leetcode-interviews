@@ -34,7 +34,13 @@ Assume the interviewer answers:
 
 ## 1. Functional Requirements
 
-State these explicitly on the whiteboard before designing anything.
+**Core function** — the 1-3 things this system must fundamentally do; everything else below is elaboration on how:
+
+1. Let a customer configure and reserve a vehicle — either a future production slot or a specific already-built VIN — before committing to a full purchase.
+2. Guarantee that two customers can never successfully hold or pay for the same production slot or the same physical vehicle.
+3. Track a reserved vehicle through production and delivery, binding it to exactly one order once it physically exists.
+
+State the fuller requirement list explicitly on the whiteboard before designing anything.
 
 1. **Configuration & buildability check** — given a trim/color/options selection, tell the customer whether that exact configuration is currently orderable and provide an estimated delivery window based on current factory allocation.
 2. **Reservation with deposit hold** — let a customer place a refundable deposit to hold either (a) a future production slot for a build-to-order configuration, or (b) a specific already-built VIN from existing finished-goods inventory.

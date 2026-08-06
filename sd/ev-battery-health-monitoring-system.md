@@ -34,7 +34,13 @@ Assume the interviewer answers:
 
 ## 1. Functional Requirements
 
-State these explicitly on the whiteboard before designing anything.
+**Core function** — the 1-3 things this system must fundamentally do; everything else below is elaboration on how:
+
+1. Continuously estimate each vehicle's battery state (SOC/SOH) and its degradation trend from streaming telemetry.
+2. Detect precursor patterns of a thermal-safety event and escalate them fast enough to trigger a mitigating response.
+3. Aggregate individual-vehicle battery data into fleet-wide degradation insights for warranty and recall decisions.
+
+State the fuller requirement list explicitly on the whiteboard before designing anything.
 
 1. **Ingest battery telemetry** — pack- and module-level voltage, current, and temperature summaries at regular intervals while driving/charging, reusing the shared ingestion pipeline (Document A).
 2. **Edge-side feature extraction** — the vehicle computes and uplinks summary statistics (min/max/mean/stddev voltage and temperature per module, cell-group imbalance metrics) rather than raw per-cell readings, to control cellular bandwidth.

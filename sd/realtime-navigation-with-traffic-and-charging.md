@@ -34,7 +34,13 @@ Assume the interviewer answers:
 
 ## 1. Functional Requirements
 
-State these explicitly on the whiteboard before designing anything.
+**Core function** — the 1-3 things this system must fundamentally do; everything else below is elaboration on how:
+
+1. Compute a route between two points that is both time/distance-efficient and, for an EV, actually reachable given the vehicle's current state of charge.
+2. Keep that route current as traffic conditions change, without a jarring full recomputation for every minor deviation.
+3. Insert charging stops into a route when a trip exceeds the vehicle's range, using live charger availability rather than raw distance alone.
+
+State the fuller requirement list explicitly on the whiteboard before designing anything.
 
 1. **Route computation** — given origin, destination, and vehicle state (current charge %, vehicle range/efficiency profile), compute a route that is both efficient (time/distance) and *feasible* (reachable given current state of charge, inserting charging stops if necessary).
 2. **Real-time traffic overlay** — incorporate live/near-live traffic conditions (congestion, incidents, closures) into route cost, both for the initial route and for updates during the trip.

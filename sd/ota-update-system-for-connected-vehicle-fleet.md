@@ -34,7 +34,13 @@ Assume the interviewer answers:
 
 ## 1. Functional Requirements
 
-State these explicitly on the whiteboard before designing anything.
+**Core function** — the 1-3 things this system must fundamentally do; everything else below is elaboration on how:
+
+1. Deliver a specific, signed software/firmware version to specific vehicles' specific ECU(s), reliably, over an unreliable network.
+2. Guarantee that an interrupted or failed update never leaves a vehicle non-functional — atomic apply with automatic rollback.
+3. Let operators control the blast radius of a rollout — target a cohort, ramp gradually, and halt or reverse it fleet-wide on anomaly.
+
+State the fuller requirement list explicitly on the whiteboard before designing anything.
 
 1. **Package management** — build, sign, and register new firmware/software packages, versioned per ECU/component.
 2. **Delta generation** — produce differential (delta) packages between any two supported versions to minimize payload size.

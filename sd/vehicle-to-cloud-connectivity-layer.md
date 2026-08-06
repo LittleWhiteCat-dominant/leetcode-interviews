@@ -34,6 +34,14 @@ Assume the interviewer answers:
 
 ## 1. Functional Requirements
 
+**Core function** — the 1-3 things this system must fundamentally do; everything else below is elaboration on how:
+
+1. Deliver messages reliably between a vehicle and the cloud despite intermittent, lossy, and frequently-changing connectivity.
+2. Guarantee no data is lost while offline, by durably queuing on the vehicle until the message can be delivered.
+3. Prioritize urgent, latency-sensitive traffic over bulk payloads whenever bandwidth is constrained.
+
+The fuller requirement list:
+
 1. **Session/connection establishment** — a vehicle can establish a logical, authenticated session to the cloud that survives changes in physical network (cellular → Wi-Fi → cellular), IP address changes, and NAT rebinding.
 2. **Bidirectional messaging** — support both vehicle → cloud (telemetry, status, alerts) and cloud → vehicle (commands, OTA notifications, configuration) over the same substrate.
 3. **Local durable queuing** — messages generated while offline (or while the outbound link is saturated) are queued locally on the vehicle and are not lost, up to a bounded storage budget.

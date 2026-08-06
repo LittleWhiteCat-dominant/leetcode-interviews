@@ -34,6 +34,14 @@ Assume the interviewer answers:
 
 ## 1. Functional Requirements
 
+**Core function** — the 1-3 things this system must fundamentally do; everything else below is elaboration on how:
+
+1. Guarantee that an interrupted or failed update application never leaves a vehicle in a non-bootable or unsafe state.
+2. Automatically detect a bad update — at boot or after some driving — and revert to the last-known-good version with zero backend dependency.
+3. Apply stricter rollback guarantees to safety-critical ECUs than to non-critical ones, rather than one-size-fits-all.
+
+The fuller requirement list:
+
 1. **Atomic apply** — from the perspective of the next boot, an update is either fully applied or not applied at all; there is no partially-applied, ambiguous state that the system can boot into.
 2. **Automatic, unattended fallback** — a failed update must trigger a fallback to the last-known-good version without requiring connectivity, a backend round-trip, or human action (dealer visit, service tool). The vehicle must be able to save itself while parked in a garage with zero signal.
 3. **Bounded fallback latency** — the decision to fall back must happen within a defined, small time budget after a failed boot attempt, not "eventually."

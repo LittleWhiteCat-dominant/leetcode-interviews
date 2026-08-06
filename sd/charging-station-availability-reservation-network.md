@@ -34,7 +34,13 @@ Assume the interviewer answers:
 
 ## 1. Functional Requirements
 
-State these explicitly on the whiteboard before designing anything.
+**Core function** — the 1-3 things this system must fundamentally do; everything else below is elaboration on how:
+
+1. Maintain an accurate, near-real-time view of which connectors are actually available across owned and partner-operated stations.
+2. Let a driver hold a specific connector for a bounded window without it being double-booked by another driver or a walk-up.
+3. Keep the system usable when a station or region is offline, by degrading availability confidence rather than failing outright.
+
+State the fuller requirement list explicitly on the whiteboard before designing anything.
 
 1. **Connector-level real-time availability** — track and expose the state of every connector (AVAILABLE / OCCUPIED / RESERVED / FAULTED / OFFLINE-UNKNOWN) across both Rivian-owned and partner-network stations.
 2. **Geo-search for nearby available (or likely-available) stations** — given a location, radius, and connector type/power level, return ranked candidate stations.
